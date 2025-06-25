@@ -207,28 +207,28 @@
         });
 
         // ======================================================================
-        // SECTION 1: PREDICTIONS PAGE LOGIC (CORRECTED & FINAL)
+        // SECTION 1: PREDICTIONS PAGE LOGIC (DATABASE-POWERED)
         // ======================================================================
         function initializePredictionsPage() {
-            const manualMatchesData = [
-                { "id": 2301, "team1": { "name": "مانشستر سيتي", "logo": "https://media.api-sports.io/football/teams/50.png" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2302, "team1": { "name": "أتلتيكو مدريد", "logo": "https://media.api-sports.io/football/teams/530.png" }, "team2": { "name": "بوتافوغو", "logo": "https://media.api-sports.io/football/teams/1081.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2303, "team1": { "name": "سياتل ساوندرز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/iju_-94JIOiHTSVh4Nqgh.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باريس سان جيرمان", "logo": "https://media.api-sports.io/football/teams/85.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2401, "team1": { "name": "إنتر ميامي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/eP7VUfiow48_R8A-w2ADb.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "بالميراس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/9iqu-OKlXY0q0WVqvcUSe.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Action"] },
-                { "id": 2402, "team1": { "name": "بورتو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/5q7vuByZ8XO_L7ZuEeep2.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الأهلي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/o0K-aXi0FsiLx9BJ3AgTv.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Masr" ] },
-                { "id": 2403, "team1": { "name": "بوكا جونيورز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/DOBffYJMo4e5VhoJX15fV.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "أوكلاند سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/IX2fIwXSOLsWDsUu5LmzD.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["DAZN" ] },
-                { "id": 2404, "team1": { "name": "بايرن ميونخ", "logo": "https://media.api-sports.io/football/teams/157.png" }, "team2": { "name": "بنفيكا", "logo": "https://media.api-sports.io/football/teams/211.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["beIN Sports" ] },
-                { "id": 2501, "team1": { "name": "تشيلسي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/w5N6rBTPf_J_brPwrNIOG.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الترجي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EF2BiqfSLna4ypEMUibdi.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2502, "team1": { "name": "فلامنغو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/uBmMjj6gGMNdb83YU2xEz.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "لوس أنجلوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Wv0w3tqrAN4Pm9g0Rymzf.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2503, "team1": { "name": "Borussia Dortmund", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EmDXkZ5B61SrXUUTUPV3X.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Ulsan HD FC", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/oo8T0F2idHnFdc-D3Mh12.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2504, "team1": { "name": "Mamelodi Sundowns", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/kfdXAFPbKdkR9O_DFH5EK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Fluminense", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Xof2xYwDp4l1fU1M_e49y.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2601, "team1": { "name": "إنتر ميلان", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/QMLrilrNtKpq2UmCOH9FK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريفر بليت", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/yvkxIVK_5-HduWzkkaru_.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2602, "team1": { "name": "أوراوا ريد دياموندز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/0PeG1kW1nv9LLjK0VU8sZ.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مونتيري", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/U4PBXIQ_FlEDSxGOoF6FX.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2603, "team1": { "name": "الوداد الرياضي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/k7TES9_2byLPJdIMn-d8H.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2604, "team1": { "name": "يوفنتوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/G0ZJNLeWxBVFsy39V4-XY.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مانشستر سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/YaWwRy_S6TKMuwJHBvDbR.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2701, "team1": { "name": "ريد بول سالزبورغ", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/-PWqo_lcDVwCd2-FuHu94.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريال مدريد", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/VOlkxOIoXAXF_11lYJ_Ve.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC Action"] },
-                { "id": 2702, "team1": { "name": "الهلال", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/7B-B14BUExP3pp4zNnlrX.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باتشوكا", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/x4Ij6QJEV0WFXyk45IFMl.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC مصر"] }
-            ];
+            // الخطوة 1: جلب المباريات من قاعدة البيانات عبر الدالة السيرفرلس
+            fetch('/.netlify/functions/get-matches')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(matchesData => {
+                    // الخطوة 2: عند النجاح، قم بتهيئة التطبيق بالبيانات الحية
+                    initializeAppWithData(matchesData);
+                })
+                .catch(error => {
+                    console.error('Error fetching matches:', error);
+                    document.getElementById('days-content-container').innerHTML = `<p class="text-center text-gray-400 mt-8">حدث خطأ في تحميل المباريات. يرجى المحاولة لاحقاً.</p>`;
+                });
+        }
+        
+        function initializeAppWithData(manualMatchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
             
             const dateTabsContainer = document.getElementById('date-tabs');
@@ -238,7 +238,46 @@
 
             function getMatchStatus(matchDate) { const now = new Date(); const diffMinutes = (matchDate.getTime() - now.getTime()) / 60000; if (diffMinutes < -125) return { state: 'ended' }; if (diffMinutes <= 0) return { state: 'live' }; if (diffMinutes <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
             
-            function initializeAppWithTabs() { loadUserInfo(); populateTicker(); if (sessionStorage.getItem('isIconDismissed')) floatingIconContainer.classList.add('hidden'); const today = new Date(); today.setHours(0, 0, 0, 0); const upcomingMatchesData = manualMatchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today); const matchesByDay = upcomingMatchesData.reduce((acc, match) => { const dayKey = new Date(match.datetime).toLocaleDateString('fr-CA'); if (!acc[dayKey]) acc[dayKey] = []; acc[dayKey].push(match); return acc; }, {}); dateTabsContainer.innerHTML = ''; daysContentContainer.innerHTML = ''; if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; return; } const sortedDays = Object.keys(matchesByDay).sort(); sortedDays.forEach((day, index) => { const dayDate = new Date(day + 'T00:00:00Z'); const tabTitle = dayDate.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }); const tabButton = document.createElement('div'); tabButton.className = `date-tab ${index === 0 ? 'active' : ''}`; tabButton.textContent = tabTitle; tabButton.dataset.tabId = day; dateTabsContainer.appendChild(tabButton); const dayContentDiv = document.createElement('div'); dayContentDiv.className = `day-content ${index === 0 ? 'active' : ''}`; dayContentDiv.id = `day-${day}`; daysContentContainer.appendChild(dayContentDiv); const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const sortedMatches = matchesByDay[day].sort((a, b) => { const statusA = getMatchStatus(new Date(a.datetime)).state; const statusB = getMatchStatus(new Date(b.datetime)).state; if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB]; return new Date(a.datetime) - new Date(b.datetime); }); renderMatchesForDay(dayContentDiv, sortedMatches); }); attachTabEventListeners(); attachMatchEventListeners(); loadFromStorage(); }
+            function initializeAppWithTabs() { 
+                loadUserInfo(); 
+                populateTicker(); 
+                if (sessionStorage.getItem('isIconDismissed')) floatingIconContainer.classList.add('hidden'); 
+                const today = new Date(); 
+                today.setHours(0, 0, 0, 0); 
+                const upcomingMatchesData = manualMatchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today); 
+                const matchesByDay = upcomingMatchesData.reduce((acc, match) => { const dayKey = new Date(match.datetime).toLocaleDateString('fr-CA'); if (!acc[dayKey]) acc[dayKey] = []; acc[dayKey].push(match); return acc; }, {}); 
+                dateTabsContainer.innerHTML = ''; 
+                daysContentContainer.innerHTML = ''; 
+                if (Object.keys(matchesByDay).length === 0) { 
+                    daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; 
+                    return; 
+                } 
+                const sortedDays = Object.keys(matchesByDay).sort(); 
+                sortedDays.forEach((day, index) => { 
+                    const dayDate = new Date(day + 'T00:00:00Z'); 
+                    const tabTitle = dayDate.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }); 
+                    const tabButton = document.createElement('div'); 
+                    tabButton.className = `date-tab ${index === 0 ? 'active' : ''}`; 
+                    tabButton.textContent = tabTitle; 
+                    tabButton.dataset.tabId = day; 
+                    dateTabsContainer.appendChild(tabButton); 
+                    const dayContentDiv = document.createElement('div'); 
+                    dayContentDiv.className = `day-content ${index === 0 ? 'active' : ''}`; 
+                    dayContentDiv.id = `day-${day}`; 
+                    daysContentContainer.appendChild(dayContentDiv); 
+                    const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; 
+                    const sortedMatches = matchesByDay[day].sort((a, b) => { 
+                        const statusA = getMatchStatus(new Date(a.datetime)).state; 
+                        const statusB = getMatchStatus(new Date(b.datetime)).state; 
+                        if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB]; 
+                        return new Date(a.datetime) - new Date(b.datetime); 
+                    }); 
+                    renderMatchesForDay(dayContentDiv, sortedMatches); 
+                }); 
+                attachTabEventListeners(); 
+                attachMatchEventListeners(); 
+                loadFromStorage(); 
+            }
             
             function renderMatchesForDay(dayContentContainer, matches) { 
                 dayContentContainer.innerHTML = ''; 
@@ -459,13 +498,12 @@
                 }); 
             }
             
+            // بدء تشغيل التطبيق
             initializeAppWithTabs();
-            if (window.matchUpdateInterval) clearInterval(window.matchUpdateInterval);
-            window.matchUpdateInterval = setInterval(initializeAppWithTabs, 60000);
         }
 
         // ==========================================================
-        // SECTION 2: NEWS PAGE LOGIC (CORRECTED & FINAL)
+        // SECTION 2: NEWS PAGE LOGIC (FINAL)
         // ==========================================================
         function initializeNewsPage() {
             const ADMIN_PASSWORD = '1122';  
