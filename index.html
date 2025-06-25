@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
 
     <style>
         :root {
@@ -207,7 +207,7 @@
         // SECTION 1: PREDICTIONS PAGE LOGIC
         // ======================================================================
         function initializePredictionsPage() {
-            const emailJsConfig = { serviceID: 'service_2ptfwwh', predictionTemplateID: 'template_prediction', commentTemplateID: 'template_comment', publicKey: 'ctE562Rgo41CObWRo' };
+            
             const manualMatchesData = [
                 { "id": 2301, "team1": { "name": "مانشستر سيتي", "logo": "https://media.api-sports.io/football/teams/50.png" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T02:00:00+01:00", "channels": ["DAZN"] },
                 { "id": 2302, "team1": { "name": "أتلتيكو مدريد", "logo": "https://media.api-sports.io/football/teams/530.png" }, "team2": { "name": "بوتافوغو", "logo": "https://media.api-sports.io/football/teams/1081.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
@@ -264,7 +264,31 @@
             function getMatchStatus(matchDate) { const now = new Date(); const diffMinutes = (matchDate.getTime() - now.getTime()) / 60000; if (diffMinutes < -125) return { state: 'ended' }; if (diffMinutes <= 0) return { state: 'live' }; if (diffMinutes <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
             
             function initializeAppWithTabs() { loadUserInfo(); populateTicker(); if (sessionStorage.getItem('isIconDismissed')) floatingIconContainer.classList.add('hidden'); const today = new Date(); today.setHours(0, 0, 0, 0); const upcomingMatchesData = manualMatchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today); const matchesByDay = upcomingMatchesData.reduce((acc, match) => { const dayKey = new Date(match.datetime).toLocaleDateString('fr-CA'); if (!acc[dayKey]) acc[dayKey] = []; acc[dayKey].push(match); return acc; }, {}); dateTabsContainer.innerHTML = ''; daysContentContainer.innerHTML = ''; if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; return; } const sortedDays = Object.keys(matchesByDay).sort(); sortedDays.forEach((day, index) => { const dayDate = new Date(day + 'T00:00:00Z'); const tabTitle = dayDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); const tabButton = document.createElement('div'); tabButton.className = `date-tab ${index === 0 ? 'active' : ''}`; tabButton.textContent = tabTitle; tabButton.dataset.tabId = day; dateTabsContainer.appendChild(tabButton); const dayContentDiv = document.createElement('div'); dayContentDiv.className = `day-content ${index === 0 ? 'active' : ''}`; dayContentDiv.id = `day-${day}`; daysContentContainer.appendChild(dayContentDiv); const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const sortedMatches = matchesByDay[day].sort((a, b) => { const statusA = getMatchStatus(new Date(a.datetime)).state; const statusB = getMatchStatus(new Date(b.datetime)).state; if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB]; return new Date(a.datetime) - new Date(b.datetime); }); renderMatchesForDay(dayContentDiv, sortedMatches); }); attachTabEventListeners(); attachMatchEventListeners(); loadFromStorage(); }
-            function renderMatchesForDay(dayContentContainer, matches) { dayContentContainer.innerHTML = ''; if (!matches || matches.length === 0) return; matches.forEach(match => { const matchDate = new Date(match.datetime); const dateString = matchDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }); const timeString = matchDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const timeZoneName = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(matchDate).find(p => p.type === 'timeZoneName')?.value || ''; const statusInfo = getMatchStatus(matchDate); let statusDisplay; switch (statusInfo.state) { case 'ended': statusDisplay = `<span class="match-status ended">انتهت</span>`; break; case 'live': statusDisplay = `<span class="match-status live">مباشر</span>`; break; case 'soon': statusDisplay = `<span class="match-status soon">بعد قليل</span>`; break; default: statusDisplay = `<div class="match-time">${timeString} ${timeZoneName}</div>`; } const channels = (match.channels && match.channels.length > 0) ? match.channels.join(' / ') : "غير محددة"; const isMatchOver = statusInfo.state === 'ended'; const card = document.createElement('div'); card.className = 'match-card'; card.dataset.matchId = match.id; card.innerHTML = `<div class="match-header"><span class="match-league">${match.league}</span><span class="match-date-time">${dateString}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${match.team1.logo}" alt="${match.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team1.name}</span></div><div class="match-status-container">${statusDisplay}</div><div class="team"><img src="${match.team2.logo}" alt="${match.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team2.name}</span></div></div><form class="prediction-form ${isMatchOver ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${channels}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner-${match.id}" id="win1-${match.id}" value="${match.team1.name}" required><label for="win1-${match.id}">${match.team1.name}</label><input type="radio" name="winner-${match.id}" id="draw-${match.id}" value="تعادل"><label for="draw-${match.id}">تعادل</label><input type="radio" name="winner-${match.id}" id="win2-${match.id}" value="${match.team2.name}"><label for="win2-${match.id}">${match.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${isMatchOver ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${isMatchOver ? 'disabled' : ''}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form class="comment-form"><textarea placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; dayContentContainer.appendChild(card); }); }
+            function renderMatchesForDay(dayContentContainer, matches) { dayContentContainer.innerHTML = ''; if (!matches || matches.length === 0) return; matches.forEach(match => { const matchDate = new Date(match.datetime); const dateString = matchDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }); const timeString = matchDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); const timeZoneName = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' }).formatToParts(matchDate).find(p => p.type === 'timeZoneName')?.value || ''; const statusInfo = getMatchStatus(matchDate); let statusDisplay; switch (statusInfo.state) { case 'ended': statusDisplay = `<span class="match-status ended">انتهت</span>`; break; case 'live': statusDisplay = `<span class="match-status live">مباشر</span>`; break; case 'soon': statusDisplay = `<span class="match-status soon">بعد قليل</span>`; break; default: statusDisplay = `<div class="match-time">${timeString} ${timeZoneName}</div>`; } const channels = (match.channels && match.channels.length > 0) ? match.channels.join(' / ') : "غير محددة"; const isMatchOver = statusInfo.state === 'ended'; const card = document.createElement('div'); card.className = 'match-card'; card.dataset.matchId = match.id; card.innerHTML = `<div class="match-header"><span class="match-league">${match.league}</span><span class="match-date-time">${dateString}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${match.team1.logo}" alt="${match.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team1.name}</span></div><div class="match-status-container">${statusDisplay}</div><div class="team"><img src="${match.team2.logo}" alt="${match.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${isMatchOver ? 'disabled' : ''}" data-netlify="true">
+    <!-- حقول مخفية لـ Netlify -->
+    <input type="hidden" name="form-name" value="prediction-form" />
+    <input type="hidden" name="match_name" value="${match.team1.name} vs ${match.team2.name}" />
+    <input type="hidden" name="league" value="${match.league}" />
+
+    <div class="form-group">
+        <legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${channels}</span></legend>
+    </div>
+    <div class="form-group">
+        <legend>توقع النتيجة:</legend>
+        <div class="prediction-options">
+            <input type="radio" name="winner" id="win1-${match.id}" value="${match.team1.name}" required><label for="win1-${match.id}">${match.team1.name}</label>
+            <input type="radio" name="winner" id="draw-${match.id}" value="تعادل"><label for="draw-${match.id}">تعادل</label>
+            <input type="radio" name="winner" id="win2-${match.id}" value="${match.team2.name}"><label for="win2-${match.id}">${match.team2.name}</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <legend>من سيسجل أولاً؟ (اختياري)</legend>
+        <input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب...">
+    </div>
+    <div class="form-group">
+        <button type="submit" class="submit-btn">${isMatchOver ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button>
+    </div>
+</form></div></div>`; dayContentContainer.appendChild(card); }); }
             function attachTabEventListeners() { dateTabsContainer.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const tabId = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(tab => tab.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(content => content.classList.remove('active')); document.getElementById(`day-${tabId}`).classList.add('active'); }); }
             function attachMatchEventListeners() { const userIconBtn = document.getElementById('user-icon-btn'); const dismissIconBtn = document.getElementById('dismiss-icon-btn'); const closeModalBtn = document.getElementById('close-modal-btn'); const userModal = document.getElementById('user-modal'); const userInfoForm = document.getElementById('user-info-form'); userIconBtn.addEventListener('click', openUserModal); dismissIconBtn.addEventListener('click', dismissFloatingIcon); closeModalBtn.addEventListener('click', closeUserModal); userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); }); userInfoForm.addEventListener('submit', saveUserInfo); daysContentContainer.addEventListener('submit', e => { if (e.target.classList.contains('prediction-form')) { e.preventDefault(); handlePredictionSubmit(e.target); } else if (e.target.classList.contains('comment-form')) { e.preventDefault(); handleCommentSubmit(e.target); } }); daysContentContainer.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
             function openUserModal() { document.getElementById('user-modal').classList.add('show'); }
@@ -273,7 +297,45 @@
             function saveUserInfo(e) { e.preventDefault(); const userModal = document.getElementById('user-modal'); const saveStatus = document.getElementById('save-status'); const userInfo = { username: userModal.querySelector('#username').value.trim(), social: userModal.querySelector('#social_account').value.trim() }; if (!userInfo.username) { alert('الرجاء إدخال اسم المستخدم.'); return; } localStorage.setItem('userInfo', JSON.stringify(userInfo)); saveStatus.textContent = 'تم الحفظ ✅'; setTimeout(() => { saveStatus.textContent = ''; closeUserModal(); }, 1500); }
             function loadUserInfo() { const userInfo = JSON.parse(localStorage.getItem('userInfo')); if (userInfo) { document.getElementById('username').value = userInfo.username || ''; document.getElementById('social_account').value = userInfo.social || ''; } }
             function populateTicker() { tickerContent.innerHTML = tickerMessages.map(msg => `<span class="ticker-item">${msg}</span>`).join(''); }
-            function handlePredictionSubmit(form) { const matchCard = form.closest('.match-card'); const submitBtn = form.querySelector('.submit-btn'); const winnerInput = form.querySelector(`input[name="winner-${matchCard.dataset.matchId}"]:checked`); if (!winnerInput) { alert('الرجاء اختيار نتيجة المباراة.'); return; } const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {}; if (!userInfo.username) { alert('الرجاء إدخال اسم المستخدم وحفظه أولاً عبر الأيقونة في الأسفل.'); return; } const templateParams = { username: userInfo.username, social_account: userInfo.social || 'لا يوجد', match_name: `${matchCard.querySelector('.teams-row .team:first-child .team-name').textContent} vs ${matchCard.querySelector('.teams-row .team:last-child .team-name').textContent}`, league_name: matchCard.querySelector('.match-league').textContent, match_time: matchCard.querySelector('.match-date-time').textContent, prediction_result: winnerInput.value, predicted_scorer: form.querySelector('.scorer-input').value.trim() || "لم يتم التحديد" }; sendEmail(submitBtn, emailJsConfig.predictionTemplateID, templateParams, () => { [...form.elements].forEach(el => el.disabled = true); const prediction = { winner: winnerInput.value, scorer: form.querySelector('.scorer-input').value.trim() }; localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction)); }); }
+     function handlePredictionSubmit(form) {
+    const submitBtn = form.querySelector('.submit-btn');
+    const winnerInput = form.querySelector('input[name="winner"]:checked');
+    const matchCard = form.closest('.match-card');
+
+    if (!winnerInput) {
+        alert('الرجاء اختيار نتيجة المباراة.');
+        return;
+    }
+
+    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+    const formData = new FormData(form);
+    formData.append('username', userInfo.username || 'مجهول');
+    formData.append('social_account', userInfo.social || 'لا يوجد');
+
+    const originalText = submitBtn.textContent;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    submitBtn.disabled = true;
+
+    fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData).toString(),
+    })
+    .then(() => {
+        submitBtn.innerHTML = `تم الإرسال ✅`;
+        [...form.elements].forEach(el => el.disabled = true);
+        const prediction = { 
+            winner: winnerInput.value, 
+            scorer: form.querySelector('input[name="scorer"]').value.trim() 
+        };
+        localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
+    })
+    .catch((error) => {
+        alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+}
             function handleCommentSubmit(form) { const textarea = form.querySelector('textarea'); const commentText = textarea.value.trim(); const submitBtn = form.querySelector('button'); if (commentText === '') return; const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {}; if (!userInfo.username) { alert('الرجاء إدخال اسم المستخدم وحفظه أولاً.'); return; } const matchCard = form.closest('.match-card'); const templateParams = { username: userInfo.username, social_account: userInfo.social || 'لا يوجد', match_name: `${matchCard.querySelector('.teams-row .team:first-child .team-name').textContent} vs ${matchCard.querySelector('.teams-row .team:last-child .team-name').textContent}`, comment_text: commentText }; sendEmail(submitBtn, emailJsConfig.commentTemplateID, templateParams, () => { const commentList = form.previousElementSibling; const commentData = { author: userInfo.username, text: commentText }; addCommentToDOM(commentList, commentData); const comments = JSON.parse(localStorage.getItem(`comments-${matchCard.dataset.matchId}`) || '[]'); comments.push(commentData); localStorage.setItem(`comments-${matchCard.dataset.matchId}`, JSON.stringify(comments)); textarea.value = ''; }); }
             function sendEmail(button, templateID, params, onSuccess) { const originalText = button.innerHTML; button.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; button.disabled = true; emailjs.send(emailJsConfig.serviceID, templateID, params, emailJsConfig.publicKey).then(() => { button.innerHTML = `تم الإرسال ✅`; onSuccess(); }, (error) => { button.innerHTML = `فشل الإرسال ❌`; button.classList.add('error'); setTimeout(() => { button.innerHTML = originalText; button.classList.remove('error'); button.disabled = false; }, 3000); }); }
             function handleToggleComments(button) { const commentsSection = button.nextElementSibling; const isHidden = commentsSection.style.display === 'none' || !commentsSection.style.display; commentsSection.style.display = isHidden ? 'block' : 'none'; button.innerHTML = isHidden ? '💬 إخفاء التعليقات' : '💬 التعليقات'; }
