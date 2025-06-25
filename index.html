@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المركز الرياضي - نسخة مستقرة</title>
+    <title>المركز الرياضي - توقعات وأخبار</title>
 
-    <!-- Google Analytics, Tailwind, Fonts, Font Awesome... (كل هذه تبقى كما هي) -->
+    <!-- Google Analytics - START -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -13,18 +13,140 @@
       gtag('js', new Date());
       gtag('config', 'G-05JCQWTWHK');
     </script>
+    <!-- Google Analytics - END -->
+
+    <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] },
+                }
+            }
+        }
     </script>
+
+    <!-- Google Fonts (Tajawal) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- كل الـ CSS style يبقى كما هو -->
+
     <style>
-        :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1,#news-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .dismiss-icon-button{background-color:var(--surface-color);color:var(--secondary-text-color);width:28px;height:28px;border-radius:50%;border:1px solid var(--border-color);font-size:.9rem;display:flex;justify-content:center;align-items:center;cursor:pointer}#predictions-page .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}#predictions-page .modal.show{display:flex}#predictions-page .modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}#predictions-page .modal-content h2{font-size:1.2rem;margin-bottom:20px;text-align:center}#predictions-page .modal .form-control input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .modal .form-control{margin-bottom:15px}#predictions-page .modal button{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer}#predictions-page .close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .submit-btn.error{background-color:var(--danger-color)}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .toggle-comments-btn:disabled{opacity:.6;cursor:not-allowed}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#news-page{height:calc(100vh - 70px)}#news-page .page{position:absolute;top:0;left:0;width:100%;height:100%;padding:15px;padding-top:0;overflow-y:auto;background-color:var(--bg-color);transition:transform .35s ease-in-out;display:flex;flex-direction:column}#news-page #home-page{transform:translateX(0);z-index:10}#news-page #article-page{transform:translateX(100%);z-index:20;touch-action:pan-y}#news-page #article-content{padding-top:15px;padding-bottom:10px}#news-page #article-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:10px}#news-page #article-header h1{font-size:1.8rem;flex-grow:1;line-height:1.4}#news-page #share-button{background:0 0;border:none;color:var(--secondary-text-color);font-size:1.5rem;cursor:pointer;padding:5px}#news-page #article-content img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px}#news-page #article-content p{font-size:1.1rem;line-height:1.8;margin-bottom:15px;color:var(--secondary-text-color)}#news-page .comments-section{padding:20px 0;margin-top:25px;border-top:1px solid var(--border-color)}#news-page .comments-section h2{font-size:1.5rem;margin-bottom:20px}#news-page .comment-item{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;padding:15px;margin-bottom:10px;position:relative}#news-page .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--secondary-text-color);font-size:.9rem;flex-wrap:wrap}#news-page .comment-author{font-weight:700}#news-page .comment-body{font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word}#news-page .delete-comment-btn{position:absolute;top:10px;left:10px;background:0 0;border:none;color:var(--secondary-text-color);cursor:pointer;font-size:.9rem;transition:color .2s;padding:5px}#news-page .delete-comment-btn:hover{color:var(--danger-color)}#news-page #comment-form input,#news-page #comment-form textarea{width:100%;padding:12px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;color:var(--primary-text-color);margin-bottom:10px;font-size:1rem}#news-page #comment-form button{width:100%;background-color:var(--accent-color);color:white;border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:8px;font-size:1rem;transition:background-color .2s}#news-page #comment-form button:disabled{background-color:var(--secondary-text-color);cursor:not-allowed}#news-page #articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px}#news-page .article-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;position:relative}#news-page .article-card img{width:100%;height:180px;object-fit:cover}#news-page .article-card .article-title{padding:15px;font-size:1.1rem;font-weight:700;flex-grow:1}#exit-toast,#notification-toast{position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,.8);color:white;padding:10px 20px;border-radius:20px;z-index:2000;font-size:.9rem;transition:bottom .3s ease-in-out;box-shadow:0 4px 12px rgba(0,0,0,.2)}#exit-toast.show,#notification-toast.show{bottom:30px}
+        :root {
+            --bg-color: #0d1117;
+            --surface-color: #161b22;
+            --primary-text-color: #c9d1d9;
+            --secondary-text-color: #8b949e;
+            --accent-color: #2f81f7;
+            --border-color: #30363d;
+            --success-color: #238636;
+            --danger-color: #da3633;
+            --warning-color: #f7b731;
+            --channel-color: #facc15; 
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--primary-text-color); line-height: 1.6; overflow-x: hidden; }
+        .page-container.hidden { display: none; }
+        #predictions-page .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+        #predictions-page header h1 { text-align: center; font-size: 1.8rem; margin-bottom: 15px; font-weight: 700; }
+        #predictions-page .floating-icon-container { position: fixed; bottom: 20px; left: 20px; display: flex; align-items: center; gap: 8px; z-index: 1001; }
+        #predictions-page .user-icon-button { background-color: var(--accent-color); color: white; width: 45px; height: 45px; border-radius: 50%; border: none; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        #predictions-page .dismiss-icon-button { background-color: var(--surface-color); color: var(--secondary-text-color); width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-color); font-size: 0.9rem; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        #predictions-page .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; }
+        #predictions-page .modal.show { display: flex; }
+        #predictions-page .modal-content { background-color: var(--surface-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; border-top: 4px solid var(--accent-color); }
+        #predictions-page .modal-content h2 { font-size: 1.2rem; margin-bottom: 20px; text-align: center; }
+        #predictions-page .modal .form-control input { width: 100%; padding: 10px; background-color: var(--border-color); color: var(--primary-text-color); border: 1px solid var(--border-color); border-radius: 6px; }
+        #predictions-page .modal .form-control { margin-bottom: 15px; }
+        #predictions-page .modal button { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        #predictions-page .close-button { position: absolute; top: 15px; right: 15px; color: var(--secondary-text-color); font-size: 24px; cursor: pointer; }
+        #predictions-page .news-ticker { background-color: var(--surface-color); border-radius: 8px; padding: 10px 15px; margin-bottom: 25px; display: flex; align-items: center; overflow: hidden; border: 1px solid var(--border-color); }
+        #predictions-page .ticker-icon { color: var(--accent-color); font-size: 1.2rem; margin-left: 15px; }
+        #predictions-page .ticker-content { white-space: nowrap; animation: ticker-scroll-rtl 25s linear infinite; }
+        @keyframes ticker-scroll-rtl { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        #predictions-page .ticker-item { display: inline-block; margin-right: 50px; font-size: 0.9rem; color: var(--secondary-text-color); }
+        .date-tabs-container { display: flex; width: 100%; border-radius: 8px; overflow: hidden; background-color: var(--surface-color); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .date-tab { flex-grow: 1; text-align: center; padding: 12px 10px; cursor: pointer; color: var(--secondary-text-color); border-bottom: 4px solid transparent; transition: all 0.2s; font-weight: 700; font-size: 1.1rem; }
+        .date-tab.active { color: var(--primary-text-color); background-color: rgba(47, 129, 247, 0.15); border-bottom-color: var(--accent-color); }
+        .day-content { display: none; }
+        .day-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #predictions-page .match-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
+        #predictions-page .match-header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: rgba(47, 129, 247, 0.1); }
+        #predictions-page .match-league { font-weight: 700; color: var(--accent-color); }
+        #predictions-page .match-date-time { font-size: 0.9rem; color: var(--secondary-text-color); }
+        #predictions-page .match-body { padding: 20px; }
+        #predictions-page .teams-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
+        #predictions-page .team { text-align: center; width: 120px; }
+        #predictions-page .team img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; }
+        #predictions-page .team-name { font-weight: 700; font-size: 1rem; }
+        #predictions-page .match-status-container { text-align: center; }
+        #predictions-page .match-time { font-size: 1.2rem; font-weight: 700; direction: ltr; }
+        #predictions-page .match-status { font-size: 1rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+        #predictions-page .match-status.soon { color: white; background-color: var(--success-color); }
+        #predictions-page .match-status.live { color: white; background-color: var(--warning-color); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(247, 183, 49, 0); } 100% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0); } }
+        #predictions-page .match-status.ended { color: white; background-color: var(--danger-color); }
+        #predictions-page .prediction-form, #predictions-page .comment-form { background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        #predictions-page .prediction-form.disabled { opacity: 0.6; pointer-events: none; }
+        #predictions-page .form-group { margin-bottom: 15px; }
+        #predictions-page .form-group legend { font-size: 1rem; font-weight: 500; color: var(--secondary-text-color); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        #predictions-page .channel-info span { color: var(--channel-color); font-weight: 700; }
+        #predictions-page .prediction-options { display: flex; gap: 10px; }
+        #predictions-page .prediction-options input[type="radio"] { display: none; }
+        #predictions-page .prediction-options label { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); text-align: center; cursor: pointer; transition: all 0.2s; }
+        #predictions-page .prediction-options input[type="radio"]:checked + label { background-color: var(--success-color); border-color: var(--success-color); color: #fff; font-weight: 700; }
+        #predictions-page .scorer-input { width: 100%; padding: 10px; background-color: var(--border-color); color: var(--primary-text-color); border: 1px solid var(--border-color); border-radius: 6px; }
+        #predictions-page .submit-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        #predictions-page .submit-btn:disabled { background-color: var(--success-color); opacity: 0.8; cursor: not-allowed; }
+        #predictions-page .submit-btn.error { background-color: var(--danger-color); }
+        #predictions-page .match-footer { padding: 0 20px 20px; }
+        #predictions-page .toggle-comments-btn { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--secondary-text-color); cursor: pointer; border-radius: 8px; margin-top: 15px; }
+        #predictions-page .toggle-comments-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #predictions-page .comments-section { display: none; margin-top: 15px; }
+        #predictions-page .comment-list { margin-bottom: 15px; max-height: 200px; overflow-y: auto; }
+        #predictions-page .comment { display: flex; gap: 10px; margin-bottom: 15px; }
+        #predictions-page .comment-avatar { width: 35px; height: 35px; border-radius: 50%; background-color: var(--border-color); display:flex; justify-content:center; align-items:center; }
+        #predictions-page .comment-body { flex: 1; }
+        #predictions-page .comment-author { font-weight: 700; }
+        #predictions-page .comment-text { font-size: 0.9rem; color: var(--secondary-text-color); }
+        #predictions-page .comment-form textarea { width: 100%; min-height: 60px; padding: 10px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; resize: vertical; margin-bottom: 10px; }
+        #predictions-page .comment-form button { padding: 8px 15px; background-color: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer; }
+        #predictions-page .fa-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #news-page { height: calc(100vh - 70px); }
+        #news-page .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 15px; padding-top: 0; overflow-y: auto; background-color: var(--bg-color); transition: transform 0.35s ease-in-out; display: flex; flex-direction: column; }
+        #news-page #home-page { transform: translateX(0); z-index: 10; }
+        #news-page #article-page { transform: translateX(100%); z-index: 20; touch-action: pan-y; }
+        #news-page #article-content { padding-top: 15px; padding-bottom: 10px; }
+        #news-page #article-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 10px; }
+        #news-page #article-header h1 { font-size: 1.8rem; flex-grow: 1; line-height: 1.4; }
+        #news-page #share-button { background: none; border: none; color: var(--secondary-text-color); font-size: 1.5rem; cursor: pointer; padding: 5px; }
+        #news-page #article-content img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
+        #news-page #article-content p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 15px; color: var(--secondary-text-color); }
+        #news-page .comments-section { padding: 20px 0; margin-top: 25px; border-top: 1px solid var(--border-color); }
+        #news-page .comments-section h2 { font-size: 1.5rem; margin-bottom: 20px; }
+        #news-page .comment-item { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 10px; position: relative; }
+        #news-page .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--secondary-text-color); font-size: 0.9rem; flex-wrap: wrap; }
+        #news-page .comment-author { font-weight: 700; }
+        #news-page .comment-body { font-size: 1rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
+        #news-page .delete-comment-btn { position: absolute; top: 10px; left: 10px; background: none; border: none; color: var(--secondary-text-color); cursor: pointer; font-size: 0.9rem; transition: color 0.2s; padding: 5px; }
+        #news-page .delete-comment-btn:hover { color: var(--danger-color); }
+        #news-page #comment-form input, #news-page #comment-form textarea { width: 100%; padding: 12px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--primary-text-color); margin-bottom: 10px; font-size: 1rem; }
+        #news-page #comment-form button { width: 100%; background-color: var(--accent-color); color: white; border: none; cursor: pointer; font-weight: 700; padding: 12px; border-radius: 8px; font-size: 1rem; transition: background-color 0.2s; }
+        #news-page #comment-form button:disabled { background-color: var(--secondary-text-color); cursor: not-allowed; }
+        #news-page header { padding: 15px 0; }
+        #news-page header h1 { text-align: center; font-size: 1.8rem; font-weight: 700; }
+        #news-page #articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding-bottom: 80px; }
+        #news-page .article-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; }
+        #news-page .article-card img { width: 100%; height: 180px; object-fit: cover; }
+        #news-page .article-card .article-title { padding: 15px; font-size: 1.1rem; font-weight: 700; flex-grow: 1; }
+        #exit-toast, #notification-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 20px; z-index: 2000; font-size: 0.9rem; transition: bottom 0.3s ease-in-out; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        #exit-toast.show, #notification-toast.show { bottom: 30px; }
     </style>
 </head>
 <body class="bg-[#0d1117]">
@@ -52,13 +174,13 @@
     <div id="news-page" class="page-container hidden relative">
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
         <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div><form id="comment-form" name="news-comment-form" data-netlify="true">
-            <input type="hidden" name="form-name" value="news-comment-form" />
-            <input type="hidden" id="article-title-hidden-input" name="article_title" value="" />
-            <h3>أضف تعليقك</h3>
-            <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (اختياري)">
-            <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
-            <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
-        </form></div></div>
+    <input type="hidden" name="form-name" value="news-comment-form" />
+    <input type="hidden" id="article-title-hidden-input" name="article_title" value="" />
+    <h3>أضف تعليقك</h3>
+    <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (اختياري)">
+    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+</form></div></div>
         <div id="notification-toast"></div>
         <div id="exit-toast">انقر مرة أخرى للخروج</div>
     </div>
@@ -85,32 +207,28 @@
         });
 
         // ======================================================================
-        // SECTION 1: PREDICTIONS PAGE LOGIC (STABLE VERSION)
+        // SECTION 1: PREDICTIONS PAGE LOGIC (DATABASE-POWERED)
         // ======================================================================
         function initializePredictionsPage() {
-            const manualMatchesData = [
-                { "id": 2301, "team1": { "name": "مانشستر سيتي", "logo": "https://media.api-sports.io/football/teams/50.png" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2302, "team1": { "name": "أتلتيكو مدريد", "logo": "https://media.api-sports.io/football/teams/530.png" }, "team2": { "name": "بوتافوغو", "logo": "https://media.api-sports.io/football/teams/1081.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2303, "team1": { "name": "سياتل ساوندرز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/iju_-94JIOiHTSVh4Nqgh.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باريس سان جيرمان", "logo": "https://media.api-sports.io/football/teams/85.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2401, "team1": { "name": "إنتر ميامي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/eP7VUfiow48_R8A-w2ADb.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "بالميراس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/9iqu-OKlXY0q0WVqvcUSe.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Action"] },
-                { "id": 2402, "team1": { "name": "بورتو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/5q7vuByZ8XO_L7ZuEeep2.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الأهلي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/o0K-aXi0FsiLx9BJ3AgTv.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Masr" ] },
-                { "id": 2403, "team1": { "name": "بوكا جونيورز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/DOBffYJMo4e5VhoJX15fV.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "أوكلاند سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/IX2fIwXSOLsWDsUu5LmzD.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["DAZN" ] },
-                { "id": 2404, "team1": { "name": "بايرن ميونخ", "logo": "https://media.api-sports.io/football/teams/157.png" }, "team2": { "name": "بنفيكا", "logo": "https://media.api-sports.io/football/teams/211.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["beIN Sports" ] },
-                { "id": 2501, "team1": { "name": "تشيلسي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/w5N6rBTPf_J_brPwrNIOG.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الترجي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EF2BiqfSLna4ypEMUibdi.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2502, "team1": { "name": "فلامنغو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/uBmMjj6gGMNdb83YU2xEz.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "لوس أنجلوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Wv0w3tqrAN4Pm9g0Rymzf.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2503, "team1": { "name": "Borussia Dortmund", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EmDXkZ5B61SrXUUTUPV3X.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Ulsan HD FC", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/oo8T0F2idHnFdc-D3Mh12.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2504, "team1": { "name": "Mamelodi Sundowns", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/kfdXAFPbKdkR9O_DFH5EK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Fluminense", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Xof2xYwDp4l1fU1M_e49y.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2601, "team1": { "name": "إنتر ميلان", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/QMLrilrNtKpq2UmCOH9FK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريفر بليت", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/yvkxIVK_5-HduWzkkaru_.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2602, "team1": { "name": "أوراوا ريد دياموندز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/0PeG1kW1nv9LLjK0VU8sZ.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مونتيري", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/U4PBXIQ_FlEDSxGOoF6FX.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2603, "team1": { "name": "الوداد الرياضي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/k7TES9_2byLPJdIMn-d8H.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2604, "team1": { "name": "يوفنتوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/G0ZJNLeWxBVFsy39V4-XY.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مانشستر سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/YaWwRy_S6TKMuwJHBvDbR.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2701, "team1": { "name": "ريد بول سالزبورغ", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/-PWqo_lcDVwCd2-FuHu94.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريال مدريد", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/VOlkxOIoXAXF_11lYJ_Ve.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC Action"] },
-                { "id": 2702, "team1": { "name": "الهلال", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/7B-B14BUExP3pp4zNnlrX.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باتشوكا", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/x4Ij6QJEV0WFXyk45IFMl.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC مصر"] }
-            ];
-            initializeAppWithData(manualMatchesData);
+            // الخطوة 1: جلب المباريات من قاعدة البيانات عبر الدالة السيرفرلس
+            fetch('/.netlify/functions/get-matches')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(matchesData => {
+                    // الخطوة 2: عند النجاح، قم بتهيئة التطبيق بالبيانات الحية
+                    initializeAppWithData(matchesData);
+                })
+                .catch(error => {
+                    console.error('Error fetching matches:', error);
+                    document.getElementById('days-content-container').innerHTML = `<p class="text-center text-gray-400 mt-8">حدث خطأ في تحميل المباريات. يرجى المحاولة لاحقاً.</p>`;
+                });
         }
-
-        function initializeAppWithData(matchesData) {
+        
+        function initializeAppWithData(manualMatchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
             
             const dateTabsContainer = document.getElementById('date-tabs');
@@ -118,7 +236,7 @@
             const tickerContent = document.getElementById('predictions-ticker-content');
             const floatingIconContainer = document.getElementById('floating-icon-container');
 
-            function getMatchStatus(matchDateStr) { const matchDate = new Date(matchDateStr); const now = new Date(); const diffMinutes = (matchDate.getTime() - now.getTime()) / 60000; if (diffMinutes < -125) return { state: 'ended' }; if (diffMinutes <= 0) return { state: 'live' }; if (diffMinutes <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
+            function getMatchStatus(matchDate) { const now = new Date(); const diffMinutes = (matchDate.getTime() - now.getTime()) / 60000; if (diffMinutes < -125) return { state: 'ended' }; if (diffMinutes <= 0) return { state: 'live' }; if (diffMinutes <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
             
             function initializeAppWithTabs() { 
                 loadUserInfo(); 
@@ -126,7 +244,7 @@
                 if (sessionStorage.getItem('isIconDismissed')) floatingIconContainer.classList.add('hidden'); 
                 const today = new Date(); 
                 today.setHours(0, 0, 0, 0); 
-                const upcomingMatchesData = matchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today); 
+                const upcomingMatchesData = manualMatchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today); 
                 const matchesByDay = upcomingMatchesData.reduce((acc, match) => { const dayKey = new Date(match.datetime).toLocaleDateString('fr-CA'); if (!acc[dayKey]) acc[dayKey] = []; acc[dayKey].push(match); return acc; }, {}); 
                 dateTabsContainer.innerHTML = ''; 
                 daysContentContainer.innerHTML = ''; 
@@ -149,8 +267,8 @@
                     daysContentContainer.appendChild(dayContentDiv); 
                     const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; 
                     const sortedMatches = matchesByDay[day].sort((a, b) => { 
-                        const statusA = getMatchStatus(a.datetime).state; 
-                        const statusB = getMatchStatus(b.datetime).state; 
+                        const statusA = getMatchStatus(new Date(a.datetime)).state; 
+                        const statusB = getMatchStatus(new Date(b.datetime)).state; 
                         if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB]; 
                         return new Date(a.datetime) - new Date(b.datetime); 
                     }); 
@@ -168,7 +286,7 @@
                     const matchDate = new Date(match.datetime); 
                     const dateString = matchDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }); 
                     const timeString = matchDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
-                    const statusInfo = getMatchStatus(match.datetime); 
+                    const statusInfo = getMatchStatus(matchDate); 
                     let statusDisplay; 
                     switch (statusInfo.state) { 
                         case 'ended': statusDisplay = `<span class="match-status ended">انتهت</span>`; break; 
@@ -246,9 +364,11 @@
                 userInfoForm.addEventListener('submit', saveUserInfo); 
                 daysContentContainer.addEventListener('submit', e => { 
                     e.preventDefault();
-                    if (e.target.classList.contains('prediction-form') || e.target.classList.contains('comment-form')) { 
-                        handleFormSubmit(e.target); 
-                    }
+                    if (e.target.classList.contains('prediction-form')) { 
+                        handlePredictionSubmit(e.target); 
+                    } else if (e.target.classList.contains('comment-form')) { 
+                        handleMatchCommentSubmit(e.target); 
+                    } 
                 }); 
                 daysContentContainer.addEventListener('click', e => { 
                     if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); 
@@ -274,16 +394,21 @@
             
             function populateTicker() { tickerContent.innerHTML = tickerMessages.map(msg => `<span class="ticker-item">${msg}</span>`).join(''); }
             
-            function handleFormSubmit(form) {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-                submitBtn.disabled = true;
+            function handlePredictionSubmit(form) {
+                const submitBtn = form.querySelector('.submit-btn');
+                const winnerInput = form.querySelector('input[name="winner"]:checked');
+                const matchCard = form.closest('.match-card');
+
+                if (!winnerInput) { alert('الرجاء اختيار نتيجة المباراة.'); return; }
 
                 const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
                 const formData = new FormData(form);
                 formData.append('username', userInfo.username || 'مجهول');
                 formData.append('social_account', userInfo.social || 'لا يوجد');
+
+                const originalText = submitBtn.textContent;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                submitBtn.disabled = true;
 
                 fetch("/", {
                     method: "POST",
@@ -291,32 +416,56 @@
                     body: new URLSearchParams(formData).toString(),
                 })
                 .then(() => {
-                    if (form.classList.contains('prediction-form')) {
-                        submitBtn.innerHTML = `تم الإرسال ✅`;
-                        [...form.elements].forEach(el => el.disabled = true);
-                        const matchCard = form.closest('.match-card');
-                        const prediction = { 
-                            winner: form.querySelector('input[name="winner"]:checked').value,
-                            scorer: form.querySelector('input[name="scorer"]').value.trim() 
-                        };
-                        localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                    } else if (form.classList.contains('comment-form')) {
-                        submitBtn.innerHTML = "إرسال";
-                        submitBtn.disabled = false;
-                        const matchCard = form.closest('.match-card');
-                        const commentList = form.closest('.comments-section').querySelector('.comment-list');
-                        const commentText = form.querySelector('textarea').value;
-                        const commentData = { author: userInfo.username || 'مجهول', text: commentText };
-                        addCommentToDOM(commentList, commentData);
-                        const comments = JSON.parse(localStorage.getItem(`comments-${matchCard.dataset.matchId}`) || '[]');
-                        comments.push(commentData);
-                        localStorage.setItem(`comments-${matchCard.dataset.matchId}`, JSON.stringify(comments));
-                        form.querySelector('textarea').value = '';
-                    }
+                    submitBtn.innerHTML = `تم الإرسال ✅`;
+                    [...form.elements].forEach(el => el.disabled = true);
+                    const prediction = { 
+                        winner: winnerInput.value, 
+                        scorer: form.querySelector('input[name="scorer"]').value.trim() 
+                    };
+                    localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
                 })
                 .catch((error) => {
                     alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
-                    submitBtn.innerHTML = originalText;
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+            }
+            
+            function handleMatchCommentSubmit(form) {
+                const submitBtn = form.querySelector('button');
+                const textarea = form.querySelector('textarea');
+                const commentText = textarea.value.trim();
+                if (commentText === '') return;
+
+                const matchCard = form.closest('.match-card');
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+                const formData = new FormData(form);
+                formData.append('username', userInfo.username || 'مجهول');
+                formData.append('social_account', userInfo.social || 'لا يوجد');
+
+                const originalText = submitBtn.textContent;
+                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+                submitBtn.disabled = true;
+
+                fetch("/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams(formData).toString(),
+                })
+                .then(() => {
+                    submitBtn.textContent = "إرسال";
+                    submitBtn.disabled = false;
+                    const commentList = form.closest('.comments-section').querySelector('.comment-list');
+                    const commentData = { author: userInfo.username || 'مجهول', text: commentText };
+                    addCommentToDOM(commentList, commentData);
+                    const comments = JSON.parse(localStorage.getItem(`comments-${matchCard.dataset.matchId}`) || '[]');
+                    comments.push(commentData);
+                    localStorage.setItem(`comments-${matchCard.dataset.matchId}`, JSON.stringify(comments));
+                    textarea.value = '';
+                })
+                .catch((error) => {
+                    alert('حدث خطأ أثناء إرسال التعليق.');
+                    submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
                 });
             }
@@ -349,11 +498,12 @@
                 }); 
             }
             
+            // بدء تشغيل التطبيق
             initializeAppWithTabs();
         }
 
         // ==========================================================
-        // SECTION 2: NEWS PAGE LOGIC (STABLE VERSION)
+        // SECTION 2: NEWS PAGE LOGIC (FINAL)
         // ==========================================================
         function initializeNewsPage() {
             const ADMIN_PASSWORD = '1122';  
@@ -371,8 +521,24 @@
                 { "id": 5, "title": "إستيفاو ويليان.. أكثر لاعب محظوظ في العالم!", "image": "https://f.top4top.io/p_3462yrvqf0.jpg", "publishDate": "2025-06-24", "badge": "hot", "fullText": "<p>في مباراة ودّية جمعت بالميراس البرازيلي وإنتر ميامي الأميركي، خطف النجم الشاب إستيفاو ويليان الأضواء بلقطة لن ينساها طيلة مسيرته.</p><p>ويليان، الذي لم يتجاوز 17 عامًا بعد، استغل فرصة مشاركته أمام أساطير اللعبة ليقوم بتبادل القمصان مع ليونيل ميسي بين شوطي اللقاء، وسط دهشة الجماهير.</p><p>لكن المفاجأة الأكبر كانت عقب نهاية المباراة، عندما توجّه مباشرة إلى لويس سواريز وتبادل القميص معه أيضًا، ليجمع بين قميصي اثنين من أعظم اللاعبين في تاريخ كرة القدم.</p><p>هذه اللحظة الاستثنائية انتشرت كالنار في الهشيم عبر مواقع التواصل، واعتبرها كثيرون دليلاً على أن النجم الصاعد يعيش حلمًا لا يعيشه سوى القلائل.</p><p>الصحافة البرازيلية وصفت الأمر بأنه \"أسبوع الأحلام\" لإستيفاو، فيما بدأ المتابعون يتساءلون: هل هو مجرد محظوظ؟ أم نجم قادم بقوة؟</p>" },
                 { "id": 4, "title": "سان جيرمان يتصدر.. وأتلتيكو مدريد خارج المونديال!", "image": "https://e.top4top.io/p_3461all000.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>انتهت منافسات المجموعة الثانية في كأس العالم للأندية بنتائج مثيرة ومفاجآت مدوية، أبرزها خروج أتلتيكو مدريد من الدور الأول رغم امتلاكه نفس عدد النقاط كالمتصدرين.</p><p>النجم المغربي أشرف حكيمي قاد فريقه باريس سان جيرمان إلى الفوز الأخير الذي ضمن الصدارة بفارق الأهداف، بعد أداء قوي وتألق واضح في الجبهة اليمنى.</p><p>في المقابل، تأهل بوتافوجو البرازيلي إلى دور الـ16 رغم الخسارة، مستفيدًا من تفوقه على أتلتيكو مدريد بفارق الأهداف الإيجابي، في واحدة من أكثر السيناريوهات إثارة هذا الموسم.</p><p>أما أتلتيكو، فقد دفع ثمن البداية الضعيفة، حيث لم يشفع له الفوز الأخير بسبب فارق الأهداف السلبي الذي أبقاه في المركز الثالث برصيد 6 نقاط.</p><p>سياتل الأمريكي كان الحلقة الأضعف في المجموعة، حيث ودّع البطولة دون أي نقطة بعد ثلاث هزائم متتالية وفارق أهداف كبير بلغ -5.</p>" },
                 { "id": 10, "title": "كابرال يرد: 'چيان لعِين' ليست عنصرية!", "image": "https://b.top4top.io/p_3461gr2b90.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>في واحدة من أبرز لقطات كأس العالم للأندية، التقطت الكاميرات مواجهة نارية بين أنطونيو روديجر وجوستافو كابرال، بعد أن بدا أن الأول شعر بإهانة عنصرية وجهها له لاعب باتشوكا.</p><p>ردّ كابرال جاء سريعًا عبر تصريح مثير، قال فيه: 'الحكم أشار بالعنصرية، وأنا واصلت تكرار ما قلته لروديجر چيان لعِين، ولم يكن هناك أي عنصرية في ذلك، كما نقولها في الأرجنتين، إنها مجرد كلمة.'</p><p>العبارة التي استخدمها كابرال تُعد شائعة في الأرجنتين، وتُقال أحيانًا داخل الملاعب للتعبير عن التوتر أو الغضب، دون نية عنصرية، لكنها قد تحمل معانٍ مختلفة في ثقافات أخرى، ما تسبب في سوء الفهم.</p><p>الجماهير تفاعلت بقوة مع المشهد، بين من يرى أن على اللاعبين احترام اختلاف الخلفيات، ومن يدافع عن كابرال مؤكدين أنه لم يقصد الإساءة، خاصة وأن روديجر معروف بحساسيته تجاه قضايا العنصرية بعد تجارب مؤلمة سابقة.</p><p>الحادثة تفتح مجددًا ملف التواصل بين الثقافات في الملاعب الدولية، وتؤكد أن كرة القدم، رغم كونها عالمية، تحتاج إلى حساسية مضاعفة تجاه ما يُقال داخل المستطيل الأخضر.</p>" },
-                { "id": 3, "title": "الهلال يقترب من حسم صفقة تيو هيرنانديز", "image": "https://j.top4top.io/p_3461lgsle0.jpg", "fullText": "<p>أكد الصحفي الموثوق فابريزيو رومانو أن نادي الهلال السعودي بات قريبًا للغاية من التوقيع مع النجم الفرنسي تيو هيرنانديز، الظهير الأيسر لنادي ميلان الإيطالي. المفاوضات دخلت مراحلها النهائية بعد أن وافق اللاعب على الشروط الشخصية.</p><p>الهلال أبدى جدية كبيرة في المفاوضات، حيث قدم عرضًا مغريًا لميلان يتجاوز 70 مليون يورو، وهو ما جعل النادي الإيطالي يدرس العرض بجدية، خاصة في ظل حاجته لتمويل صفقات أخرى. تيو هيرنانديز يُعد من أفضل اللاعبين في مركزه خلال السنوات الأخيرة، وساهم بشكل كبير في تتويج ميلان بلقب الدوري الإيطالي موسم 2021-2022. في حال إتمام الصفقة، سيُشكل تيو إضافة نوعية لدفاع وهجوم الهلال في الموسم المقبل الذي يشهد مشاركات عالمية.</p>" }
+                { "id": 3, "title": "الهلال يقترب من حسم صفقة تيو هيرنانديز", "image": "https://j.top4top.io/p_3461lgsle0.jpg", "fullText": "<p>أكد الصحفي الموثوق فابريزيو رومانو أن نادي الهلال السعودي بات قريبًا للغاية من التوقيع مع النجم الفرنسي تيو هيرنانديز، الظهير الأيسر لنادي ميلان الإيطالي. المفاوضات دخلت مراحلها النهائية بعد أن وافق اللاعب على الشروط الشخصية.</p><p>الهلال أبدى جدية كبيرة في المفاوضات، حيث قدم عرضًا مغريًا لميلان يتجاوز 70 مليون يورو، وهو ما جعل النادي الإيطالي يدرس العرض بجدية، خاصة في ظل حاجته لتمويل صفقات أخرى. تيو هيرنانديز يُعد من أفضل اللاعبين في مركزه خلال السنوات الأخيرة، وساهم بشكل كبير في تتويج ميلان بلقب الدوري الإيطالي موسم 2021-2022. في حال إتمام الصفقة، سيُشكل تيو إضافة نوعية لدفاع وهجوم الهلال في الموسم المقبل الذي يشهد مشاركات عالمية.</p>" },
+                { "id": 7, "title": "ديكو: نيكو ويليامز يرغب في برشلونة وسنسعى للتوقيع معه", "image": "https://c.top4top.io/p_3460d0wq31.jpg", "fullText": `<p>في تصريح أشعل حماس جماهير برشلونة، أكد ديكو، المدير الرياضي للنادي، أن النجم الإسباني نيكو ويليامز أبدى رغبة واضحة في ارتداء قميص البلوجرانا. وقال ديكو: "نيكو لاعب كبير، وكل الأندية الكبرى تريده. نحن نعلم أنه يفضل مشروعنا وسنحاول إيجاد صيغة مناسبة للتوقيع معه".</p><p>ويليامز، الذي يمتلك شرطًا جزائيًا في عقده مع أتلتيك بلباو يقدر بحوالي 58 مليون يورو، يُعتبر هدفًا رئيسيًا للمدرب هانزي فليك لتعزيز مركز الجناح الأيسر. الصفقة قد تعتمد على قدرة برشلونة على بيع بعض اللاعبين أولاً لتحقيق التوازن المالي المطلوب وفقًا لقواعد اللعب المالي النظيف في الليغا.</p>`},
+                { "id": 2, "title": "الأساطير لا تموت.. راموس وسيلفا يتألقان", "image": "https://e.top4top.io/p_34592f0l51.jpg", "fullText": `<p>في زمن تُقاس فيه كرة القدم بالسرعة واللياقة البدنية، يواصل الثنائي الأسطوري سيرجيو راموس وتياجو سيلفا كتابة فصولٍ مدهشة في مسيرتهما. راموس، بعد عودته لإشبيلية، أثبت أنه لا يزال صخرة دفاعية يُعتمد عليها، بينما قاد سيلفا دفاع تشيلسي بخبرته الكبيرة.</p><p>كلاهما تجاوز الـ37 من العمر، لكنهما يقدمان أداءً يفوق العديد من اللاعبين الشبان، مما يطرح تساؤلاً حول سر استمراريتهما في أعلى المستويات. الانضباط، الشغف، والخبرة هي العوامل الرئيسية التي تجعل من هذين اللاعبين نموذجًا يُحتذى به في عالم كرة القدم.</p>`},
+                { "id": 1, "title": "البرازيل تُعلن ترشحها لاستضافة كأس العالم للأندية 2029", "image": "https://h.top4top.io/p_3459a7zx00.jpg", "fullText": `<p>في إعلان رسمي لفت الأنظار، كشف الاتحاد البرازيلي لكرة القدم عن نيته الترشح لاستضافة النسخة الثانية من كأس العالم للأندية بصيغتها الجديدة عام 2029. ويأتي هذا الإعلان ليعكس الرغبة الكبيرة لدى البرازيل في استضافة الأحداث الرياضية الكبرى مجددًا.</p><p>يعتمد الملف البرازيلي على البنية التحتية القوية التي خلفتها استضافة كأس العالم 2014، بالإضافة إلى الشغف الجماهيري الكبير بكرة القدم. وتواجه البرازيل منافسة محتملة من ملفات أخرى قد تتقدم بها دول من أوروبا وآسيا، مما ينبئ بسباق مثير على نيل شرف التنظيم.</p>`},
+                { "id": 4, "title": "مشاكل لامين يامال النسائية تتصدر العناوين!", "image": "https://f.top4top.io/p_3459o9rcs0.jpg", "fullText": `<p>تداولت وسائل الإعلام خلال الساعات الأخيرة تصريحات متبادلة بين نجم برشلونة الشاب لامين يامال و"كلوديا بافيل"، عارضة أزياء وممثلة معروفة، بعد مزاعم بعلاقة سابقة بين الطرفين. بدأت القصة عندما نشرت بافيل تلميحات حول علاقتها بلاعب كرة قدم شاب، وهو ما فسره المتابعون بأنه لامين يامال.</p><p>من جانبه، نفى يامال عبر وكيله أي علاقة له بالأمر، مؤكدًا أن تركيزه منصب بالكامل على مسيرته الكروية مع برشلونة والمنتخب الإسباني. هذه الأحداث تثير الجدل حول تأثير الشهرة المبكرة على اللاعبين الشبان وكيفية تعاملهم مع الضغوط الإعلامية والشخصية.</p>`},
+                { "id": 5, "title": "أندية أمريكا الجنوبية تفرض هيمنتها في مونديال الأندية", "image": "https://f.top4top.io/p_3459firs50.jpg", "fullText": `<p>في أداء لافت، واصلت أندية أمريكا الجنوبية كتابة سطور التحدي في كأس العالم للأندية 2025، بعد أن خاضت تسع مباريات دون أن تتذوق طعم الهزيمة. أندية مثل فلامنغو، بالميراس، وريفر بليت قدمت مستويات فنية عالية وأظهرت قدرة كبيرة على مجاراة الأندية الأوروبية.</p><p>هذا الأداء يعكس التطور الكبير في مستوى الأندية في أمريكا الجنوبية، وقدرتها على الاحتفاظ بنجومها لفترات أطول. المحللون يرون أن هذه النسخة من البطولة قد تشهد بطلاً من خارج القارة الأوروبية لأول مرة منذ سنوات طويلة، مما يزيد من إثارة المنافسة.</p>`},
+                { "id": 4, "title": "مقال قديم للحذف: مشاكل لامين يامال النسائية تتصدر العناوين!", "image": "https://f.top4top.io/p_3459o9rcs0.jpg", "publishDate": getTodaysDateString(11), "fullText": `<p>تداولت وسائل الإعلام خلال الساعات الأخيرة تصريحات متبادلة بين نجم برشلونة الشاب لامين يامال...</p>`}
             ];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); 
+            const tenDaysInMs = 10 * 24 * 60 * 60 * 1000;
+            articlesData = articlesData.filter(article => {
+                if (!article.publishDate) return true;
+                const publishDate = new Date(article.publishDate);
+                const timeDiff = today.getTime() - publishDate.getTime();
+                return timeDiff <= tenDaysInMs;
+            });
 
             const newsHomePage = document.querySelector('#news-page #home-page'); 
             const newsArticlePage = document.querySelector('#news-page #article-page'); 
