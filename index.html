@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المركز الرياضي - نسخة مستقرة</title>
+    <title>المركز الرياضي - توقعات وأخبار</title>
 
     <!-- Google Analytics, Tailwind, Fonts, Font Awesome -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
@@ -84,7 +84,7 @@
         });
 
         // ======================================================================
-        // SECTION 1: PREDICTIONS PAGE LOGIC (STABLE VERSION)
+        // SECTION 1: PREDICTIONS PAGE LOGIC
         // ======================================================================
         function initializePredictionsPage() {
             const manualMatchesData = [
@@ -108,6 +108,7 @@
             ];
             
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
+            
             const dateTabsContainer = document.getElementById('date-tabs');
             const daysContentContainer = document.getElementById('days-content-container');
             const tickerContent = document.getElementById('predictions-ticker-content');
@@ -283,9 +284,7 @@
                 const sortedDays = Object.keys(matchesByDay).sort();
                 sortedDays.forEach((day, index) => {
                     const dayDate = new Date(day + 'T00:00:00Z');
-                    // === التصحيح هنا ===
                     const tabTitle = dayDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-                    // === نهاية التصحيح ===
                     const tabButton = document.createElement('div');
                     tabButton.className = `date-tab ${index === 0 ? 'active' : ''}`;
                     tabButton.textContent = tabTitle;
@@ -337,7 +336,7 @@
                 { "id": 4, "title": "مشاكل لامين يامال النسائية تتصدر العناوين!", "image": "https://f.top4top.io/p_3459o9rcs0.jpg", "fullText": `<p>تداولت وسائل الإعلام خلال الساعات الأخيرة تصريحات متبادلة بين نجم برشلونة الشاب لامين يامال و"كلوديا بافيل"، عارضة أزياء وممثلة معروفة، بعد مزاعم بعلاقة سابقة بين الطرفين. بدأت القصة عندما نشرت بافيل تلميحات حول علاقتها بلاعب كرة قدم شاب، وهو ما فسره المتابعون بأنه لامين يامال.</p><p>من جانبه، نفى يامال عبر وكيله أي علاقة له بالأمر، مؤكدًا أن تركيزه منصب بالكامل على مسيرته الكروية مع برشلونة والمنتخب الإسباني. هذه الأحداث تثير الجدل حول تأثير الشهرة المبكرة على اللاعبين الشبان وكيفية تعاملهم مع الضغوط الإعلامية والشخصية.</p>`},
                 { "id": 5, "title": "أندية أمريكا الجنوبية تفرض هيمنتها في مونديال الأندية", "image": "https://f.top4top.io/p_3459firs50.jpg", "fullText": `<p>في أداء لافت، واصلت أندية أمريكا الجنوبية كتابة سطور التحدي في كأس العالم للأندية 2025، بعد أن خاضت تسع مباريات دون أن تتذوق طعم الهزيمة. أندية مثل فلامنغو، بالميراس، وريفر بليت قدمت مستويات فنية عالية وأظهرت قدرة كبيرة على مجاراة الأندية الأوروبية.</p><p>هذا الأداء يعكس التطور الكبير في مستوى الأندية في أمريكا الجنوبية، وقدرتها على الاحتفاظ بنجومها لفترات أطول. المحللون يرون أن هذه النسخة من البطولة قد تشهد بطلاً من خارج القارة الأوروبية لأول مرة منذ سنوات طويلة، مما يزيد من إثارة المنافسة.</p>`}
             ];
-
+            
             const newsHomePage=document.querySelector('#news-page #home-page');const newsArticlePage=document.querySelector('#news-page #article-page');const articlesGrid=document.querySelector('#news-page #articles-grid');const articleContent=document.querySelector('#news-page #article-content');const notificationToast=document.querySelector('#news-page #notification-toast');const exitToast=document.getElementById('exit-toast');let currentArticleId=null;let currentNewsSubPage='home';let firstBackPressTime=0;function showToast(message,type='success',duration=3000){notificationToast.textContent=message;notificationToast.className=`show ${type}`;setTimeout(()=>{notificationToast.classList.remove('show')},duration)}function navigateToNewsSubPage(pageName){currentNewsSubPage=pageName;if(pageName==='article'){newsHomePage.style.transform='translateX(-100%)';newsArticlePage.style.transform='translateX(0)'}else{newsHomePage.style.transform='translateX(0)';newsArticlePage.style.transform='translateX(100%)'}}function showArticle(articleId){const article=articlesData.find(a=>a.id===articleId);if(!article)return;currentArticleId=article.id;if(typeof gtag!=='undefined'){gtag('event','view_item',{'item_name':article.title})}articleContent.innerHTML=`
                     <div id="article-header">
                         <h1>${article.title}</h1>
