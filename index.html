@@ -328,8 +328,7 @@
                             scorer: form.querySelector('input[name="scorer"]').value.trim() 
                         };
                         localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                    
-} else if (form.classList.contains('comment-form')) {
+                    } else if (form.classList.contains('comment-form')) {
     const matchCard = form.closest('.match-card');
     const matchId = matchCard.dataset.matchId;
     const commentText = form.querySelector('textarea').value;
