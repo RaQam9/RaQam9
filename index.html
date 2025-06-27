@@ -35,21 +35,12 @@
     </style>
 </head>
 <body class="bg-[#0d1117]">
-    <!-- Ghost forms for Netlify -->
+    <!-- Ghost forms for Netlify (can be removed if not used) -->
     <div style="display:none;">
-        <form name="prediction-form" netlify netlify-honeypot="bot-field">
-            <input type="text" name="match_name" />
-            <input type="text" name="league" />
-            <input type="radio" name="winner" />
-            <input type="text" name="scorer" />
-            <input type="text" name="username" />
-            <input type="text" name="social_account" />
-        </form>
-        <form name="match-comment-form" netlify netlify-honeypot="bot-field">
-            <input type="text" name="match_name" />
+        <form name="news-comment-form" netlify netlify-honeypot="bot-field">
+            <input type="text" name="article_title" />
+            <input type="text" name="comment_name" />
             <textarea name="comment_text"></textarea>
-            <input type="text" name="username" />
-            <input type="text" name="social_account" />
         </form>
     </div>
 
@@ -67,8 +58,7 @@
             <header><h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
             <div class="news-ticker"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
             <main id="matches-container">
-                <div class="date-tabs-container" id="date-tabs"></div>
-                <div id="days-content-container"></div>
+                <!-- Content is loaded by JavaScript -->
             </main>
         </div>
         <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
@@ -78,8 +68,7 @@
     <!-- News Page -->
     <div id="news-page" class="page-container hidden relative">
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
-        <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div><form id="comment-form" name="news-comment-form" data-netlify="true">
-            <input type="hidden" name="form-name" value="news-comment-form" />
+        <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div><form id="comment-form" name="news-comment-form">
             <input type="hidden" id="article-title-hidden-input" name="article_title" value="" />
             <h3>أضف تعليقك</h3>
             <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (اختياري)">
@@ -97,12 +86,7 @@
         const predictionsPage = document.getElementById('predictions-page');
         const newsPage = document.getElementById('news-page');
         function switchPage(pageToShow) { 
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'select_content', {
-                    'content_type': 'tab',
-                    'item_id': pageToShow
-                });
-            }
+            if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
             if (pageToShow === 'predictions') { predictionsPage.classList.remove('hidden'); newsPage.classList.add('hidden'); predictionsBtn.classList.add('bg-blue-600', 'text-white'); predictionsBtn.classList.remove('text-gray-400'); newsBtn.classList.remove('bg-blue-600', 'text-white'); newsBtn.classList.add('text-gray-400'); } else { newsPage.classList.remove('hidden'); predictionsPage.classList.add('hidden'); newsBtn.classList.add('bg-blue-600', 'text-white'); newsBtn.classList.remove('text-gray-400'); predictionsBtn.classList.remove('bg-blue-600', 'text-white'); predictionsBtn.classList.add('text-gray-400'); } 
         }
         predictionsBtn.addEventListener('click', () => switchPage('predictions'));
@@ -112,598 +96,131 @@
     });
 
     // ======================================================================
-    // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Version)
+    // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Predictions & Comments)
     // ======================================================================
     async function initializePredictionsPage() {
-        // --- إعدادات الاتصال بـ Supabase ---
         const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-
         try {
-            // عرض مؤشر التحميل للمستخدم
             const container = document.getElementById('matches-container');
             container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
-
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            // جلب البيانات من جدول 'matches'
-            let { data: matchesDataFromDB, error } = await supabaseClient
-                .from('matches') 
-                .select('*')
-                .order('datetime', { ascending: true });
-
-            if (error) {
-                throw error;
-            }
-            
-            // تنسيق البيانات
-            const formattedMatches = matchesDataFromDB.map(match => ({
-                id: match.id,
-                team1: { name: match.team1_name, logo: match.team1_logo },
-                team2: { name: match.team2_name, logo: match.team2_logo },
-                league: match.league,
-                datetime: match.datetime,
-                channels: match.channels || []
-            }));
-            
-            // إعادة بناء الهيكل قبل استدعاء الدالة الرئيسية
-            document.getElementById('matches-container').innerHTML = `
-                <div class="date-tabs-container" id="date-tabs"></div>
-                <div id="days-content-container"></div>
-            `;
-
-            // عرض البيانات
+            let { data: matchesDataFromDB, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
+            if (error) { throw error; }
+            const formattedMatches = matchesDataFromDB.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
+            document.getElementById('matches-container').innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
             initializeAppWithData(formattedMatches);
-
         } catch (error) {
             console.error("An error occurred:", error);
             const container = document.getElementById('matches-container');
-            if (container) {
-                container.innerHTML = '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>';
-            }
+            if (container) { container.innerHTML = '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>'; }
         }
     }
 
     function initializeAppWithData(matchesData) {
         const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
-        
         const dateTabsContainer = document.getElementById('date-tabs');
         const daysContentContainer = document.getElementById('days-content-container');
-        const tickerContent = document.getElementById('predictions-ticker-content');
-        
-        function getMatchStatus(matchDateStr) { const matchDate = new Date(matchDateStr); const now = new Date(); const diffMinutes = (matchDate.getTime() - now.getTime()) / 60000; if (diffMinutes < -125) return { state: 'ended' }; if (diffMinutes <= 0) return { state: 'live' }; if (diffMinutes <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
-        
-        function renderMatchesForDay(dayContentContainer, matches) { 
-            dayContentContainer.innerHTML = ''; 
-            if (!matches || matches.length === 0) return;
-            const numMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
-            matches.forEach(match => { 
-                const matchDate = new Date(match.datetime); 
-                const dateString = matchDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, d => numMap[d]);
-                const timeString = matchDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, d => numMap[d]);
-                const statusInfo = getMatchStatus(match.datetime); 
-                let statusDisplay; 
-                switch (statusInfo.state) { 
-                    case 'ended': statusDisplay = `<span class="match-status ended">انتهت</span>`; break; 
-                    case 'live': statusDisplay = `<span class="match-status live">مباشر</span>`; break; 
-                    case 'soon': statusDisplay = `<span class="match-status soon">بعد قليل</span>`; break; 
-                    default: statusDisplay = `<div class="match-time">${timeString}</div>`; 
-                } 
-                const channels = (match.channels && match.channels.length > 0) ? match.channels.join(' / ') : "غير محددة"; 
-                const isMatchOver = statusInfo.state === 'ended'; 
-                const card = document.createElement('div'); 
-                card.className = 'match-card'; 
-                card.dataset.matchId = match.id; 
-                const matchName = `${match.team1.name} vs ${match.team2.name}`;
-                card.innerHTML = `
-                    <div class="match-header"><span class="match-league">${match.league}</span><span class="match-date-time">${dateString}</span></div>
-                    <div class="match-body">
-                        <div class="teams-row">
-                            <div class="team"><img src="${match.team1.logo}" alt="${match.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team1.name}</span></div>
-                            <div class="match-status-container">${statusDisplay}</div>
-                            <div class="team"><img src="${match.team2.logo}" alt="${match.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${match.team2.name}</span></div>
-                        </div>
-                        <form name="prediction-form" class="prediction-form ${isMatchOver ? 'disabled' : ''}" data-netlify="true">
-                            <input type="hidden" name="form-name" value="prediction-form" />
-                            <input type="hidden" name="match_name" value="${matchName}" />
-                            <input type="hidden" name="league" value="${match.league}" />
-                            <div class="form-group">
-                                <legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${channels}</span></legend>
-                            </div>
-                            <div class="form-group">
-                                <legend>توقع النتيجة:</legend>
-                                <div class="prediction-options">
-                                    <input type="radio" name="winner" id="win1-${match.id}" value="${match.team1.name}" required><label for="win1-${match.id}">${match.team1.name}</label>
-                                    <input type="radio" name="winner" id="draw-${match.id}" value="تعادل"><label for="draw-${match.id}">تعادل</label>
-                                    <input type="radio" name="winner" id="win2-${match.id}" value="${match.team2.name}"><label for="win2-${match.id}">${match.team2.name}</label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <legend>من سيسجل أولاً؟ (اختياري)</legend>
-                                <input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب...">
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="submit-btn">${isMatchOver ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="match-footer">
-                        <button class="toggle-comments-btn" ${isMatchOver ? 'disabled' : ''}>💬 التعليقات</button>
-                        <div class="comments-section" style="display:none;">
-                            <div class="comment-list"></div>
-                            <form name="match-comment-form" class="comment-form" data-netlify="true">
-                                <input type="hidden" name="form-name" value="match-comment-form" />
-                                <input type="hidden" name="match_name" value="${matchName}" />
-                                <textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea>
-                                <button type="submit">إرسال</button>
-                            </form>
-                        </div>
-                    </div>
-                `; 
-                dayContentContainer.appendChild(card); 
-            }); 
-        }
-
-        function attachTabEventListeners() { 
-            const dateTabsContainer = document.getElementById('date-tabs');
-            dateTabsContainer.addEventListener('click', (e) => { 
-                if (!e.target.classList.contains('date-tab')) return; 
-                const tabId = e.target.dataset.tabId; 
-                document.querySelectorAll('.date-tab').forEach(tab => tab.classList.remove('active')); 
-                e.target.classList.add('active'); 
-                document.querySelectorAll('.day-content').forEach(content => content.classList.remove('active')); 
-                document.getElementById(`day-${tabId}`).classList.add('active'); 
-            }); 
-        }
-        
-        function attachMatchEventListeners() { 
-            const daysContentContainer = document.getElementById('days-content-container');
-            const userIconBtn = document.getElementById('user-icon-btn'); 
-            const dismissIconBtn = document.getElementById('dismiss-icon-btn'); 
-            const closeModalBtn = document.getElementById('close-modal-btn'); 
-            const userModal = document.getElementById('user-modal'); 
-            const userInfoForm = document.getElementById('user-info-form'); 
-            userIconBtn.addEventListener('click', openUserModal); 
-            dismissIconBtn.addEventListener('click', dismissFloatingIcon); 
-            closeModalBtn.addEventListener('click', closeUserModal); 
-            userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); }); 
-            userInfoForm.addEventListener('submit', saveUserInfo); 
-            daysContentContainer.addEventListener('submit', e => { 
-                e.preventDefault();
-                if (e.target.classList.contains('prediction-form') || e.target.classList.contains('comment-form')) { 
-                    handleFormSubmit(e.target); 
-                }
-            }); 
-            daysContentContainer.addEventListener('click', e => { 
-                if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); 
-            }); 
-        }
-
+        function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
+        function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${r ? 'disabled' : ''}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
+        function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
+        function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); const u = document.getElementById('user-icon-btn'); const i = document.getElementById('dismiss-icon-btn'); const c = document.getElementById('close-modal-btn'); const m = document.getElementById('user-modal'); const f = document.getElementById('user-info-form'); u.addEventListener('click', openUserModal); i.addEventListener('click', dismissFloatingIcon); c.addEventListener('click', closeUserModal); m.addEventListener('click', (e) => { if (e.target === m) closeUserModal(); }); f.addEventListener('submit', saveUserInfo); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
         function openUserModal() { document.getElementById('user-modal').classList.add('show'); }
         function closeUserModal() { document.getElementById('user-modal').classList.remove('show'); }
         function dismissFloatingIcon() { document.getElementById('floating-icon-container').classList.add('hidden'); sessionStorage.setItem('isIconDismissed', 'true'); }
+        function saveUserInfo(e) { e.preventDefault(); const m = document.getElementById('user-modal'); const s = document.getElementById('save-status'); const u = { username: m.querySelector('#username').value.trim(), social: m.querySelector('#social_account').value.trim() }; if (!u.username) { alert('الرجاء إدخال اسم المستخدم.'); return; } localStorage.setItem('userInfo', JSON.stringify(u)); s.textContent = 'تم الحفظ ✅'; setTimeout(() => { s.textContent = ''; closeUserModal(); }, 1500); }
+        function loadUserInfo() { const u = JSON.parse(localStorage.getItem('userInfo')); if (u) { document.getElementById('username').value = u.username || ''; document.getElementById('social_account').value = u.social || ''; } }
+        function populateTicker() { const t = document.getElementById('predictions-ticker-content'); t.innerHTML = tickerMessages.map(m => `<span class="ticker-item">${m}</span>`).join(''); }
         
-        function saveUserInfo(e) { 
-            e.preventDefault(); 
-            const userModal = document.getElementById('user-modal'); 
-            const saveStatus = document.getElementById('save-status'); 
-            const userInfo = { username: userModal.querySelector('#username').value.trim(), social: userModal.querySelector('#social_account').value.trim() }; 
-            if (!userInfo.username) { alert('الرجاء إدخال اسم المستخدم.'); return; } 
-            localStorage.setItem('userInfo', JSON.stringify(userInfo)); 
-            saveStatus.textContent = 'تم الحفظ ✅'; 
-            setTimeout(() => { saveStatus.textContent = ''; closeUserModal(); }, 1500); 
-        }
-        
-        function loadUserInfo() { const userInfo = JSON.parse(localStorage.getItem('userInfo')); if (userInfo) { document.getElementById('username').value = userInfo.username || ''; document.getElementById('social_account').value = userInfo.social || ''; } }
-        
-        function populateTicker() { 
-            const tickerContent = document.getElementById('predictions-ticker-content');
-            tickerContent.innerHTML = tickerMessages.map(msg => `<span class="ticker-item">${msg}</span>`).join(''); 
-        }
-        
-        // =======================================================
-        //  الدالة المصححة لإرسال النماذج - START
-        // =======================================================
         async function handleFormSubmit(form) {
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
             submitBtn.disabled = true;
-
             const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+            if (!userInfo.username) {
+                alert('الرجاء حفظ اسم المستخدم أولاً من خلال أيقونة القلم للمشاركة.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                openUserModal();
+                return;
+            }
+            
+            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            // --- التعامل مع نموذج التوقعات (إرسال إلى Netlify) ---
             if (form.name === 'prediction-form') {
-                const formData = new FormData(form);
-                formData.append('username', userInfo.username || 'مجهول');
-                formData.append('social_account', userInfo.social || 'لا يوجد');
-
-                fetch("/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams(formData).toString(),
-                })
-                .then(() => {
+                const matchCard = form.closest('.match-card');
+                const matchId = matchCard.dataset.matchId;
+                const winnerRadio = form.querySelector('input[name="winner"]:checked');
+                if (!winnerRadio) { alert('الرجاء اختيار نتيجة المباراة.'); submitBtn.innerHTML = originalText; submitBtn.disabled = false; return; }
+                const predictionData = { match_id: matchId, username: userInfo.username, social_account: userInfo.social, predicted_winner: winnerRadio.value, predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() };
+                try {
+                    const { error } = await supabaseClient.from('predictions').insert([predictionData]);
+                    if (error) throw error;
                     submitBtn.innerHTML = `تم الإرسال ✅`;
                     [...form.elements].forEach(el => el.disabled = true);
-                    const matchCard = form.closest('.match-card');
-                    const prediction = { 
-                        winner: form.querySelector('input[name="winner"]:checked').value,
-                        scorer: form.querySelector('input[name="scorer"]').value.trim() 
-                    };
-                    localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                })
-                .catch((error) => {
-                    alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
+                    localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
+                } catch (error) {
+                    console.error('Error submitting prediction:', error);
+                    alert('حدث خطأ أثناء إرسال توقعك. قد تكون توقعت لهذه المباراة من قبل.');
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                });
-                return; 
+                }
+                return;
             }
-
-            // --- التعامل مع نموذج التعليقات (إرسال إلى Supabase) ---
+            
             if (form.name === 'match-comment-form') {
                 const matchCard = form.closest('.match-card');
                 const matchId = matchCard.dataset.matchId;
                 const commentText = form.querySelector('textarea').value;
-                const authorName = userInfo.username || 'مجهول';
-
-                const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
                 try {
-                    if (!commentText.trim()) {
-                        throw new Error("لا يمكن إرسال تعليق فارغ.");
-                    }
-                    const { data, error } = await supabaseClient
-                        .from('comments')
-                        .insert([{ match_id: matchId, author: authorName, comment_text: commentText }]);
-
+                    if (!commentText.trim()) { throw new Error("لا يمكن إرسال تعليق فارغ."); }
+                    const { error } = await supabaseClient.from('comments').insert([{ match_id: matchId, author: userInfo.username, comment_text: commentText }]);
                     if (error) throw error;
-                    
                     const commentList = form.closest('.comments-section').querySelector('.comment-list');
-                    if (commentList.querySelector('p')) { // إزالة رسالة "لا توجد تعليقات"
-                        commentList.innerHTML = '';
-                    }
-                    addCommentToDOM(commentList, { author: authorName, text: commentText });
+                    if (commentList.querySelector('p')) { commentList.innerHTML = ''; }
+                    addCommentToDOM(commentList, { author: userInfo.username, text: commentText });
                     form.querySelector('textarea').value = '';
-
-                } catch (error) {
-                    console.error('Error submitting comment:', error);
-                    alert('حدث خطأ أثناء إرسال تعليقك.');
-                } finally {
-                    submitBtn.innerHTML = "إرسال";
-                    submitBtn.disabled = false;
-                }
+                } catch (error) { console.error('Error submitting comment:', error); alert('حدث خطأ أثناء إرسال تعليقك.');
+                } finally { submitBtn.innerHTML = "إرسال"; submitBtn.disabled = false; }
             }
         }
-        // =======================================================
-        //  الدالة المصححة لإرسال النماذج - END
-        // =======================================================
         
-        async function handleToggleComments(button) {
-            const commentsSection = button.nextElementSibling;
-            const isHidden = commentsSection.style.display === 'none' || !commentsSection.style.display;
-            const commentList = commentsSection.querySelector('.comment-list');
-            const matchCard = button.closest('.match-card');
-            const matchId = matchCard.dataset.matchId;
-
-            if (isHidden) {
-                commentsSection.style.display = 'block';
-                button.innerHTML = '💬 إخفاء التعليقات';
-                commentList.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
-
-                const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-                try {
-                    let { data: comments, error } = await supabaseClient
-                        .from('comments')
-                        .select('author, comment_text, created_at')
-                        .eq('match_id', matchId)
-                        .order('created_at', { ascending: true }); // عرض الأقدم أولاً
-
-                    if (error) throw error;
-
-                    commentList.innerHTML = ''; 
-
-                    if (comments.length === 0) {
-                        commentList.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
-                    } else {
-                        comments.forEach(comment => {
-                            addCommentToDOM(commentList, { author: comment.author, text: comment.comment_text });
-                        });
-                    }
-
-                } catch (error) {
-                    console.error("Error fetching comments:", error);
-                    commentList.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>';
-                }
-
-            } else {
-                commentsSection.style.display = 'none';
-                button.innerHTML = '💬 التعليقات';
-            }
-        }
-
-        // =======================================================
-        //  الدالة المصححة لعرض التعليقات - START
-        // =======================================================
-        function addCommentToDOM(commentList, commentData) {
-            const newComment = document.createElement('div');
-            newComment.className = 'comment';
-            // استخدام backticks (`) لإنشاء template literal
-            newComment.innerHTML = `
-                <div class="comment-avatar"><i class="fa-solid fa-user"></i></div>
-                <div class="comment-body">
-                    <span class="comment-author">${commentData.author}</span>
-                    <p class="comment-text">${commentData.text}</p>
-                </div>`;
-            commentList.appendChild(newComment);
-            commentList.scrollTop = commentList.scrollHeight; // التمرير لأسفل لعرض التعليق الجديد
-        }
-        // =======================================================
-        //  الدالة المصححة لعرض التعليقات - END
-        // =======================================================
-
-        // =======================================================
-        //  الدالة المصححة لتحميل البيانات من الذاكرة - START
-        // =======================================================
-        function loadFromStorage() { 
-            document.querySelectorAll('.match-card').forEach(card => { 
-                const matchId = card.dataset.matchId; 
-                const savedPrediction = localStorage.getItem(`prediction-${matchId}`); 
-                
-                // تحميل بيانات التوقع فقط
-                if (savedPrediction) { 
-                    const prediction = JSON.parse(savedPrediction); 
-                    const form = card.querySelector('.prediction-form'); 
-                    const winnerInput = form.querySelector(`input[value="${prediction.winner}"]`); 
-                    if (winnerInput) winnerInput.checked = true; 
-                    form.querySelector('.scorer-input').value = prediction.scorer; 
-                    [...form.elements].forEach(el => el.disabled = true); 
-                    form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅'; 
-                }
-                
-                // تم حذف الجزء الخاص بتحميل التعليقات من localStorage
-            }); 
-        }
-        // =======================================================
-        //  الدالة المصححة لتحميل البيانات من الذاكرة - END
-        // =======================================================
+        async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; l.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; const u = 'https://uxtxavurcgdeueeemmdi.supabase.co'; const a = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; const c = supabase.createClient(u, a); try { let { data: o, error: e } = await c.from('comments').select('author, comment_text, created_at').eq('match_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(l, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); l.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+        function addCommentToDOM(l, d) { const c = document.createElement('div'); c.className = 'comment'; c.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-user"></i></div><div class="comment-body"><span class="comment-author">${d.author}</span><p class="comment-text">${d.text}</p></div>`; l.appendChild(c); l.scrollTop = l.scrollHeight; }
+        function loadFromStorage() { document.querySelectorAll('.match-card').forEach(c => { const i = c.dataset.matchId; const p = localStorage.getItem(`prediction-${i}`); if (p) { const d = JSON.parse(p); const f = c.querySelector('.prediction-form'); const w = f.querySelector(`input[value="${d.winner}"]`); if (w) w.checked = true; f.querySelector('.scorer-input').value = d.scorer; [...f.elements].forEach(el => el.disabled = true); f.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅'; } }); }
         
-        // ===== تهيئة التطبيق الرئيسية =====
         loadUserInfo();
         populateTicker();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const upcomingMatchesData = matchesData.filter(match => new Date(new Date(match.datetime).toLocaleDateString('fr-CA')) >= today);
-        const matchesByDay = upcomingMatchesData.reduce((acc, match) => { const dayKey = new Date(match.datetime).toLocaleDateString('fr-CA'); if (!acc[dayKey]) acc[dayKey] = []; acc[dayKey].push(match); return acc; }, {});
-        
-        if (Object.keys(matchesByDay).length === 0) {
-            daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`;
-        } else {
-            const sortedDays = Object.keys(matchesByDay).sort();
-            const numMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
-            sortedDays.forEach((day, index) => {
-                const dayDate = new Date(day + 'T00:00:00Z');
-                const tabTitle = dayDate.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, d => numMap[d]);
-                const tabButton = document.createElement('div');
-                tabButton.className = `date-tab ${index === 0 ? 'active' : ''}`;
-                tabButton.textContent = tabTitle;
-                tabButton.dataset.tabId = day;
-                dateTabsContainer.appendChild(tabButton);
-                const dayContentDiv = document.createElement('div');
-                dayContentDiv.className = `day-content ${index === 0 ? 'active' : ''}`;
-                dayContentDiv.id = `day-${day}`;
-                daysContentContainer.appendChild(dayContentDiv);
-                const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 };
-                const sortedMatches = matchesByDay[day].sort((a, b) => {
-                    const statusA = getMatchStatus(a.datetime).state;
-                    const statusB = getMatchStatus(b.datetime).state;
-                    if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB];
-                    return new Date(a.datetime) - new Date(b.datetime);
-                });
-                renderMatchesForDay(dayContentDiv, sortedMatches);
-            });
-        }
-        
+        const upcomingMatchesData = matchesData.filter(m => new Date(new Date(m.datetime).toLocaleDateString('fr-CA')) >= today);
+        const matchesByDay = upcomingMatchesData.reduce((acc, m) => { const d = new Date(m.datetime).toLocaleDateString('fr-CA'); if (!acc[d]) acc[d] = []; acc[d].push(m); return acc; }, {});
+        if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; } else { const s = Object.keys(matchesByDay).sort(); const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; s.forEach((d, i) => { const a = new Date(d + 'T00:00:00Z'); const t = a.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const b = document.createElement('div'); b.className = `date-tab ${i === 0 ? 'active' : ''}`; b.textContent = t; b.dataset.tabId = d; dateTabsContainer.appendChild(b); const e = document.createElement('div'); e.className = `day-content ${i === 0 ? 'active' : ''}`; e.id = `day-${d}`; daysContentContainer.appendChild(e); const o = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const r = matchesByDay[d].sort((x, y) => { const sA = getMatchStatus(x.datetime).state; const sB = getMatchStatus(y.datetime).state; if (o[sA] !== o[sB]) return o[sA] - o[sB]; return new Date(x.datetime) - new Date(y.datetime); }); renderMatchesForDay(e, r); }); }
         attachTabEventListeners();
         attachMatchEventListeners();
         loadFromStorage();
     }
 
     // ==========================================================
-    // SECTION 2: NEWS PAGE LOGIC (STABLE VERSION)
+    // SECTION 2: NEWS PAGE LOGIC (WITH SUPABASE COMMENTS)
     // ==========================================================
     function initializeNewsPage() {
-        const ADMIN_PASSWORD = '1122';  
-        
-        const getTodaysDateString = (offsetDays = 0) => {
-            const today = new Date();
-            today.setDate(today.getDate() - offsetDays);
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        };
-        
-        let articlesData = [
-            {
-                "id": 6, "title": "مبابي يعود.. والظهور الأول يقترب!", "image": "https://a.top4top.io/p_3463f03ts0.jpg", "publishDate": "2025-06-25", "badge": "hot",
-                "fullText": "<p>عاد النجم الفرنسي كيليان مبابي إلى التدريبات الجماعية مع ريال مدريد بعد تعافيه من الوعكة الصحية التي أبعدته عن الفريق خلال الأيام الماضية.</p><p>المهاجم العائد ظهر في أجواء مليئة بالحماس والتركيز، ضمن استعدادات الفريق للمشاركة في كأس العالم للأندية، حيث يتطلّع لظهوره الأول بقميص الميرينغي.</p><p>المدرب تشابي ألونسو بدا حذرًا في التعامل مع مبابي، لكنه أشار إلى إمكانية الدفع به تدريجيًا في المباريات القادمة، مؤكدًا أنه سيكون عنصرًا حاسمًا في مشوار الفريق.</p><p>جماهير ريال مدريد تترقّب اللحظة التي سيرتدي فيها مبابي القميص الأبيض رسميًا داخل الملعب، خاصة وأن التعاقد معه كان الحلم الأكبر للمدريديين منذ سنوات.</p><p>كل الأنظار تتجه الآن نحو أول مباراة للفريق في البطولة، فهل يبدأ تشابي بمفاجأة ويُشرك مبابي منذ البداية؟</p>"
-            },
-            { "id": 5, "title": "إستيفاو ويليان.. أكثر لاعب محظوظ في العالم!", "image": "https://f.top4top.io/p_3462yrvqf0.jpg", "publishDate": "2025-06-24", "badge": "hot", "fullText": "<p>في مباراة ودّية جمعت بالميراس البرازيلي وإنتر ميامي الأميركي، خطف النجم الشاب إستيفاو ويليان الأضواء بلقطة لن ينساها طيلة مسيرته.</p><p>ويليان، الذي لم يتجاوز 17 عامًا بعد، استغل فرصة مشاركته أمام أساطير اللعبة ليقوم بتبادل القمصان مع ليونيل ميسي بين شوطي اللقاء، وسط دهشة الجماهير.</p><p>لكن المفاجأة الأكبر كانت عقب نهاية المباراة، عندما توجّه مباشرة إلى لويس سواريز وتبادل القميص معه أيضًا، ليجمع بين قميصي اثنين من أعظم اللاعبين في تاريخ كرة القدم.</p><p>هذه اللحظة الاستثنائية انتشرت كالنار في الهشيم عبر مواقع التواصل، واعتبرها كثيرون دليلاً على أن النجم الصاعد يعيش حلمًا لا يعيشه سوى القلائل.</p><p>الصحافة البرازيلية وصفت الأمر بأنه \"أسبوع الأحلام\" لإستيفاو، فيما بدأ المتابعون يتساءلون: هل هو مجرد محظوظ؟ أم نجم قادم بقوة؟</p>" },
-            { "id": 4, "title": "سان جيرمان يتصدر.. وأتلتيكو مدريد خارج المونديال!", "image": "https://e.top4top.io/p_3461all000.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>انتهت منافسات المجموعة الثانية في كأس العالم للأندية بنتائج مثيرة ومفاجآت مدوية، أبرزها خروج أتلتيكو مدريد من الدور الأول رغم امتلاكه نفس عدد النقاط كالمتصدرين.</p><p>النجم المغربي أشرف حكيمي قاد فريقه باريس سان جيرمان إلى الفوز الأخير الذي ضمن الصدارة بفارق الأهداف، بعد أداء قوي وتألق واضح في الجبهة اليمنى.</p><p>في المقابل، تأهل بوتافوجو البرازيلي إلى دور الـ16 رغم الخسارة، مستفيدًا من تفوقه على أتلتيكو مدريد بفارق الأهداف الإيجابي، في واحدة من أكثر السيناريوهات إثارة هذا الموسم.</p><p>أما أتلتيكو، فقد دفع ثمن البداية الضعيفة، حيث لم يشفع له الفوز الأخير بسبب فارق الأهداف السلبي الذي أبقاه في المركز الثالث برصيد 6 نقاط.</p><p>سياتل الأمريكي كان الحلقة الأضعف في المجموعة، حيث ودّع البطولة دون أي نقطة بعد ثلاث هزائم متتالية وفارق أهداف كبير بلغ -5.</p>" },
-        ];
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        const tenDaysInMs = 10 * 24 * 60 * 60 * 1000;
-        articlesData = articlesData.filter(article => {
-            if (!article.publishDate) return true;
-            const publishDate = new Date(article.publishDate);
-            const timeDiff = today.getTime() - publishDate.getTime();
-            return timeDiff <= tenDaysInMs;
-        });
-
-        const newsHomePage = document.querySelector('#news-page #home-page'); 
-        const newsArticlePage = document.querySelector('#news-page #article-page'); 
-        const articlesGrid = document.querySelector('#news-page #articles-grid'); 
-        const articleContent = document.querySelector('#news-page #article-content'); 
-        const notificationToast = document.querySelector('#news-page #notification-toast'); 
-        const exitToast = document.getElementById('exit-toast'); 
-        let currentArticleId = null; 
-        let currentNewsSubPage = 'home';
-        let firstBackPressTime = 0;
-
-        function showToast(message, type = 'success', duration = 3000) { notificationToast.textContent = message; notificationToast.className = `show ${type}`; setTimeout(() => { notificationToast.classList.remove('show'); }, duration); }
-        function navigateToNewsSubPage(pageName) { currentNewsSubPage = pageName; if (pageName === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
-        
-        function showArticle(articleId) {
-            const article = articlesData.find(a => a.id === articleId);
-            if (!article) return;
-            currentArticleId = article.id;
-            
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'view_item', { 'item_name': article.title });
-            }
-
-            articleContent.innerHTML = `
-                <div id="article-header">
-                    <h1>${article.title}</h1>
-                    <button id="share-button" title="مشاركة الخبر"><i class="fa-solid fa-share-nodes"></i></button>
-                </div>
-                <img src="${article.image}" alt="${article.title}">
-                ${article.fullText}
-            `;
-            document.getElementById('article-title-hidden-input').value = article.title;
-            
-            document.getElementById('share-button').addEventListener('click', () => {
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'share', { 'method': 'Native/Clipboard', 'content_type': 'article', 'item_id': article.title });
-                }
-                const shareData = { title: article.title, text: `شاهد هذا الخبر: ${article.title}`, url: window.location.href };
-                if (navigator.share) {
-                    navigator.share(shareData).catch(console.error);
-                } else {
-                    navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`).then(() => showToast('تم نسخ رابط الخبر!')).catch(err => alert('فشل نسخ الرابط.'));
-                }
-            });
-            
-            loadComments(currentArticleId); 
-            newsArticlePage.scrollTop = 0; 
-            navigateToNewsSubPage('article'); 
-        }
-
-        function buildHomePage() { articlesGrid.innerHTML = ''; articlesData.forEach(article => { const card = document.createElement('div'); card.className = 'article-card'; card.innerHTML = `<img src="${article.image}" alt="${article.title}"><div class="article-title"><h3>${article.title}</h3></div>`; card.addEventListener('click', () => showArticle(article.id)); articlesGrid.appendChild(card); }); }
-        
-        function loadComments(articleId) { 
-            const commentsList = document.querySelector('#news-page #comments-list'); 
-            const comments = JSON.parse(localStorage.getItem(`comments_${articleId}`)) || []; 
-            commentsList.innerHTML = ''; 
-            if (comments.length === 0) { commentsList.innerHTML = '<p style="color: var(--secondary-text-color); text-align: center;">لا توجد تعليقات. كن أول من يعلق!</p>'; return; } 
-            const numMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
-            comments.slice().reverse().forEach(comment => { 
-                const commentElement = document.createElement('div'); 
-                commentElement.className = 'comment-item'; 
-                const safeAuthor = document.createTextNode(comment.name || 'مجهول').textContent; 
-                const safeText = document.createTextNode(comment.text).textContent; 
-                const commentDate = new Date(comment.date).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }).replace(/[٠-٩]/g, d => numMap[d]);
-                commentElement.innerHTML = `<button class="delete-comment-btn" onclick="handleNewsDeleteComment(${articleId}, '${comment.date}')" title="حذف التعليق"><i class="fa-solid fa-trash"></i></button><div class="comment-header"><span class="comment-author">${safeAuthor}</span><span class="comment-date">${commentDate}</span></div><p class="comment-body">${safeText}</p>`; 
-                commentsList.appendChild(commentElement); 
-            }); 
-        }
-
-        function handleNewsCommentSubmit(event) {
-            event.preventDefault();
-            const form = event.target;
-            const nameInput = document.getElementById('comment-name');
-            const textInput = document.getElementById('comment-text');
-            const submitBtn = document.getElementById('submit-comment-btn');
-            const name = nameInput.value.trim();
-            const text = textInput.value.trim();
-            if (!text) return;
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'جارِ الإرسال...';
-            
-            const formData = new FormData(form);
-            fetch("/", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(formData).toString(),
-            })
-            .then(() => {
-                const comments = JSON.parse(localStorage.getItem(`comments_${currentArticleId}`)) || [];
-                const newComment = { name: name || 'مجهول', text: text, date: new Date().toISOString() };
-                comments.push(newComment);
-                localStorage.setItem(`comments_${currentArticleId}`, JSON.stringify(comments));
-                loadComments(currentArticleId);
-                showToast('تم إرسال تعليقك بنجاح!');
-            })
-            .catch(error => {
-                showToast('فشل إرسال التعليق.', 'error');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'إرسال التعليق';
-                nameInput.value = '';
-                textInput.value = '';
-            });
-        }
-
-        window.handleNewsDeleteComment = function(articleId, commentDate) { 
-            const password = prompt("للتحقق، يرجى إدخال كلمة مرور المدير:"); 
-            if (password === ADMIN_PASSWORD) { 
-                let comments = JSON.parse(localStorage.getItem(`comments_${articleId}`)) || []; 
-                comments = comments.filter(c => c.date !== commentDate); 
-                localStorage.setItem(`comments_${articleId}`, JSON.stringify(comments)); 
-                loadComments(articleId); 
-                showToast('تم حذف التعليق بنجاح.'); 
-            } else if (password !== null) { 
-                alert("كلمة المرور غير صحيحة!"); 
-            } 
-        }
-        
+        const ADMIN_PASSWORD = '1122';
+        let articlesData = [ { "id": 6, "title": "مبابي يعود.. والظهور الأول يقترب!", "image": "https://a.top4top.io/p_3463f03ts0.jpg", "publishDate": "2025-06-25", "badge": "hot", "fullText": "<p>عاد النجم الفرنسي كيليان مبابي إلى التدريبات الجماعية مع ريال مدريد بعد تعافيه من الوعكة الصحية التي أبعدته عن الفريق خلال الأيام الماضية.</p><p>المهاجم العائد ظهر في أجواء مليئة بالحماس والتركيز، ضمن استعدادات الفريق للمشاركة في كأس العالم للأندية، حيث يتطلّع لظهوره الأول بقميص الميرينغي.</p><p>المدرب تشابي ألونسو بدا حذرًا في التعامل مع مبابي، لكنه أشار إلى إمكانية الدفع به تدريجيًا في المباريات القادمة، مؤكدًا أنه سيكون عنصرًا حاسمًا في مشوار الفريق.</p><p>جماهير ريال مدريد تترقّب اللحظة التي سيرتدي فيها مبابي القميص الأبيض رسميًا داخل الملعب، خاصة وأن التعاقد معه كان الحلم الأكبر للمدريديين منذ سنوات.</p><p>كل الأنظار تتجه الآن نحو أول مباراة للفريق في البطولة، فهل يبدأ تشابي بمفاجأة ويُشرك مبابي منذ البداية؟</p>" }, { "id": 5, "title": "إستيفاو ويليان.. أكثر لاعب محظوظ في العالم!", "image": "https://f.top4top.io/p_3462yrvqf0.jpg", "publishDate": "2025-06-24", "badge": "hot", "fullText": "<p>في مباراة ودّية جمعت بالميراس البرازيلي وإنتر ميامي الأميركي، خطف النجم الشاب إستيفاو ويليان الأضواء بلقطة لن ينساها طيلة مسيرته.</p><p>ويليان، الذي لم يتجاوز 17 عامًا بعد، استغل فرصة مشاركته أمام أساطير اللعبة ليقوم بتبادل القمصان مع ليونيل ميسي بين شوطي اللقاء، وسط دهشة الجماهير.</p><p>لكن المفاجأة الأكبر كانت عقب نهاية المباراة، عندما توجّه مباشرة إلى لويس سواريز وتبادل القميص معه أيضًا، ليجمع بين قميصي اثنين من أعظم اللاعبين في تاريخ كرة القدم.</p><p>هذه اللحظة الاستثنائية انتشرت كالنار في الهشيم عبر مواقع التواصل، واعتبرها كثيرون دليلاً على أن النجم الصاعد يعيش حلمًا لا يعيشه سوى القلائل.</p><p>الصحافة البرازيلية وصفت الأمر بأنه \"أسبوع الأحلام\" لإستيفاو، فيما بدأ المتابعون يتساءلون: هل هو مجرد محظوظ؟ أم نجم قادم بقوة؟</p>" }, { "id": 4, "title": "سان جيرمان يتصدر.. وأتلتيكو مدريد خارج المونديال!", "image": "https://e.top4top.io/p_3461all000.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>انتهت منافسات المجموعة الثانية في كأس العالم للأندية بنتائج مثيرة ومفاجآت مدوية، أبرزها خروج أتلتيكو مدريد من الدور الأول رغم امتلاكه نفس عدد النقاط كالمتصدرين.</p><p>النجم المغربي أشرف حكيمي قاد فريقه باريس سان جيرمان إلى الفوز الأخير الذي ضمن الصدارة بفارق الأهداف، بعد أداء قوي وتألق واضح في الجبهة اليمنى.</p><p>في المقابل، تأهل بوتافوجو البرازيلي إلى دور الـ16 رغم الخسارة، مستفيدًا من تفوقه على أتلتيكو مدريد بفارق الأهداف الإيجابي، في واحدة من أكثر السيناريوهات إثارة هذا الموسم.</p><p>أما أتلتيكو، فقد دفع ثمن البداية الضعيفة، حيث لم يشفع له الفوز الأخير بسبب فارق الأهداف السلبي الذي أبقاه في المركز الثالث برصيد 6 نقاط.</p><p>سياتل الأمريكي كان الحلقة الأضعف في المجموعة، حيث ودّع البطولة دون أي نقطة بعد ثلاث هزائم متتالية وفارق أهداف كبير بلغ -5.</p>" }, ];
+        const newsHomePage = document.querySelector('#news-page #home-page'); const newsArticlePage = document.querySelector('#news-page #article-page'); const articlesGrid = document.querySelector('#news-page #articles-grid'); const articleContent = document.querySelector('#news-page #article-content'); const notificationToast = document.querySelector('#news-page #notification-toast'); const exitToast = document.getElementById('exit-toast'); let currentArticleId = null; let currentNewsSubPage = 'home'; let firstBackPressTime = 0;
+        function showToast(m, t = 'success', d = 3000) { notificationToast.textContent = m; notificationToast.className = `show ${t}`; setTimeout(() => { notificationToast.classList.remove('show'); }, d); }
+        function navigateToNewsSubPage(p) { currentNewsSubPage = p; if (p === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
+        function showArticle(i) { const a = articlesData.find(d => d.id === i); if (!a) return; currentArticleId = a.id; if (typeof gtag !== 'undefined') { gtag('event', 'view_item', { 'item_name': a.title }); } articleContent.innerHTML = `<div id="article-header"><h1>${a.title}</h1><button id="share-button" title="مشاركة الخبر"><i class="fa-solid fa-share-nodes"></i></button></div><img src="${a.image}" alt="${a.title}">${a.fullText}`; document.getElementById('article-title-hidden-input').value = a.title; document.getElementById('share-button').addEventListener('click', () => { if (typeof gtag !== 'undefined') { gtag('event', 'share', { 'method': 'Native/Clipboard', 'content_type': 'article', 'item_id': a.title }); } const s = { title: a.title, text: `شاهد هذا الخبر: ${a.title}`, url: window.location.href }; if (navigator.share) { navigator.share(s).catch(console.error); } else { navigator.clipboard.writeText(`${s.text}\n${s.url}`).then(() => showToast('تم نسخ رابط الخبر!')).catch(err => alert('فشل نسخ الرابط.')); } }); loadComments(currentArticleId); newsArticlePage.scrollTop = 0; navigateToNewsSubPage('article'); }
+        function buildHomePage() { articlesGrid.innerHTML = ''; articlesData.forEach(a => { const c = document.createElement('div'); c.className = 'article-card'; c.innerHTML = `<img src="${a.image}" alt="${a.title}"><div class="article-title"><h3>${a.title}</h3></div>`; c.addEventListener('click', () => showArticle(a.id)); articlesGrid.appendChild(c); }); }
+        async function loadComments(i) { const l = document.querySelector('#news-page #comments-list'); l.innerHTML = '<p style="color: var(--secondary-text-color); text-align: center;">جاري تحميل التعليقات...</p>'; const u = 'https://uxtxavurcgdeueeemmdi.supabase.co'; const a = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; const c = supabase.createClient(u, a); try { const { data: o, error: e } = await c.from('news_comments').select('id, created_at, author, comment_text').eq('article_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p style="color: var(--secondary-text-color); text-align: center;">لا توجد تعليقات. كن أول من يعلق!</p>'; return; } const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; o.forEach(t => { const d = document.createElement('div'); d.className = 'comment-item'; const s = document.createTextNode(t.author || 'مجهول').textContent; const x = document.createTextNode(t.comment_text).textContent; const m = new Date(t.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }).replace(/[٠-٩]/g, f => n[f]); d.innerHTML = `<button class="delete-comment-btn" onclick="handleNewsDeleteComment(${t.id}, ${i})" title="حذف التعليق"><i class="fa-solid fa-trash"></i></button><div class="comment-header"><span class="comment-author">${s}</span><span class="comment-date">${m}</span></div><p class="comment-body">${x}</p>`; l.appendChild(d); }); } catch(e) { console.error("Error loading news comments:", e); l.innerHTML = '<p class="text-red-500 text-center">فشل تحميل التعليقات. يرجى المحاولة مرة أخرى.</p>'; } }
+        async function handleNewsCommentSubmit(e) { e.preventDefault(); const n = document.getElementById('comment-name'); const t = document.getElementById('comment-text'); const b = document.getElementById('submit-comment-btn'); const a = n.value.trim(); const c = t.value.trim(); if (!c) return; b.disabled = true; b.textContent = 'جارِ الإرسال...'; const u = 'https://uxtxavurcgdeueeemmdi.supabase.co'; const k = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; const s = supabase.createClient(u, k); try { const { error: r } = await s.from('news_comments').insert([{ article_id: currentArticleId, author: a || 'مجهول', comment_text: c }]); if (r) throw r; showToast('تم إرسال تعليقك بنجاح!'); loadComments(currentArticleId); } catch (r) { console.error("Failed to submit comment to Supabase:", r); showToast('فشل إرسال التعليق.', 'error'); } finally { b.disabled = false; b.textContent = 'إرسال التعليق'; t.value = ''; } }
+        window.handleNewsDeleteComment = async function(i, a) { const p = prompt("للتحقق، يرجى إدخال كلمة مرور المدير:"); if (p === ADMIN_PASSWORD) { const u = 'https://uxtxavurcgdeueeemmdi.supabase.co'; const k = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; const s = supabase.createClient(u, k); try { const { error: e } = await s.from('news_comments').delete().eq('id', i); if (e) throw e; loadComments(a); showToast('تم حذف التعليق بنجاح.'); } catch (e) { console.error("Failed to delete comment:", e); alert("فشل حذف التعليق."); } } else if (p !== null) { alert("كلمة المرور غير صحيحة!"); } }
         document.querySelector('#news-page #comment-form').addEventListener('submit', handleNewsCommentSubmit);
-        
-        let touchStartX = 0; 
-        let isSwiping = false;
-        newsArticlePage.addEventListener('touchstart', e => {
-            if (e.changedTouches[0].screenX < 50 || e.changedTouches[0].screenX > window.innerWidth - 50) {
-                touchStartX = e.changedTouches[0].screenX;
-                isSwiping = true;
-            }
-        });
-        newsArticlePage.addEventListener('touchend', e => {
-            if (!isSwiping) return;
-            isSwiping = false;
-            const touchEndX = e.changedTouches[0].screenX;
-            const swipeDistance = Math.abs(touchEndX - touchStartX);
-            if (swipeDistance > 75) {
-                navigateToNewsSubPage('home');
-            }
-        });
-
-        document.addEventListener('backbutton', (e) => {
-            e.preventDefault();
-            const newsPage = document.getElementById('news-page');
-            if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') {
-                navigateToNewsSubPage('home');
-            } else {
-                if (new Date().getTime() - firstBackPressTime < 2000) {
-                    if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); }
-                } else {
-                    firstBackPressTime = new Date().getTime();
-                    exitToast.classList.add('show');
-                    setTimeout(() => { exitToast.classList.remove('show'); }, 2000);
-                }
-            }
-        }, false);
-
+        let touchStartX = 0; let isSwiping = false; newsArticlePage.addEventListener('touchstart', e => { if (e.changedTouches[0].screenX < 50 || e.changedTouches[0].screenX > window.innerWidth - 50) { touchStartX = e.changedTouches[0].screenX; isSwiping = true; } }); newsArticlePage.addEventListener('touchend', e => { if (!isSwiping) return; isSwiping = false; const t = e.changedTouches[0].screenX; const d = Math.abs(t - touchStartX); if (d > 75) { navigateToNewsSubPage('home'); } });
+        document.addEventListener('backbutton', (e) => { e.preventDefault(); const p = document.getElementById('news-page'); if (!p.classList.contains('hidden') && currentNewsSubPage === 'article') { navigateToNewsSubPage('home'); } else { if (new Date().getTime() - firstBackPressTime < 2000) { if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); } } else { firstBackPressTime = new Date().getTime(); exitToast.classList.add('show'); setTimeout(() => { exitToast.classList.remove('show'); }, 2000); } } }, false);
         buildHomePage();
     }
 </script>
