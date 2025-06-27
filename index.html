@@ -308,7 +308,7 @@
 
             // --- بدء تشغيل صفحة الأخبار ---
             fetchAndRenderArticles();
-        };
+        }}
         const newsHomePage = document.querySelector('#news-page #home-page'); const newsArticlePage = document.querySelector('#news-page #article-page'); const articlesGrid = document.querySelector('#news-page #articles-grid'); const articleContent = document.querySelector('#news-page #article-content'); const notificationToast = document.querySelector('#news-page #notification-toast'); const exitToast = document.getElementById('exit-toast'); let currentArticleId = null; let currentNewsSubPage = 'home'; let firstBackPressTime = 0;
         function showToast(m, t = 'success', d = 3000) { notificationToast.textContent = m; notificationToast.className = `show ${t}`; setTimeout(() => { notificationToast.classList.remove('show'); }, d); }
         function navigateToNewsSubPage(p) { currentNewsSubPage = p; if (p === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
