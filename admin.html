@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #161b22; border-radius: 8px; }
+        h1, h2 { color: white; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input[type="text"], input[type="datetime-local"] { width: 100%; padding: 0.5rem; background-color: #0d1117; border: 1px solid #30363d; border-radius: 4px; color: #c9d1d9; }
+        button { background-color: #2f81f7; color: white; padding: 0.5rem 1rem; border-radius: 4px; border: none; cursor: pointer; }
+        button:hover { background-color: #4b8ff7; }
+        #matches-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid #30363d; }
+        #matches-list button { background-color: #da3633; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="container text-center">
+        <h1 class="text-2xl font-bold">تسجيل الدخول للوحة التحكم</h1>
+        <input type="password" id="password-input" placeholder="أدخل كلمة المرور" class="mt-4 text-center">
+        <button onclick="login()" class="mt-2">دخول</button>
+    </div>
+
+    <div id="admin-panel" class="container hidden">
+        <h1 class="text-2xl font-bold">لوحة تحكم المباريات</h1>
+
+        <!-- قسم إضافة مباراة جديدة -->
+        <section id="add-match" class="mb-8">
+            <h2 class="text-xl font-bold">إضافة مباراة جديدة</h2>
+            <form id="add-match-form" class="space-y-4">
+                <div><label for="team1_name">الفريق الأول:</label><input type="text" id="team1_name" required></div>
+                <div><label for="team1_logo">شعار الفريق الأول (رابط):</label><input type="text" id="team1_logo" required></div>
+                <div><label for="team2_name">الفريق الثاني:</label><input type="text" id="team2_name" required></div>
+                <div><label for="team2_logo">شعار الفريق الثاني (رابط):</label><input type="text" id="team2_logo" required></div>
+                <div><label for="league">الدوري:</label><input type="text" id="league" required></div>
+                <div><label for="datetime">التاريخ والوقت:</label><input type="datetime-local" id="datetime" required></div>
+                <div><label for="channels">القنوات (افصل بينها بفاصلة):</label><input type="text" id="channels" placeholder="beIN, SSC"></div>
+                <button type="submit">إضافة المباراة</button>
+            </form>
+        </section>
+
+        <!-- قسم عرض وحذف المباريات -->
+        <section id="manage-matches">
+            <h2 class="text-xl font-bold">إدارة المباريات الحالية</h2>
+            <ul id="matches-list">
+                <!-- سيتم ملء المباريات هنا بواسطة الجافاسكربت -->
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // --- إعدادات الحماية والاتصال ---
+        const ADMIN_PASSWORD = '1122'; // <-- غيّر كلمة المرور هذه إلى كلمة سر قوية!
+        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginScreen = document.getElementById('login-screen');
+        const adminPanel = document.getElementById('admin-panel');
+
+        // --- دالة تسجيل الدخول ---
+        function login() {
+            const passwordInput = document.getElementById('password-input').value;
+            if (passwordInput === ADMIN_PASSWORD) {
+                loginScreen.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+                loadMatches();
+            } else {
+                alert('كلمة المرور غير صحيحة!');
+            }
+        }
+
+        // --- دالة تحميل المباريات وعرضها ---
+        async function loadMatches() {
+            const list = document.getElementById('matches-list');
+            list.innerHTML = '<li>جاري تحميل المباريات...</li>';
+
+            const { data, error } = await supabase.from('matches').select('*').order('datetime', { ascending: false });
+
+            if (error) {
+                list.innerHTML = '<li>حدث خطأ في تحميل المباريات.</li>';
+                console.error(error);
+                return;
+            }
+
+            list.innerHTML = '';
+            data.forEach(match => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <span>${match.team1_name} ضد ${match.team2_name} - (${new Date(match.datetime).toLocaleString()})</span>
+                    <button onclick="deleteMatch(${match.id})">حذف</button>
+                `;
+                list.appendChild(listItem);
+            });
+        }
+
+        // --- دالة حذف مباراة ---
+        async function deleteMatch(matchId) {
+            if (!confirm('هل أنت متأكد من أنك تريد حذف هذه المباراة؟')) {
+                return;
+            }
+
+            const { error } = await supabase.from('matches').delete().eq('id', matchId);
+
+            if (error) {
+                alert('فشل حذف المباراة!');
+                console.error(error);
+            } else {
+                alert('تم حذف المباراة بنجاح.');
+                loadMatches(); // إعادة تحميل القائمة
+            }
+        }
+
+        // --- ربط نموذج إضافة مباراة ---
+        document.getElementById('add-match-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const form = e.target;
+            const newMatch = {
+                team1_name: form.team1_name.value,
+                team1_logo: form.team1_logo.value,
+                team2_name: form.team2_name.value,
+                team2_logo: form.team2_logo.value,
+                league: form.league.value,
+                datetime: form.datetime.value,
+                channels: form.channels.value.split(',').map(c => c.trim()).filter(c => c), // تحويل النص إلى مصفوفة
+            };
+
+            const { error } = await supabase.from('matches').insert([newMatch]);
+
+            if (error) {
+                alert('فشل إضافة المباراة!');
+                console.error(error);
+            } else {
+                alert('تم إضافة المباراة بنجاح.');
+                form.reset();
+                loadMatches(); // إعادة تحميل القائمة
+            }
+        });
+
+    </script>
+</body>
+</html>
