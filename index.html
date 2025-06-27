@@ -642,32 +642,213 @@
                 comments.push(newComment);
                 localStorage.setItem(`comments_${currentArticleId}`, JSON.stringify(comments));
                 loadComments(currentArticleId);
-                showToast('تم إرسال تعليقك بنجاح!');
-            })
-            .catch(error => {
-                showToast('فشل إرسال التعليق.', 'error');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'إرسال التعليق';
-                nameInput.value = '';
-                textInput.value = '';
+    // ==========================================================
+    // SECTION 2: NEWS PAGE LOGIC (NOW WITH SUPABASE COMMENTS)
+    // ==========================================================
+    function initializeNewsPage() {
+        const ADMIN_PASSWORD = '1122';
+        
+        // --- مصفوفة المقالات تبقى كما هي ---
+        let articlesData = [
+            {
+                "id": 6, "title": "مبابي يعود.. والظهور الأول يقترب!", "image": "https://a.top4top.io/p_3463f03ts0.jpg", "publishDate": "2025-06-25", "badge": "hot",
+                "fullText": "<p>عاد النجم الفرنسي كيليان مبابي إلى التدريبات الجماعية مع ريال مدريد بعد تعافيه من الوعكة الصحية التي أبعدته عن الفريق خلال الأيام الماضية.</p><p>المهاجم العائد ظهر في أجواء مليئة بالحماس والتركيز، ضمن استعدادات الفريق للمشاركة في كأس العالم للأندية، حيث يتطلّع لظهوره الأول بقميص الميرينغي.</p><p>المدرب تشابي ألونسو بدا حذرًا في التعامل مع مبابي، لكنه أشار إلى إمكانية الدفع به تدريجيًا في المباريات القادمة، مؤكدًا أنه سيكون عنصرًا حاسمًا في مشوار الفريق.</p><p>جماهير ريال مدريد تترقّب اللحظة التي سيرتدي فيها مبابي القميص الأبيض رسميًا داخل الملعب، خاصة وأن التعاقد معه كان الحلم الأكبر للمدريديين منذ سنوات.</p><p>كل الأنظار تتجه الآن نحو أول مباراة للفريق في البطولة، فهل يبدأ تشابي بمفاجأة ويُشرك مبابي منذ البداية؟</p>"
+            },
+            { "id": 5, "title": "إستيفاو ويليان.. أكثر لاعب محظوظ في العالم!", "image": "https://f.top4top.io/p_3462yrvqf0.jpg", "publishDate": "2025-06-24", "badge": "hot", "fullText": "<p>في مباراة ودّية جمعت بالميراس البرازيلي وإنتر ميامي الأميركي، خطف النجم الشاب إستيفاو ويليان الأضواء بلقطة لن ينساها طيلة مسيرته.</p><p>ويليان، الذي لم يتجاوز 17 عامًا بعد، استغل فرصة مشاركته أمام أساطير اللعبة ليقوم بتبادل القمصان مع ليونيل ميسي بين شوطي اللقاء، وسط دهشة الجماهير.</p><p>لكن المفاجأة الأكبر كانت عقب نهاية المباراة، عندما توجّه مباشرة إلى لويس سواريز وتبادل القميص معه أيضًا، ليجمع بين قميصي اثنين من أعظم اللاعبين في تاريخ كرة القدم.</p><p>هذه اللحظة الاستثنائية انتشرت كالنار في الهشيم عبر مواقع التواصل، واعتبرها كثيرون دليلاً على أن النجم الصاعد يعيش حلمًا لا يعيشه سوى القلائل.</p><p>الصحافة البرازيلية وصفت الأمر بأنه \"أسبوع الأحلام\" لإستيفاو، فيما بدأ المتابعون يتساءلون: هل هو مجرد محظوظ؟ أم نجم قادم بقوة؟</p>" },
+            { "id": 4, "title": "سان جيرمان يتصدر.. وأتلتيكو مدريد خارج المونديال!", "image": "https://e.top4top.io/p_3461all000.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>انتهت منافسات المجموعة الثانية في كأس العالم للأندية بنتائج مثيرة ومفاجآت مدوية، أبرزها خروج أتلتيكو مدريد من الدور الأول رغم امتلاكه نفس عدد النقاط كالمتصدرين.</p><p>النجم المغربي أشرف حكيمي قاد فريقه باريس سان جيرمان إلى الفوز الأخير الذي ضمن الصدارة بفارق الأهداف، بعد أداء قوي وتألق واضح في الجبهة اليمنى.</p><p>في المقابل، تأهل بوتافوجو البرازيلي إلى دور الـ16 رغم الخسارة، مستفيدًا من تفوقه على أتلتيكو مدريد بفارق الأهداف الإيجابي، في واحدة من أكثر السيناريوهات إثارة هذا الموسم.</p><p>أما أتلتيكو، فقد دفع ثمن البداية الضعيفة، حيث لم يشفع له الفوز الأخير بسبب فارق الأهداف السلبي الذي أبقاه في المركز الثالث برصيد 6 نقاط.</p><p>سياتل الأمريكي كان الحلقة الأضعف في المجموعة، حيث ودّع البطولة دون أي نقطة بعد ثلاث هزائم متتالية وفارق أهداف كبير بلغ -5.</p>" },
+        ];
+
+        // --- تهيئة العناصر والمتغيرات الأساسية ---
+        const newsHomePage = document.querySelector('#news-page #home-page'); 
+        const newsArticlePage = document.querySelector('#news-page #article-page'); 
+        const articlesGrid = document.querySelector('#news-page #articles-grid'); 
+        const articleContent = document.querySelector('#news-page #article-content'); 
+        const notificationToast = document.querySelector('#news-page #notification-toast'); 
+        const exitToast = document.getElementById('exit-toast'); 
+        let currentArticleId = null; 
+        let currentNewsSubPage = 'home';
+        let firstBackPressTime = 0;
+
+        // --- الدوال المساعدة (تبقى كما هي) ---
+        function showToast(message, type = 'success', duration = 3000) { notificationToast.textContent = message; notificationToast.className = `show ${type}`; setTimeout(() => { notificationToast.classList.remove('show'); }, duration); }
+        function navigateToNewsSubPage(pageName) { currentNewsSubPage = pageName; if (pageName === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
+        
+        function showArticle(articleId) {
+            const article = articlesData.find(a => a.id === articleId);
+            if (!article) return;
+            currentArticleId = article.id;
+            
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'view_item', { 'item_name': article.title });
+            }
+
+            articleContent.innerHTML = `
+                <div id="article-header">
+                    <h1>${article.title}</h1>
+                    <button id="share-button" title="مشاركة الخبر"><i class="fa-solid fa-share-nodes"></i></button>
+                </div>
+                <img src="${article.image}" alt="${article.title}">
+                ${article.fullText}
+            `;
+            document.getElementById('article-title-hidden-input').value = article.title;
+            
+            document.getElementById('share-button').addEventListener('click', () => {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'share', { 'method': 'Native/Clipboard', 'content_type': 'article', 'item_id': article.title });
+                }
+                const shareData = { title: article.title, text: `شاهد هذا الخبر: ${article.title}`, url: window.location.href };
+                if (navigator.share) {
+                    navigator.share(shareData).catch(console.error);
+                } else {
+                    navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`).then(() => showToast('تم نسخ رابط الخبر!')).catch(err => alert('فشل نسخ الرابط.'));
+                }
             });
+            
+            loadComments(currentArticleId); // استدعاء الدالة الجديدة
+            newsArticlePage.scrollTop = 0; 
+            navigateToNewsSubPage('article'); 
         }
 
-        window.handleNewsDeleteComment = function(articleId, commentDate) { 
+        function buildHomePage() { articlesGrid.innerHTML = ''; articlesData.forEach(article => { const card = document.createElement('div'); card.className = 'article-card'; card.innerHTML = `<img src="${article.image}" alt="${article.title}"><div class="article-title"><h3>${article.title}</h3></div>`; card.addEventListener('click', () => showArticle(article.id)); articlesGrid.appendChild(card); }); }
+        
+        // =======================================================
+        //  دوال التعليقات المعدلة (Supabase) - START
+        // =======================================================
+
+        // دالة جلب التعليقات من Supabase
+        async function loadComments(articleId) {
+            const commentsList = document.querySelector('#news-page #comments-list');
+            commentsList.innerHTML = '<p style="color: var(--secondary-text-color); text-align: center;">جاري تحميل التعليقات...</p>';
+
+            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            try {
+                const { data: comments, error } = await supabaseClient
+                    .from('news_comments') // اسم الجدول الجديد
+                    .select('id, created_at, author, comment_text')
+                    .eq('article_id', articleId)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                
+                commentsList.innerHTML = '';
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<p style="color: var(--secondary-text-color); text-align: center;">لا توجد تعليقات. كن أول من يعلق!</p>';
+                    return;
+                }
+                
+                const numMap = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+                comments.forEach(comment => {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'comment-item';
+                    const safeAuthor = document.createTextNode(comment.author || 'مجهول').textContent;
+                    const safeText = document.createTextNode(comment.comment_text).textContent;
+                    const commentDate = new Date(comment.created_at).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }).replace(/[٠-٩]/g, d => numMap[d]);
+                    
+                    commentElement.innerHTML = `
+                        <button class="delete-comment-btn" onclick="handleNewsDeleteComment(${comment.id}, ${articleId})" title="حذف التعليق">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <div class="comment-header">
+                            <span class="comment-author">${safeAuthor}</span>
+                            <span class="comment-date">${commentDate}</span>
+                        </div>
+                        <p class="comment-body">${safeText}</p>`;
+                    commentsList.appendChild(commentElement);
+                });
+
+            } catch(e) {
+                console.error("Error loading news comments:", e);
+                commentsList.innerHTML = '<p class="text-red-500 text-center">فشل تحميل التعليقات. يرجى المحاولة مرة أخرى.</p>';
+            }
+        }
+
+        // دالة إرسال التعليقات إلى Supabase
+        async function handleNewsCommentSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const nameInput = document.getElementById('comment-name');
+            const textInput = document.getElementById('comment-text');
+            const submitBtn = document.getElementById('submit-comment-btn');
+            const name = nameInput.value.trim();
+            const text = textInput.value.trim();
+
+            if (!text) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'جارِ الإرسال...';
+            
+            const formData = new FormData(form);
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData).toString(),
+            }).catch(error => console.log('Netlify form submission failed, but continuing...', error));
+
+            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('news_comments') // اسم الجدول الجديد
+                    .insert([{ 
+                        article_id: currentArticleId, 
+                        author: name || 'مجهول', 
+                        comment_text: text 
+                    }]);
+
+                if (error) throw error;
+                
+                showToast('تم إرسال تعليقك بنجاح!');
+                loadComments(currentArticleId);
+            
+            } catch (e) {
+                console.error("Failed to submit comment to Supabase:", e);
+                showToast('فشل إرسال التعليق.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'إرسال التعليق';
+                textInput.value = '';
+            }
+        }
+
+        // دالة حذف التعليقات من Supabase
+        window.handleNewsDeleteComment = async function(commentId, articleId) {
             const password = prompt("للتحقق، يرجى إدخال كلمة مرور المدير:"); 
-            if (password === ADMIN_PASSWORD) { 
-                let comments = JSON.parse(localStorage.getItem(`comments_${articleId}`)) || []; 
-                comments = comments.filter(c => c.date !== commentDate); 
-                localStorage.setItem(`comments_${articleId}`, JSON.stringify(comments)); 
-                loadComments(articleId); 
-                showToast('تم حذف التعليق بنجاح.'); 
+            if (password === ADMIN_PASSWORD) {
+                const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('news_comments') // اسم الجدول الجديد
+                        .delete()
+                        .eq('id', commentId);
+
+                    if (error) throw error;
+                    
+                    loadComments(articleId);
+                    showToast('تم حذف التعليق بنجاح.'); 
+
+                } catch (e) {
+                    console.error("Failed to delete comment:", e);
+                    alert("فشل حذف التعليق.");
+                }
+
             } else if (password !== null) { 
                 alert("كلمة المرور غير صحيحة!"); 
             } 
         }
         
+        // =======================================================
+        //  دوال التعليقات المعدلة (Supabase) - END
+        // =======================================================
+
+        // --- ربط الأحداث وعمليات التهيئة النهائية ---
         document.querySelector('#news-page #comment-form').addEventListener('submit', handleNewsCommentSubmit);
         
         let touchStartX = 0; 
