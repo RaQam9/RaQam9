@@ -1,60 +1,40 @@
 // netlify/functions/get-matches.js
 
-const { Pool } = require('@neondatabase/serverless');
+// استيراد المكتبة الجديدة
+import { neon } from '@netlify/neon';
 
-exports.handler = async function(event) {
-    // 1. التأكد من أن الطلب من نوع GET فقط
-    if (event.httpMethod !== 'GET') {
-        return {
-            statusCode: 405,
-            body: 'Method Not Allowed',
-        };
-    }
-
-    // 2. الحصول على رابط الاتصال من متغيرات البيئة
-    const connectionString = process.env.DATABASE_URL;
-    if (!connectionString) {
-        console.error("Error: DATABASE_URL environment variable is not set.");
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: "Server configuration error." }),
-        };
-    }
-
-    let pool;
+// تعريف الـ handler. لاحظ استخدام export default
+export default async (req) => {
     try {
-        // 3. إنشاء اتصال جديد
-        pool = new Pool({ connectionString });
-        
-        // 4. تنفيذ الاستعلام لجلب المباريات
-        const sqlQuery = 'SELECT * FROM matches ORDER BY datetime ASC;';
-        const { rows: matches } = await pool.query(sqlQuery);
-        
-        // 5. إنهاء الاتصال لتحرير الموارد
-        await pool.end();
+        // هذه المكتبة تستخدم متغير البيئة تلقائياً، لا حاجة لكتابة أي شيء آخر
+        const sql = neon();
 
-        // 6. إرجاع البيانات بنجاح
-        return {
-            statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*', // للسماح بالوصول من أي مكان
-            },
-            body: JSON.stringify(matches),
-        };
+        // كتابة الاستعلام بطريقة القوالب (Template Literals) الآمنة
+        const matches = await sql`SELECT * FROM matches ORDER BY datetime ASC`;
 
+        // إرجاع البيانات بنجاح باستخدام واجهة برمجة تطبيقات Netlify الأحدث
+        return new Response(
+            JSON.stringify(matches),
+            {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
     } catch (error) {
-        // 7. التعامل مع أي خطأ يحدث
+        // التعامل مع الأخطاء
         console.error("Database query failed:", error);
-        
-        // تأكد من إنهاء الاتصال حتى في حالة الخطأ
-        if (pool) {
-            await pool.end();
-        }
-
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: "Failed to fetch matches from the database." }),
-        };
+        return new Response(
+            JSON.stringify({ message: "Failed to fetch matches." }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
     }
+};
+
+// يمكن إضافة هذا السطر لضمان أن الـ function تعمل فقط مع طلبات GET
+export const config = {
+  path: "/.netlify/functions/get-matches",
+  method: "GET",
 };
