@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>المركز الرياضي - نسخة مستقرة</title>
@@ -108,141 +110,51 @@
         // ======================================================================
         // SECTION 1: PREDICTIONS PAGE LOGIC (STABLE VERSION)
         // ======================================================================
-        function initializePredictionsPage() {
-            const manualMatchesData = [
-                { "id": 2301, "team1": { "name": "مانشستر سيتي", "logo": "https://media.api-sports.io/football/teams/50.png" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2302, "team1": { "name": "أتلتيكو مدريد", "logo": "https://media.api-sports.io/football/teams/530.png" }, "team2": { "name": "بوتافوغو", "logo": "https://media.api-sports.io/football/teams/1081.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2303, "team1": { "name": "سياتل ساوندرز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/iju_-94JIOiHTSVh4Nqgh.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باريس سان جيرمان", "logo": "https://media.api-sports.io/football/teams/85.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-23T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2401, "team1": { "name": "إنتر ميامي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/eP7VUfiow48_R8A-w2ADb.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "بالميراس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/9iqu-OKlXY0q0WVqvcUSe.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Action"] },
-                { "id": 2402, "team1": { "name": "بورتو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/5q7vuByZ8XO_L7ZuEeep2.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الأهلي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/o0K-aXi0FsiLx9BJ3AgTv.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T02:00:00+01:00", "channels": ["DAZN" , "MBC Masr" ] },
-                { "id": 2403, "team1": { "name": "بوكا جونيورز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/DOBffYJMo4e5VhoJX15fV.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "أوكلاند سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/IX2fIwXSOLsWDsUu5LmzD.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["DAZN" ] },
-                { "id": 2404, "team1": { "name": "بايرن ميونخ", "logo": "https://media.api-sports.io/football/teams/157.png" }, "team2": { "name": "بنفيكا", "logo": "https://media.api-sports.io/football/teams/211.png" }, "league": "كأس العالم للأندية", "datetime": "2025-06-24T20:00:00+01:00", "channels": ["beIN Sports" ] },
-                { "id": 2501, "team1": { "name": "تشيلسي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/w5N6rBTPf_J_brPwrNIOG.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "الترجي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EF2BiqfSLna4ypEMUibdi.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2502, "team1": { "name": "فلامنغو", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/uBmMjj6gGMNdb83YU2xEz.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "لوس أنجلوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Wv0w3tqrAN4Pm9g0Rymzf.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-25T02:00:00+01:00", "channels": ["DAZN"]},
-                { "id": 2503, "team1": { "name": "Borussia Dortmund", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/EmDXkZ5B61SrXUUTUPV3X.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Ulsan HD FC", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/oo8T0F2idHnFdc-D3Mh12.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2504, "team1": { "name": "Mamelodi Sundowns", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/kfdXAFPbKdkR9O_DFH5EK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "Fluminense", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Xof2xYwDp4l1fU1M_e49y.png?quality=60&auto=webp&format=pjpg" }, "league": "Group F – كأس العالم للأندية", "datetime": "2025-06-25T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2601, "team1": { "name": "إنتر ميلان", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/QMLrilrNtKpq2UmCOH9FK.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريفر بليت", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/yvkxIVK_5-HduWzkkaru_.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2602, "team1": { "name": "أوراوا ريد دياموندز", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/0PeG1kW1nv9LLjK0VU8sZ.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مونتيري", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/U4PBXIQ_FlEDSxGOoF6FX.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T02:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2603, "team1": { "name": "الوداد الرياضي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/k7TES9_2byLPJdIMn-d8H.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "العين", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2sHjUCuU5YFqVTNH4hDhu.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2604, "team1": { "name": "يوفنتوس", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/G0ZJNLeWxBVFsy39V4-XY.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "مانشستر سيتي", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/YaWwRy_S6TKMuwJHBvDbR.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-26T20:00:00+01:00", "channels": ["DAZN"] },
-                { "id": 2701, "team1": { "name": "ريد بول سالزبورغ", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/-PWqo_lcDVwCd2-FuHu94.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "ريال مدريد", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/VOlkxOIoXAXF_11lYJ_Ve.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC Action"] },
-                { "id": 2702, "team1": { "name": "الهلال", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/7B-B14BUExP3pp4zNnlrX.png?quality=60&auto=webp&format=pjpg" }, "team2": { "name": "باتشوكا", "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/x4Ij6QJEV0WFXyk45IFMl.png?quality=60&auto=webp&format=pjpg" }, "league": "كأس العالم للأندية", "datetime": "2025-06-27T02:00:00+01:00", "channels": ["DAZN", "MBC مصر"] }
-,  {
-    "id": 2801,
-    "team1": {
-      "name": "بالميراس",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/9iqu-OKlXY0q0WVqvcUSe.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "بوتافوغو",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/83rA2GDR3PO9XgAR7fR0z.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس العالم للأندية",
-    "datetime": "2025-06-28T17:00:00+01:00",
-    "channels": []
-  },
-  {
-    "id": 2802,
-    "team1": {
-      "name": "بنفيكا",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/IBJQ65NUuPelqy4EDtW64.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "تشيلسي",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/w5N6rBTPf_J_brPwrNIOG.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس العالم للأندية",
-    "datetime": "2025-06-28T21:00:00+01:00",
-    "channels": []
-  },
-  {
-    "id": 2803,
-    "team1": {
-      "name": "إنجلترا تحت 21",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/BitLHHMQQa4AgcMgwZic-.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "ألمانيا تحت 21",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/uEY-CNFqT1Vs7L-YKk2MM.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "أمم أوروبا للشباب - EURO U21 Final Stage",
-    "datetime": "2025-06-28T20:00:00+01:00",
-    "channels": []
-  }  
-  ,{
-    "id": 2901,
-    "team1": {
-      "name": "باريس سان جيرمان",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Gt8F5QmiB3gbYqX46lCUq.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "إنتر ميامي",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/eP7VUfiow48_R8A-w2ADb.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس العالم للأندية",
-    "datetime": "2025-06-29T17:00:00+01:00",
-    "channels": ["DAZN"]
-  },
-  {
-    "id": 2902,
-    "team1": {
-      "name": "فلامينغو",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/uBmMjj6gGMNdb83YU2xEz.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "بايرن ميونخ",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/2TlMSJkWTGqMX2lPN7Cgd.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس العالم للأندية",
-    "datetime": "2025-06-29T21:00:00+01:00",
-    "channels": ["DAZN"]
-  },
-  {
-    "id": 2903,
-    "team1": {
-      "name": "بنما",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/waswU8R9HQMeHLm3NCSRA.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "الهندوراس",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/Z9rCx-yRA_gn4ftlH2-xM.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس الكونكاكاف الذهبية",
-    "datetime": "2025-06-29T00:15:00+01:00",
-    "channels": []
-  },
-  {
-    "id": 2904,
-    "team1": {
-      "name": "المكسيك",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/bwm-UYwTfjJUNFUZ9UQHn.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "السعودية",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/MFcISbqSzeB5jO8-cWifu.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس الكونكاكاف الذهبية",
-    "datetime": "2025-06-29T03:15:00+01:00",
-    "channels": ["SSC"]
-  },
-  {
-    "id": 2905,
-    "team1": {
-      "name": "كندا",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/IdbD1JJSOvq-p3pzMXksc.png?quality=60&auto=webp&format=pjpg"
-    },
-    "team2": {
-      "name": "جواتيمالا",
-      "logo": "https://cdn.sportfeeds.io/sdl/images/team/crest/medium/GnJxVy6niHd2f-La2sVSr.png?quality=60&auto=webp&format=pjpg"
-    },
-    "league": "كأس الكونكاكاف الذهبية",
-    "datetime": "2025-06-29T21:00:00+01:00",
-    "channels": []
-  }
- ];
-            initializeAppWithData(manualMatchesData);
-        }
+        async function initializePredictionsPage() {
+    // --- إعدادات الاتصال بـ Supabase ---
+    const SUPABASE_URL = 'الرابط الذي نسخته'; // <-- الصق رابط المشروع هنا
+    const SUPABASE_ANON_KEY = 'المفتاح الذي نسخته'; // <-- الصق مفتاح anon public هنا
 
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    try {
+        // عرض مؤشر التحميل
+        const container = document.getElementById('matches-container');
+        container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
+
+        // جلب البيانات من جدول 'matches'
+        let { data: matchesDataFromDB, error } = await supabase
+            .from('matches')
+            .select('*')
+            .order('datetime', { ascending: true });
+
+        if (error) {
+            // إذا حدث خطأ من Supabase، اعرضه
+            throw error;
+        }
+        
+        // نفس كود التنسيق القديم
+        const formattedMatches = matchesDataFromDB.map(match => ({
+            id: match.id,
+            team1: { name: match.team1_name, logo: match.team1_logo },
+            team2: { name: match.team2_name, logo: match.team2_logo },
+            league: match.league,
+            datetime: match.datetime,
+            channels: match.channels || []
+        }));
+
+        // استدعاء الدالة الرئيسية لعرض البيانات
+        initializeAppWithData(formattedMatches);
+
+    } catch (error) {
+        console.error("Could not fetch matches from Supabase:", error);
+        const container = document.getElementById('matches-container');
+        if (container) {
+            container.innerHTML = 
+            '<p class="text-center text-red-500 mt-8">حدث خطأ أثناء تحميل المباريات. يرجى التحقق لاحقًا.</p>';
+        }
+    }
+}
         function initializeAppWithData(matchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
             
