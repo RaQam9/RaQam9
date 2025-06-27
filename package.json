@@ -1,7 +1,7 @@
 {
-  "name": "my-sports-app-functions",
+  "name": "raqam9-functions",
   "version": "1.0.0",
-  "description": "Serverless functions for my app",
+  "description": "Serverless functions for my sports app",
   "dependencies": {
     "@neondatabase/serverless": "^0.9.1"
   }
