@@ -204,12 +204,111 @@
         loadFromStorage();
     }
 
-    // ==========================================================
-    // SECTION 2: NEWS PAGE LOGIC (WITH SUPABASE COMMENTS)
-    // ==========================================================
-    function initializeNewsPage() {
-        const ADMIN_PASSWORD = '1122';
-        let articlesData = [ { "id": 6, "title": "مبابي يعود.. والظهور الأول يقترب!", "image": "https://a.top4top.io/p_3463f03ts0.jpg", "publishDate": "2025-06-25", "badge": "hot", "fullText": "<p>عاد النجم الفرنسي كيليان مبابي إلى التدريبات الجماعية مع ريال مدريد بعد تعافيه من الوعكة الصحية التي أبعدته عن الفريق خلال الأيام الماضية.</p><p>المهاجم العائد ظهر في أجواء مليئة بالحماس والتركيز، ضمن استعدادات الفريق للمشاركة في كأس العالم للأندية، حيث يتطلّع لظهوره الأول بقميص الميرينغي.</p><p>المدرب تشابي ألونسو بدا حذرًا في التعامل مع مبابي، لكنه أشار إلى إمكانية الدفع به تدريجيًا في المباريات القادمة، مؤكدًا أنه سيكون عنصرًا حاسمًا في مشوار الفريق.</p><p>جماهير ريال مدريد تترقّب اللحظة التي سيرتدي فيها مبابي القميص الأبيض رسميًا داخل الملعب، خاصة وأن التعاقد معه كان الحلم الأكبر للمدريديين منذ سنوات.</p><p>كل الأنظار تتجه الآن نحو أول مباراة للفريق في البطولة، فهل يبدأ تشابي بمفاجأة ويُشرك مبابي منذ البداية؟</p>" }, { "id": 5, "title": "إستيفاو ويليان.. أكثر لاعب محظوظ في العالم!", "image": "https://f.top4top.io/p_3462yrvqf0.jpg", "publishDate": "2025-06-24", "badge": "hot", "fullText": "<p>في مباراة ودّية جمعت بالميراس البرازيلي وإنتر ميامي الأميركي، خطف النجم الشاب إستيفاو ويليان الأضواء بلقطة لن ينساها طيلة مسيرته.</p><p>ويليان، الذي لم يتجاوز 17 عامًا بعد، استغل فرصة مشاركته أمام أساطير اللعبة ليقوم بتبادل القمصان مع ليونيل ميسي بين شوطي اللقاء، وسط دهشة الجماهير.</p><p>لكن المفاجأة الأكبر كانت عقب نهاية المباراة، عندما توجّه مباشرة إلى لويس سواريز وتبادل القميص معه أيضًا، ليجمع بين قميصي اثنين من أعظم اللاعبين في تاريخ كرة القدم.</p><p>هذه اللحظة الاستثنائية انتشرت كالنار في الهشيم عبر مواقع التواصل، واعتبرها كثيرون دليلاً على أن النجم الصاعد يعيش حلمًا لا يعيشه سوى القلائل.</p><p>الصحافة البرازيلية وصفت الأمر بأنه \"أسبوع الأحلام\" لإستيفاو، فيما بدأ المتابعون يتساءلون: هل هو مجرد محظوظ؟ أم نجم قادم بقوة؟</p>" }, { "id": 4, "title": "سان جيرمان يتصدر.. وأتلتيكو مدريد خارج المونديال!", "image": "https://e.top4top.io/p_3461all000.jpg", "publishDate": "2025-06-23", "badge": "hot", "fullText": "<p>انتهت منافسات المجموعة الثانية في كأس العالم للأندية بنتائج مثيرة ومفاجآت مدوية، أبرزها خروج أتلتيكو مدريد من الدور الأول رغم امتلاكه نفس عدد النقاط كالمتصدرين.</p><p>النجم المغربي أشرف حكيمي قاد فريقه باريس سان جيرمان إلى الفوز الأخير الذي ضمن الصدارة بفارق الأهداف، بعد أداء قوي وتألق واضح في الجبهة اليمنى.</p><p>في المقابل، تأهل بوتافوجو البرازيلي إلى دور الـ16 رغم الخسارة، مستفيدًا من تفوقه على أتلتيكو مدريد بفارق الأهداف الإيجابي، في واحدة من أكثر السيناريوهات إثارة هذا الموسم.</p><p>أما أتلتيكو، فقد دفع ثمن البداية الضعيفة، حيث لم يشفع له الفوز الأخير بسبب فارق الأهداف السلبي الذي أبقاه في المركز الثالث برصيد 6 نقاط.</p><p>سياتل الأمريكي كان الحلقة الأضعف في المجموعة، حيث ودّع البطولة دون أي نقطة بعد ثلاث هزائم متتالية وفارق أهداف كبير بلغ -5.</p>" }, ];
+            // ==========================================================
+        // SECTION 2: NEWS PAGE LOGIC (Supabase Version)
+        // ==========================================================
+        async function initializeNewsPage() {
+            // --- إعدادات الاتصال (مكررة ولكن ضرورية لكل قسم) ---
+            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            let articlesData = []; // سنملأها من قاعدة البيانات
+            const articlesGrid = document.querySelector('#news-page #articles-grid');
+            const articleContent = document.querySelector('#news-page #article-content');
+            
+            const newsHomePage = document.querySelector('#news-page #home-page'); 
+            const newsArticlePage = document.querySelector('#news-page #article-page'); 
+            const notificationToast = document.querySelector('#news-page #notification-toast');
+            
+            let currentArticleId = null; 
+            let currentNewsSubPage = 'home';
+            
+            // --- دالة جلب وعرض المقالات ---
+            async function fetchAndRenderArticles() {
+                articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+                
+                const { data, error } = await supabaseClient
+                    .from('articles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار: ${error.message}</p>`;
+                    return;
+                }
+                
+                articlesData = data; // تحديث القائمة بالبيانات الحقيقية
+                buildHomePage();
+            }
+
+            function buildHomePage() {
+                articlesGrid.innerHTML = '';
+                if(articlesData.length === 0) {
+                     articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
+                     return;
+                }
+                articlesData.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'article-card';
+                    // تم تعديل image_url ليطابق اسم العمود في قاعدة البيانات
+                    card.innerHTML = `<img src="${article.image_url}" alt="${article.title}"><div class="article-title"><h3>${article.title}</h3></div>`;
+                    card.addEventListener('click', () => showArticle(article.id));
+                    articlesGrid.appendChild(card);
+                });
+            }
+            
+            function showArticle(articleId) {
+                const article = articlesData.find(a => a.id === articleId);
+                if (!article) return;
+                currentArticleId = article.id;
+                
+                articleContent.innerHTML = `
+                    <div id="article-header">
+                        <h1>${article.title}</h1>
+                        <button id="share-button" title="مشاركة الخبر"><i class="fa-solid fa-share-nodes"></i></button>
+                    </div>
+                    <img src="${article.image_url}" alt="${article.title}">
+                    <div>${article.content}</div> <!-- تم تعديل المحتوى ليقبل HTML -->
+                `;
+                
+                // ربط زر المشاركة
+                document.getElementById('share-button').addEventListener('click', () => {
+                    // ... كود المشاركة يبقى كما هو ...
+                });
+                
+                // (اختياري) يمكنك إضافة نظام تعليقات ديناميكي هنا لاحقاً
+                
+                newsArticlePage.scrollTop = 0; 
+                navigateToNewsSubPage('article'); 
+            }
+
+            function navigateToNewsSubPage(pageName) { 
+                currentNewsSubPage = pageName; 
+                if (pageName === 'article') { 
+                    newsHomePage.style.transform = 'translateX(-100%)'; 
+                    newsArticlePage.style.transform = 'translateX(0)'; 
+                } else { 
+                    newsHomePage.style.transform = 'translateX(0)'; 
+                    newsArticlePage.style.transform = 'translateX(100%)'; 
+                } 
+            }
+
+            // ... بقية دوال صفحة الأخبار مثل التعامل مع زر الرجوع تبقى كما هي ...
+            // تأكد من أن هذه الدالة موجودة في الكود الأصلي أو أضفها
+             document.addEventListener('backbutton', (e) => {
+                e.preventDefault();
+                const newsPage = document.getElementById('news-page');
+                if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') {
+                    navigateToNewsSubPage('home');
+                } else {
+                    // ... منطق الخروج من التطبيق
+                }
+            }, false);
+
+            // --- بدء تشغيل صفحة الأخبار ---
+            fetchAndRenderArticles();
+        }
         const newsHomePage = document.querySelector('#news-page #home-page'); const newsArticlePage = document.querySelector('#news-page #article-page'); const articlesGrid = document.querySelector('#news-page #articles-grid'); const articleContent = document.querySelector('#news-page #article-content'); const notificationToast = document.querySelector('#news-page #notification-toast'); const exitToast = document.getElementById('exit-toast'); let currentArticleId = null; let currentNewsSubPage = 'home'; let firstBackPressTime = 0;
         function showToast(m, t = 'success', d = 3000) { notificationToast.textContent = m; notificationToast.className = `show ${t}`; setTimeout(() => { notificationToast.classList.remove('show'); }, d); }
         function navigateToNewsSubPage(p) { currentNewsSubPage = p; if (p === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
