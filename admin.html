@@ -1,15 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #0d1117; color: #c9d1d9; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #161b22; border-radius: 8px; border: 1px solid #30363d;}
+        h1, h2 { color: white; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="text"], input[type="password"], input[type="datetime-local"] { width: 100%; padding: 0.75rem; background-color: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9; margin-bottom: 1rem; }
+        button { background-color: #2f81f7; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s; }
+        button:hover { background-color: #4b8ff7; }
+        #matches-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #30363d; }
+        #matches-list li:last-child { border-bottom: none; }
+        #matches-list button { background-color: #da3633; font-size: 0.9em; padding: 0.5rem 1rem; }
+        #matches-list button:hover { background-color: #e84a47; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="container text-center">
+        <h1 class="text-2xl font-bold">تسجيل الدخول للوحة التحكم</h1>
+        <label for="password-input" class="sr-only">كلمة المرور</label>
+        <input type="password" id="password-input" placeholder="أدخل كلمة المرور" class="mt-4 text-center">
+        <button id="login-button" class="mt-2 w-full">دخول</button>
+    </div>
+
+    <div id="admin-panel" class="container hidden">
+        <h1 class="text-2xl font-bold">لوحة تحكم المباريات</h1>
+
+        <!-- قسم إضافة مباراة جديدة -->
+        <section id="add-match" class="mb-8 p-4 bg-[#0d1117] rounded-lg">
+            <h2 class="text-xl font-bold">إضافة مباراة جديدة</h2>
+            <form id="add-match-form" class="space-y-4 mt-4">
+                <div><label for="team1_name">الفريق الأول:</label><input type="text" id="team1_name" required></div>
+                <div><label for="team1_logo">شعار الفريق الأول (رابط):</label><input type="text" id="team1_logo" required></div>
+                <div><label for="team2_name">الفريق الثاني:</label><input type="text" id="team2_name" required></div>
+                <div><label for="team2_logo">شعار الفريق الثاني (رابط):</label><input type="text" id="team2_logo" required></div>
+                <div><label for="league">الدوري:</label><input type="text" id="league" required></div>
+                <div><label for="datetime">التاريخ والوقت:</label><input type="datetime-local" id="datetime" required></div>
+                <div><label for="channels">القنوات (افصل بينها بفاصلة):</label><input type="text" id="channels" placeholder="beIN, SSC"></div>
+                <button type="submit" class="w-full">إضافة المباراة</button>
+            </form>
+        </section>
+
+        <!-- قسم عرض وحذف المباريات -->
+        <section id="manage-matches" class="p-4 bg-[#0d1117] rounded-lg">
+            <h2 class="text-xl font-bold">إدارة المباريات الحالية</h2>
+            <ul id="matches-list" class="mt-4">
+                <!-- سيتم ملء المباريات هنا بواسطة الجافاسكربت -->
+            </ul>
+        </section>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- إعدادات الحماية والاتصال ---
-            const ADMIN_PASSWORD = '1122'; // <-- غيّر كلمة المرور هذه!
+            const ADMIN_PASSWORD = 'Fofacant12&'; // <-- غيّر كلمة المرور هذه إلى كلمة سر قوية!
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+            // --- تعريف عناصر الصفحة ---
             const loginScreen = document.getElementById('login-screen');
             const adminPanel = document.getElementById('admin-panel');
-            const loginButton = loginScreen.querySelector('button');
+            const loginButton = document.getElementById('login-button');
             const addMatchForm = document.getElementById('add-match-form');
+            const matchesList = document.getElementById('matches-list');
 
             // --- دالة تسجيل الدخول ---
             function login() {
@@ -25,37 +86,44 @@
             
             // ربط دالة تسجيل الدخول بالزر
             loginButton.addEventListener('click', login);
+             // السماح بالدخول عند الضغط على Enter في حقل كلمة المرور
+            document.getElementById('password-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
 
             // --- دالة تحميل المباريات وعرضها ---
             async function loadMatches() {
-                const list = document.getElementById('matches-list');
-                list.innerHTML = '<li>جاري تحميل المباريات...</li>';
+                matchesList.innerHTML = '<li>جاري تحميل المباريات...</li>';
 
-                const { data, error } = await supabase.from('matches').select('*').order('datetime', { ascending: false });
+                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
 
                 if (error) {
-                    list.innerHTML = `<li>حدث خطأ: ${error.message}</li>`;
+                    matchesList.innerHTML = `<li style="color: red;">حدث خطأ: ${error.message}</li>`;
                     console.error(error);
                     return;
                 }
 
-                list.innerHTML = '';
+                matchesList.innerHTML = '';
                 if (data.length === 0) {
-                    list.innerHTML = '<li>لا توجد مباريات حالياً.</li>';
+                    matchesList.innerHTML = '<li>لا توجد مباريات حالياً.</li>';
+                } else {
+                    data.forEach(match => {
+                        const listItem = document.createElement('li');
+                        listItem.dataset.matchId = match.id;
+                        listItem.innerHTML = `
+                            <span>${match.team1_name} ضد ${match.team2_name} - (${new Date(match.datetime).toLocaleDateString('ar-EG')})</span>
+                            <button class="delete-btn">حذف</button>
+                        `;
+                        matchesList.appendChild(listItem);
+                    });
                 }
-                data.forEach(match => {
-                    const listItem = document.createElement('li');
-                    listItem.dataset.matchId = match.id;
-                    listItem.innerHTML = `
-                        <span>${match.team1_name} ضد ${match.team2_name} - (${new Date(match.datetime).toLocaleDateString()})</span>
-                        <button class="delete-btn">حذف</button>
-                    `;
-                    list.appendChild(listItem);
-                });
             }
 
             // --- دالة حذف مباراة (باستخدام Event Delegation) ---
-            document.getElementById('matches-list').addEventListener('click', async (e) => {
+            matchesList.addEventListener('click', async (e) => {
                 if (e.target && e.target.classList.contains('delete-btn')) {
                     const listItem = e.target.closest('li');
                     const matchId = listItem.dataset.matchId;
@@ -64,7 +132,7 @@
                         return;
                     }
 
-                    const { error } = await supabase.from('matches').delete().eq('id', matchId);
+                    const { error } = await supabaseClient.from('matches').delete().eq('id', matchId);
 
                     if (error) {
                         alert(`فشل حذف المباراة: ${error.message}`);
@@ -79,6 +147,9 @@
             // --- ربط نموذج إضافة مباراة ---
             addMatchForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'جاري الإضافة...';
 
                 const form = e.target;
                 const newMatch = {
@@ -91,7 +162,7 @@
                     channels: form.channels.value.split(',').map(c => c.trim()).filter(c => c),
                 };
 
-                const { error } = await supabase.from('matches').insert([newMatch]);
+                const { error } = await supabaseClient.from('matches').insert([newMatch]);
 
                 if (error) {
                     alert(`فشل إضافة المباراة: ${error.message}`);
@@ -101,6 +172,11 @@
                     form.reset();
                     loadMatches(); // إعادة تحميل القائمة
                 }
+                
+                submitButton.disabled = false;
+                submitButton.textContent = 'إضافة المباراة';
             });
         });
     </script>
+</body>
+</html>
