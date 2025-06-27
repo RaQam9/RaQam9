@@ -204,63 +204,78 @@
         loadFromStorage();
     }
 
-            // ==========================================================
-        // SECTION 2: NEWS PAGE LOGIC (Supabase Version)
+                    // ==========================================================
+        // SECTION 2: NEWS PAGE LOGIC (Supabase FINAL Version)
         // ==========================================================
-        async function initializeNewsPage() {
-            // --- إعدادات الاتصال (مكررة ولكن ضرورية لكل قسم) ---
+        function initializeNewsPage() {
+            // --- إعدادات الاتصال ---
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            let articlesData = []; // سنملأها من قاعدة البيانات
-            const articlesGrid = document.querySelector('#news-page #articles-grid');
-            const articleContent = document.querySelector('#news-page #article-content');
+            // --- تعريف عناصر الصفحة ---
+            const articlesGrid = document.getElementById('articles-grid');
+            const articleContent = document.getElementById('article-content');
+            const newsHomePage = document.getElementById('home-page');
+            const newsArticlePage = document.getElementById('article-page');
             
-            const newsHomePage = document.querySelector('#news-page #home-page'); 
-            const newsArticlePage = document.querySelector('#news-page #article-page'); 
-            const notificationToast = document.querySelector('#news-page #notification-toast');
-            
-            let currentArticleId = null; 
+            let articlesData = []; // سيتم ملؤها من قاعدة البيانات
+            let currentArticleId = null;
             let currentNewsSubPage = 'home';
-            
-            // --- دالة جلب وعرض المقالات ---
-            async function fetchAndRenderArticles() {
-                articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
-                
-                const { data, error } = await supabaseClient
-                    .from('articles')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+            let firstBackPressTime = 0; // لزر الخروج في أندرويد
 
-                if (error) {
-                    articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار: ${error.message}</p>`;
-                    return;
+            // --- دالة جلب وعرض المقالات الرئيسية ---
+            async function fetchAndRenderArticles() {
+                try {
+                    articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+                    
+                    const { data, error } = await supabaseClient
+                        .from('articles')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        throw error; // إرسال الخطأ إلى catch block
+                    }
+                    
+                    articlesData = data;
+                    buildHomePage();
+
+                } catch (error) {
+                    console.error("Failed to fetch articles:", error);
+                    const errorMessage = JSON.stringify(error, Object.getOwnPropertyNames(error), 2);
+                    articlesGrid.innerHTML = `
+                        <div style="background-color: #2d1a1a; border: 1px solid #da3633; color: #ff9a9a; padding: 15px; border-radius: 8px; margin: 10px; font-family: monospace; text-align: left; direction: ltr; grid-column: 1 / -1;">
+                            <h3 style="color: #ffcccc; font-size: 1.2em; margin-bottom: 10px;">حدث خطأ في جلب الأخبار!</h3>
+                            <pre style="background-color: #161b22; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
+                        </div>
+                    `;
                 }
-                
-                articlesData = data; // تحديث القائمة بالبيانات الحقيقية
-                buildHomePage();
             }
 
+            // --- دالة بناء الصفحة الرئيسية للأخبار ---
             function buildHomePage() {
                 articlesGrid.innerHTML = '';
-                if(articlesData.length === 0) {
+                if (!articlesData || articlesData.length === 0) {
                      articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
                      return;
                 }
                 articlesData.forEach(article => {
                     const card = document.createElement('div');
                     card.className = 'article-card';
-                    // تم تعديل image_url ليطابق اسم العمود في قاعدة البيانات
-                    card.innerHTML = `<img src="${article.image_url}" alt="${article.title}"><div class="article-title"><h3>${article.title}</h3></div>`;
+                    card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.onerror=null;this.src='https://via.placeholder.com/280x180?text=Image+Not+Found';"><div class="article-title"><h3>${article.title}</h3></div>`;
                     card.addEventListener('click', () => showArticle(article.id));
                     articlesGrid.appendChild(card);
                 });
             }
             
+            // --- دالة عرض تفاصيل المقال ---
             function showArticle(articleId) {
                 const article = articlesData.find(a => a.id === articleId);
-                if (!article) return;
+                if (!article) {
+                    alert('المقال غير موجود!');
+                    return;
+                }
                 currentArticleId = article.id;
                 
                 articleContent.innerHTML = `
@@ -268,21 +283,24 @@
                         <h1>${article.title}</h1>
                         <button id="share-button" title="مشاركة الخبر"><i class="fa-solid fa-share-nodes"></i></button>
                     </div>
-                    <img src="${article.image_url}" alt="${article.title}">
-                    <div>${article.content}</div> <!-- تم تعديل المحتوى ليقبل HTML -->
+                    <img src="${article.image_url}" alt="${article.title}" onerror="this.onerror=null;this.src='https://via.placeholder.com/800x400?text=Image+Not+Found';">
+                    <div class="prose lg:prose-xl text-gray-300">${article.content}</div>
                 `;
                 
-                // ربط زر المشاركة
                 document.getElementById('share-button').addEventListener('click', () => {
-                    // ... كود المشاركة يبقى كما هو ...
+                    const shareData = { title: article.title, text: `شاهد هذا الخبر: ${article.title}`, url: window.location.href };
+                    if (navigator.share) {
+                        navigator.share(shareData).catch(console.error);
+                    } else {
+                        navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`).then(() => alert('تم نسخ رابط الخبر!')).catch(err => alert('فشل نسخ الرابط.'));
+                    }
                 });
-                
-                // (اختياري) يمكنك إضافة نظام تعليقات ديناميكي هنا لاحقاً
                 
                 newsArticlePage.scrollTop = 0; 
                 navigateToNewsSubPage('article'); 
             }
 
+            // --- دوال التنقل ---
             function navigateToNewsSubPage(pageName) { 
                 currentNewsSubPage = pageName; 
                 if (pageName === 'article') { 
@@ -294,21 +312,27 @@
                 } 
             }
 
-            // ... بقية دوال صفحة الأخبار مثل التعامل مع زر الرجوع تبقى كما هي ...
-            // تأكد من أن هذه الدالة موجودة في الكود الأصلي أو أضفها
-             document.addEventListener('backbutton', (e) => {
+            // --- التعامل مع زر الرجوع في الهاتف ---
+            document.addEventListener('backbutton', (e) => {
                 e.preventDefault();
-                const newsPage = document.getElementById('news-page');
-                if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') {
-                    navigateToNewsSubPage('home');
-                } else {
-                    // ... منطق الخروج من التطبيق
+                if (!document.getElementById('news-page').classList.contains('hidden')) {
+                    if (currentNewsSubPage === 'article') {
+                        navigateToNewsSubPage('home');
+                    } else {
+                        if (new Date().getTime() - firstBackPressTime < 2000) {
+                            if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); }
+                        } else {
+                            firstBackPressTime = new Date().getTime();
+                            document.getElementById('exit-toast').classList.add('show');
+                            setTimeout(() => { document.getElementById('exit-toast').classList.remove('show'); }, 2000);
+                        }
+                    }
                 }
             }, false);
 
             // --- بدء تشغيل صفحة الأخبار ---
             fetchAndRenderArticles();
-        }}
+        }
         const newsHomePage = document.querySelector('#news-page #home-page'); const newsArticlePage = document.querySelector('#news-page #article-page'); const articlesGrid = document.querySelector('#news-page #articles-grid'); const articleContent = document.querySelector('#news-page #article-content'); const notificationToast = document.querySelector('#news-page #notification-toast'); const exitToast = document.getElementById('exit-toast'); let currentArticleId = null; let currentNewsSubPage = 'home'; let firstBackPressTime = 0;
         function showToast(m, t = 'success', d = 3000) { notificationToast.textContent = m; notificationToast.className = `show ${t}`; setTimeout(() => { notificationToast.classList.remove('show'); }, d); }
         function navigateToNewsSubPage(p) { currentNewsSubPage = p; if (p === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; } else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; } }
