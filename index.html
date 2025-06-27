@@ -349,8 +349,55 @@
                 });
             }
 
-            function handleToggleComments(button) { const commentsSection = button.nextElementSibling; const isHidden = commentsSection.style.display === 'none' || !commentsSection.style.display; commentsSection.style.display = isHidden ? 'block' : 'none'; button.innerHTML = isHidden ? '💬 إخفاء التعليقات' : '💬 التعليقات'; }
-            
+            async function handleToggleComments(button) {
+    const commentsSection = button.nextElementSibling;
+    const isHidden = commentsSection.style.display === 'none' || !commentsSection.style.display;
+    const commentList = commentsSection.querySelector('.comment-list');
+    const matchCard = button.closest('.match-card');
+    const matchId = matchCard.dataset.matchId;
+
+    if (isHidden) {
+        // إذا كانت التعليقات مخفية، قم بعرضها وجلب البيانات
+        commentsSection.style.display = 'block';
+        button.innerHTML = '💬 إخفاء التعليقات';
+        commentList.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
+
+        // إعدادات الاتصال بـ Supabase
+        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        try {
+            // جلب التعليقات الخاصة بهذه المباراة فقط
+            let { data: comments, error } = await supabaseClient
+                .from('comments')
+                .select('author, comment_text, created_at')
+                .eq('match_id', matchId)
+                .order('created_at', { ascending: false }); // الأحدث أولاً
+
+            if (error) throw error;
+
+            commentList.innerHTML = ''; // مسح رسالة التحميل
+
+            if (comments.length === 0) {
+                commentList.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
+            } else {
+                comments.forEach(comment => {
+                    addCommentToDOM(commentList, { author: comment.author, text: comment.comment_text });
+                });
+            }
+
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+            commentList.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>';
+        }
+
+    } else {
+        // إذا كانت التعليقات ظاهرة، قم بإخفائها
+        commentsSection.style.display = 'none';
+        button.innerHTML = '💬 التعليقات';
+    }
+}
             function addCommentToDOM(commentList, commentData) { 
                 const newComment = document.createElement('div'); 
                 newComment.className = 'comment'; 
