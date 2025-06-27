@@ -328,7 +328,7 @@
                             scorer: form.querySelector('input[name="scorer"]').value.trim() 
                         };
                         localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                    // ... الكود قبله
+                    
 } else if (form.classList.contains('comment-form')) {
     const matchCard = form.closest('.match-card');
     const matchId = matchCard.dataset.matchId;
@@ -368,7 +368,6 @@
         submitBtn.disabled = false;
     }
 }
-// ... الكود بعده
                 })
                 .catch((error) => {
                     alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
