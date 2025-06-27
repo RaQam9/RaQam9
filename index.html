@@ -114,20 +114,21 @@
                // ======================================================================
         // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Version)
         // ======================================================================
-        async function initializePredictionsPage() {
-            // --- إعدادات الاتصال بـ Supabase (معلوماتك هنا) ---
+                async function initializePredictionsPage() {
+            // --- إعدادات الاتصال بـ Supabase ---
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-
-            // إنشاء اتصال مع Supabase
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             try {
                 // عرض مؤشر التحميل للمستخدم
                 const container = document.getElementById('matches-container');
                 container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
 
-                // هذا هو الجزء الذي يجلب البيانات من الإنترنت
+                // !! السطر الذي تم تصحيحه !!
+                // نحن نستخدم الكائن العالمي supabase الذي تم تحميله من ملف السكريبت
+                const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                // جلب البيانات من جدول 'matches'
                 let { data: matchesDataFromDB, error } = await supabaseClient
                     .from('matches') 
                     .select('*')
@@ -137,7 +138,7 @@
                     throw error;
                 }
                 
-                // تنسيق البيانات لتناسب بقية الكود
+                // تنسيق البيانات
                 const formattedMatches = matchesDataFromDB.map(match => ({
                     id: match.id,
                     team1: { name: match.team1_name, logo: match.team1_logo },
@@ -147,26 +148,25 @@
                     channels: match.channels || []
                 }));
 
-                // إرسال البيانات التي تم جلبها إلى الدالة الرئيسية للعرض
+                // عرض البيانات
                 initializeAppWithData(formattedMatches);
 
-                        } catch (error) {
-                // (النسخة الجديدة) تسجيل الخطأ وعرض تفاصيله مباشرة على الشاشة
-                console.error("Could not fetch matches from Supabase:", error);
+            } catch (error) {
+                // في حالة الفشل، عرض الخطأ للتشخيص
+                console.error("An error occurred:", error);
                 const container = document.getElementById('matches-container');
                 if (container) {
-                    // تحويل كائن الخطأ إلى نص لعرضه
-                    const errorMessage = JSON.stringify(error, null, 2);
+                    const errorMessage = JSON.stringify(error, Object.getOwnPropertyNames(error));
                     container.innerHTML = `
-                        <div class="text-center text-red-500 mt-8 p-4 border border-red-500 rounded-md">
-                            <p class="font-bold mb-2">حدث خطأ تقني!</p>
-                            <p class="mb-4">هذه هي تفاصيل الخطأ التي ستساعدنا على حل المشكلة:</p>
-                            <pre style="text-align: left; direction: ltr; background: #161b22; color: #c9d1d9; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
+                        <div style="background-color: #2d1a1a; border: 1px solid #da3633; color: #ff9a9a; padding: 15px; border-radius: 8px; margin: 10px; font-family: monospace; text-align: left; direction: ltr;">
+                            <h3 style="color: #ffcccc; font-size: 1.2em; margin-bottom: 10px;">حدث خطأ تقني!</h3>
+                            <p style="font-size: 0.9em; margin-bottom: 15px;">هذه هي تفاصيل الخطأ التي ستساعدنا على حل المشكلة:</p>
+                            <pre style="background-color: #161b22; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
                         </div>
                     `;
                 }
             }
-	};
+        }
         function initializeAppWithData(matchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
             
