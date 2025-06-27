@@ -154,22 +154,14 @@
 
                 // عرض البيانات
                 initializeAppWithData(formattedMatches);
-
-            } catch (error) {
-                // في حالة الفشل، عرض الخطأ للتشخيص
-                console.error("An error occurred:", error);
-                const container = document.getElementById('matches-container');
-                if (container) {
-                    const errorMessage = JSON.stringify(error, Object.getOwnPropertyNames(error));
-                    container.innerHTML = `
-                        <div style="background-color: #2d1a1a; border: 1px solid #da3633; color: #ff9a9a; padding: 15px; border-radius: 8px; margin: 10px; font-family: monospace; text-align: left; direction: ltr;">
-                            <h3 style="color: #ffcccc; font-size: 1.2em; margin-bottom: 10px;">حدث خطأ تقني!</h3>
-                            <p style="font-size: 0.9em; margin-bottom: 15px;">هذه هي تفاصيل الخطأ التي ستساعدنا على حل المشكلة:</p>
-                            <pre style="background-color: #161b22; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
-                        </div>
-                    `;
-                }
-            }
+} catch (error) {
+    console.error("An error occurred:", error);
+    const container = document.getElementById('matches-container');
+    if (container) {
+        container.innerHTML = 
+        '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>';
+    }
+}
         }
 
         function initializeAppWithData(matchesData) {
