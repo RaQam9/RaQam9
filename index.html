@@ -328,19 +328,47 @@
                             scorer: form.querySelector('input[name="scorer"]').value.trim() 
                         };
                         localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                    } else if (form.classList.contains('comment-form')) {
-                        submitBtn.innerHTML = "إرسال";
-                        submitBtn.disabled = false;
-                        const matchCard = form.closest('.match-card');
-                        const commentList = form.closest('.comments-section').querySelector('.comment-list');
-                        const commentText = form.querySelector('textarea').value;
-                        const commentData = { author: userInfo.username || 'مجهول', text: commentText };
-                        addCommentToDOM(commentList, commentData);
-                        const comments = JSON.parse(localStorage.getItem(`comments-${matchCard.dataset.matchId}`) || '[]');
-                        comments.push(commentData);
-                        localStorage.setItem(`comments-${matchCard.dataset.matchId}`, JSON.stringify(comments));
-                        form.querySelector('textarea').value = '';
-                    }
+                    // ... الكود قبله
+} else if (form.classList.contains('comment-form')) {
+    const matchCard = form.closest('.match-card');
+    const matchId = matchCard.dataset.matchId;
+    const commentText = form.querySelector('textarea').value;
+    const authorName = userInfo.username || 'مجهول';
+
+    // إعدادات الاتصال بـ Supabase
+    const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    try {
+        // إرسال التعليق الجديد إلى جدول 'comments'
+        const { data, error } = await supabaseClient
+            .from('comments')
+            .insert([
+                { match_id: matchId, author: authorName, comment_text: commentText }
+            ]);
+
+        if (error) throw error;
+        
+        // بعد النجاح، أضف التعليق مباشرة إلى القائمة الظاهرة
+        const commentList = form.closest('.comments-section').querySelector('.comment-list');
+        // إزالة رسالة "لا توجد تعليقات" إذا كانت موجودة
+        if (commentList.querySelector('p')) {
+            commentList.innerHTML = '';
+        }
+        addCommentToDOM(commentList, { author: authorName, text: commentText });
+        form.querySelector('textarea').value = ''; // مسح حقل النص
+
+    } catch (error) {
+        console.error('Error submitting comment:', error);
+        alert('حدث خطأ أثناء إرسال تعليقك. يرجى المحاولة مرة أخرى.');
+    } finally {
+        // إعادة الزر إلى حالته الطبيعية في كل الحالات
+        submitBtn.innerHTML = "إرسال";
+        submitBtn.disabled = false;
+    }
+}
+// ... الكود بعده
                 })
                 .catch((error) => {
                     alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
