@@ -1,5 +1,5 @@
 {
-  "name": "raqam9-functions",
+  "name": "neondb-functions",  // <-- تم التغيير لاسم وصفي جديد
   "version": "1.0.0",
   "description": "Serverless functions for my sports app",
   "dependencies": {
