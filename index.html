@@ -108,13 +108,7 @@
             predictionsBtn.addEventListener('click', () => switchPage('predictions'));
             newsBtn.addEventListener('click', () => switchPage('news'));
             initializePredictionsPage();
-            initializeNewsPage();
-        });
-
-               // ======================================================================
-        // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Version)
-        // ======================================================================
-                async function initializePredictionsPage() {
+            init        async function initializePredictionsPage() {
             // --- إعدادات الاتصال بـ Supabase ---
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
@@ -124,8 +118,6 @@
                 const container = document.getElementById('matches-container');
                 container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
 
-                // !! السطر الذي تم تصحيحه !!
-                // نحن نستخدم الكائن العالمي supabase الذي تم تحميله من ملف السكريبت
                 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                 // جلب البيانات من جدول 'matches'
@@ -147,6 +139,12 @@
                     datetime: match.datetime,
                     channels: match.channels || []
                 }));
+                
+                // !! التصحيح النهائي: إعادة بناء الهيكل قبل استدعاء الدالة الرئيسية !!
+                document.getElementById('matches-container').innerHTML = `
+                    <div class="date-tabs-container" id="date-tabs"></div>
+                    <div id="days-content-container"></div>
+                `;
 
                 // عرض البيانات
                 initializeAppWithData(formattedMatches);
