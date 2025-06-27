@@ -300,73 +300,78 @@
             function populateTicker() { 
                 const tickerContent = document.getElementById('predictions-ticker-content');
                 tickerContent.innerHTML = tickerMessages.map(msg => `<span class="ticker-item">${msg}</span>`).join(''); 
-            }
-             async function handleFormSubmit(form) {
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-                submitBtn.disabled = true;
+            // نسخة جديدة تفصل بين التوقعات والتعليقات
+async function handleFormSubmit(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    submitBtn.disabled = true;
 
-                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-                const formData = new FormData(form);
-                formData.append('username', userInfo.username || 'مجهول');
-                formData.append('social_account', userInfo.social || 'لا يوجد');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
 
-                fetch("/", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: new URLSearchParams(formData).toString(),
-                })
-                .then(() => {
-                    if (form.classList.contains('prediction-form')) {
-                        submitBtn.innerHTML = `تم الإرسال ✅`;
-                        [...form.elements].forEach(el => el.disabled = true);
-                        const matchCard = form.closest('.match-card');
-                        const prediction = { 
-                            winner: form.querySelector('input[name="winner"]:checked').value,
-                            scorer: form.querySelector('input[name="scorer"]').value.trim() 
-                        };
-                        localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
-                    } else if (form.classList.contains('comment-form')) {
-    const matchCard = form.closest('.match-card');
-    const matchId = matchCard.dataset.matchId;
-    const commentText = form.querySelector('textarea').value;
-    const authorName = userInfo.username || 'مجهول';
+    // --- التعامل مع نموذج التوقعات (يبقى كما هو) ---
+    if (form.name === 'prediction-form') {
+        const formData = new FormData(form);
+        formData.append('username', userInfo.username || 'مجهول');
+        formData.append('social_account', userInfo.social || 'لا يوجد');
 
-    // إعدادات الاتصال بـ Supabase
-    const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    try {
-        // إرسال التعليق الجديد إلى جدول 'comments'
-        const { data, error } = await supabaseClient
-            .from('comments')
-            .insert([
-                { match_id: matchId, author: authorName, comment_text: commentText }
-            ]);
-
-        if (error) throw error;
-        
-        // بعد النجاح، أضف التعليق مباشرة إلى القائمة الظاهرة
-        const commentList = form.closest('.comments-section').querySelector('.comment-list');
-        // إزالة رسالة "لا توجد تعليقات" إذا كانت موجودة
-        if (commentList.querySelector('p')) {
-            commentList.innerHTML = '';
-        }
-        addCommentToDOM(commentList, { author: authorName, text: commentText });
-        form.querySelector('textarea').value = ''; // مسح حقل النص
-
-    } catch (error) {
-        console.error('Error submitting comment:', error);
-        alert('حدث خطأ أثناء إرسال تعليقك. يرجى المحاولة مرة أخرى.');
-    } finally {
-        // إعادة الزر إلى حالته الطبيعية في كل الحالات
-        submitBtn.innerHTML = "إرسال";
-        submitBtn.disabled = false;
+        fetch("/", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams(formData).toString(),
+        })
+        .then(() => {
+            submitBtn.innerHTML = `تم الإرسال ✅`;
+            [...form.elements].forEach(el => el.disabled = true);
+            const matchCard = form.closest('.match-card');
+            const prediction = { 
+                winner: form.querySelector('input[name="winner"]:checked').value,
+                scorer: form.querySelector('input[name="scorer"]').value.trim() 
+            };
+            localStorage.setItem(`prediction-${matchCard.dataset.matchId}`, JSON.stringify(prediction));
+        })
+        .catch((error) => {
+            alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+        return; // إنهاء الدالة هنا
     }
-		    }
-		}
+
+    // --- التعامل مع نموذج التعليقات (باستخدام Supabase) ---
+    if (form.name === 'match-comment-form') {
+        const matchCard = form.closest('.match-card');
+        const matchId = matchCard.dataset.matchId;
+        const commentText = form.querySelector('textarea').value;
+        const authorName = userInfo.username || 'مجهول';
+
+        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('comments')
+                .insert([{ match_id: matchId, author: authorName, comment_text: commentText }]);
+
+            if (error) throw error;
+            
+            const commentList = form.closest('.comments-section').querySelector('.comment-list');
+            if (commentList.querySelector('p')) {
+                commentList.innerHTML = '';
+            }
+            addCommentToDOM(commentList, { author: authorName, text: commentText });
+            form.querySelector('textarea').value = '';
+
+        } catch (error) {
+            console.error('Error submitting comment:', error);
+            alert('حدث خطأ أثناء إرسال تعليقك.');
+        } finally {
+            submitBtn.innerHTML = "إرسال";
+            submitBtn.disabled = false;
+        }
+    }
+}
                 .catch((error) => {
                     alert('حدث خطأ. الرجاء المحاولة مرة أخرى.');
                     submitBtn.innerHTML = originalText;
