@@ -150,15 +150,22 @@
                 // إرسال البيانات التي تم جلبها إلى الدالة الرئيسية للعرض
                 initializeAppWithData(formattedMatches);
 
-            } catch (error) {
+                        } catch (error) {
+                // (النسخة الجديدة) تسجيل الخطأ وعرض تفاصيله مباشرة على الشاشة
                 console.error("Could not fetch matches from Supabase:", error);
                 const container = document.getElementById('matches-container');
                 if (container) {
-                    container.innerHTML = 
-                    '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. تأكد من صحة إعدادات الاتصال وأن الجدول `matches` يحتوي على بيانات.</p>';
+                    // تحويل كائن الخطأ إلى نص لعرضه
+                    const errorMessage = JSON.stringify(error, null, 2);
+                    container.innerHTML = `
+                        <div class="text-center text-red-500 mt-8 p-4 border border-red-500 rounded-md">
+                            <p class="font-bold mb-2">حدث خطأ تقني!</p>
+                            <p class="mb-4">هذه هي تفاصيل الخطأ التي ستساعدنا على حل المشكلة:</p>
+                            <pre style="text-align: left; direction: ltr; background: #161b22; color: #c9d1d9; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word;">${errorMessage}</pre>
+                        </div>
+                    `;
                 }
             }
-        }
 
         function initializeAppWithData(matchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
