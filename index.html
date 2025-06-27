@@ -111,29 +111,30 @@
         // SECTION 1: PREDICTIONS PAGE LOGIC (STABLE VERSION)
         // ======================================================================
         async function initializePredictionsPage() {
-    // --- إعدادات الاتصال بـ Supabase ---
-    const SUPABASE_URL = 'الرابط الذي نسخته'; // <-- الصق رابط المشروع هنا
-    const SUPABASE_ANON_KEY = 'المفتاح الذي نسخته'; // <-- الصق مفتاح anon public هنا
+    // --- إعدادات الاتصال بـ Supabase (معلوماتك هنا) ---
+    const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 
+    // إنشاء اتصال مع Supabase
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     try {
-        // عرض مؤشر التحميل
+        // عرض مؤشر التحميل للمستخدم
         const container = document.getElementById('matches-container');
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
 
-        // جلب البيانات من جدول 'matches'
+        // جلب البيانات من جدول 'matches' وترتيبها حسب التاريخ
         let { data: matchesDataFromDB, error } = await supabase
-            .from('matches')
+            .from('matches') // تأكد أن اسم الجدول هو 'matches'
             .select('*')
             .order('datetime', { ascending: true });
 
+        // إذا حدث خطأ أثناء جلب البيانات، قم بإيقاف التنفيذ وعرض الخطأ
         if (error) {
-            // إذا حدث خطأ من Supabase، اعرضه
             throw error;
         }
         
-        // نفس كود التنسيق القديم
+        // تحويل أسماء الأعمدة لتناسب بقية الكود
         const formattedMatches = matchesDataFromDB.map(match => ({
             id: match.id,
             team1: { name: match.team1_name, logo: match.team1_logo },
@@ -143,15 +144,16 @@
             channels: match.channels || []
         }));
 
-        // استدعاء الدالة الرئيسية لعرض البيانات
+        // استدعاء الدالة الرئيسية لعرض البيانات بعد جلبها بنجاح
         initializeAppWithData(formattedMatches);
 
     } catch (error) {
+        // في حالة فشل أي خطوة، يتم تسجيل الخطأ وعرض رسالة للمستخدم
         console.error("Could not fetch matches from Supabase:", error);
         const container = document.getElementById('matches-container');
         if (container) {
             container.innerHTML = 
-            '<p class="text-center text-red-500 mt-8">حدث خطأ أثناء تحميل المباريات. يرجى التحقق لاحقًا.</p>';
+            '<p class="text-center text-red-500 mt-8">حدث خطأ أثناء تحميل المباريات. يرجى مراجعة إعدادات الاتصال أو التأكد من وجود البيانات.</p>';
         }
     }
 }
