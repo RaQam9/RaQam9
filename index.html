@@ -301,8 +301,7 @@
                 const tickerContent = document.getElementById('predictions-ticker-content');
                 tickerContent.innerHTML = tickerMessages.map(msg => `<span class="ticker-item">${msg}</span>`).join(''); 
             }
-            
-            function handleFormSubmit(form) {
+             async function handleFormSubmit(form) {
                 const submitBtn = form.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
@@ -423,7 +422,7 @@
         commentsSection.style.display = 'none';
         button.innerHTML = '💬 التعليقات';
     }
-}
+
             function addCommentToDOM(commentList, commentData) { 
                 const newComment = document.createElement('div'); 
                 newComment.className = 'comment'; 
