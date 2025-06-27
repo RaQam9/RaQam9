@@ -1,8 +1,0 @@
-{
-  "name": "neondb-functions",
-  "version": "1.0.0",
-  "description": "Serverless functions for my sports app",
-  "dependencies": {
-    "@netlify/neon": "latest"
-  }
-}
