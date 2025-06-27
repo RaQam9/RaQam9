@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "description": "Serverless functions for my sports app",
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.1"
+    "@netlify/neon": "^0.3.0"
   }
 }
