@@ -108,7 +108,13 @@
             predictionsBtn.addEventListener('click', () => switchPage('predictions'));
             newsBtn.addEventListener('click', () => switchPage('news'));
             initializePredictionsPage();
-            init        async function initializePredictionsPage() {
+            initializeNewsPage();
+        });
+
+               // ======================================================================
+        // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Version)
+        // ======================================================================
+                async function initializePredictionsPage() {
             // --- إعدادات الاتصال بـ Supabase ---
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
@@ -164,7 +170,8 @@
                     `;
                 }
             }
-        };
+        }
+
         function initializeAppWithData(matchesData) {
             const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
             
