@@ -1,40 +1,45 @@
 // netlify/functions/get-matches.js
 
-// استيراد المكتبة الجديدة
 import { neon } from '@netlify/neon';
 
-// تعريف الـ handler. لاحظ استخدام export default
-export default async (req) => {
+export default async (req, context) => {
     try {
-        // هذه المكتبة تستخدم متغير البيئة تلقائياً، لا حاجة لكتابة أي شيء آخر
+        // الاتصال بقاعدة البيانات باستخدام متغير البيئة تلقائياً
         const sql = neon();
 
-        // كتابة الاستعلام بطريقة القوالب (Template Literals) الآمنة
-        const matches = await sql`SELECT * FROM matches ORDER BY datetime ASC`;
+        // الاستعلام عن كل المباريات وترتيبها حسب التاريخ
+        const matches = await sql`
+            SELECT * FROM matches ORDER BY datetime ASC
+        `;
 
-        // إرجاع البيانات بنجاح باستخدام واجهة برمجة تطبيقات Netlify الأحدث
+        // إرجاع البيانات بصيغة JSON
         return new Response(
             JSON.stringify(matches),
             {
                 status: 200,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*' // للسماح بالوصول من أي مكان
+                }
             }
         );
     } catch (error) {
-        // التعامل مع الأخطاء
+        // في حالة حدوث خطأ، يتم تسجيله وإرجاع رسالة خطأ واضحة
         console.error("Database query failed:", error);
         return new Response(
-            JSON.stringify({ message: "Failed to fetch matches." }),
+            JSON.stringify({ message: "Failed to fetch matches from the database." }),
             {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                }
             }
         );
     }
 };
 
-// يمكن إضافة هذا السطر لضمان أن الـ function تعمل فقط مع طلبات GET
+// إعدادات إضافية للـ function (اختياري ولكنه جيد)
 export const config = {
-  path: "/.netlify/functions/get-matches",
-  method: "GET",
+  path: "/.netlify/functions/get-matches"
 };
