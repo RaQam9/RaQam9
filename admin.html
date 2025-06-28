@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم المطورة</title>
+    <title>لوحة التحكم - وضع التشخيص</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,71 +12,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-dark: #0d1117;
-            --bg-medium: #161b22;
-            --border-color: #30363d;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --accent-blue: #2f81f7;
-            --accent-red: #da3633;
-            --accent-yellow: #f7b731;
-            --accent-green: #238636;
+            --bg-dark: #0d1117; --bg-medium: #161b22; --border-color: #30363d;
+            --text-primary: #c9d1d9; --text-secondary: #8b949e; --accent-blue: #2f81f7;
+            --accent-red: #da3633; --accent-yellow: #f7b731; --accent-green: #238636;
         }
-        html { scroll-behavior: smooth; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); }
         .container { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
-        .card { background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.5rem; transition: box-shadow 0.3s ease; }
-        .card:hover { box-shadow: 0 0 15px rgba(47, 129, 247, 0.1); }
+        .card { background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.5rem; }
         h1, h2, h3 { color: white; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; font-weight: 700; }
         label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); }
-        input, textarea, select { width: 100%; padding: 0.75rem; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); transition: border-color 0.2s, box-shadow 0.2s; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.3); }
-        textarea { min-height: 120px; }
-        .code-input { font-family: monospace; text-align: left; direction: ltr; }
-        button { background-color: var(--accent-blue); color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: background-color 0.2s, transform 0.1s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        button:disabled { background-color: var(--text-secondary); cursor: not-allowed; }
-        button:hover:not(:disabled) { background-color: #4b8ff7; }
-        button:active:not(:disabled) { transform: scale(0.98); }
-        .delete-btn { background-color: var(--accent-red); }
-        .edit-btn { background-color: var(--accent-yellow); color: #161b22;}
-        .info-btn { background-color: #30363d; }
+        input, textarea, select { width: 100%; padding: 0.75rem; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); }
         .hidden { display: none; }
-        .tab-button { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
         .tab-button.active { background-color: var(--accent-blue); color: white; border-color: var(--accent-blue); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; }
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; }
-        .item-card { background-color: var(--bg-dark); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease-in-out; }
-        .item-card:hover { transform: translateY(-5px); border-color: var(--accent-blue); }
+        .item-card { background-color: var(--bg-dark); padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color); }
         .item-card-footer { margin-top: 1rem; display: flex; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; }
-        .item-card-footer button { flex-grow: 1; padding: 0.5rem; font-size: 0.9em; justify-content: center;}
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--bg-medium); padding: 2rem; border-radius: 8px; width: 90%; max-width: 800px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; transform: scale(0.95); transition: transform 0.3s ease; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: var(--bg-medium); padding: 2rem; border-radius: 8px; width: 90%; max-width: 800px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
         .loader { width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid var(--accent-blue); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 1rem 1.5rem; color: white; border-radius: 6px; font-weight: bold; display: flex; align-items: center; gap: 1rem; opacity: 0; transform: translateX(-100%); animation: slideIn 0.5s forwards; }
-        .toast.success { background-color: var(--accent-green); }
-        .toast.error { background-color: var(--accent-red); }
-        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
-        /* Match Card Specific Styles */
-        .match-card-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        .team { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
-        .team img { width: 50px; height: 50px; object-fit: contain; }
-        .vs { font-size: 1.5rem; font-weight: 700; color: var(--text-secondary); }
-        .match-status { font-weight: bold; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; }
-        .status-live { background-color: var(--accent-red); color: white; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(218, 54, 51, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(218, 54, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(218, 54, 51, 0); } }
-        .status-upcoming { background-color: var(--accent-blue); color: white; }
-        .status-finished { background-color: var(--text-secondary); color: var(--bg-dark); }
+        /* Add other styles back if needed, keeping it minimal for debugging */
     </style>
 </head>
 <body>
-
-    <div id="toast-container"></div>
 
     <div id="login-screen" class="container max-w-md text-center card mt-20">
         <h1 class="text-2xl">تسجيل الدخول</h1>
@@ -85,518 +45,81 @@
     </div>
 
     <div id="admin-panel" class="container hidden">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl m-0 p-0 border-none">لوحة التحكم المطورة</h1>
-            <div class="tabs flex gap-2">
-                <button class="tab-button active" data-tab="matches"><i class="fas fa-futbol"></i> إدارة المباريات</button>
-                <button class="tab-button" data-tab="articles"><i class="fas fa-newspaper"></i> إدارة المقالات</button>
-            </div>
-        </div>
-
-        <!-- ==================== TAB: MATCHES ==================== -->
-        <div id="tab-matches" class="tab-content active">
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div class="xl:col-span-1 space-y-6">
-                    <section class="card">
-                        <h3 class="text-xl"><i class="fas fa-plus-circle"></i> إضافة مباراة يدوياً</h3>
-                        <form id="add-match-form" class="space-y-4 mt-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div><label for="match-team1-name">الفريق الأول:</label><input type="text" id="match-team1-name" required></div>
-                                <div><label for="match-team1-logo">شعار الفريق الأول:</label><input type="url" id="match-team1-logo" required></div>
-                                <div><label for="match-team2-name">الفريق الثاني:</label><input type="text" id="match-team2-name" required></div>
-                                <div><label for="match-team2-logo">شعار الفريق الثاني:</label><input type="url" id="match-team2-logo" required></div>
-                            </div>
-                            <div><label for="match-league">الدوري:</label><input type="text" id="match-league" required></div>
-                            <div><label for="match-datetime">التاريخ والوقت:</label><input type="datetime-local" id="match-datetime" required></div>
-                            <div><label for="match-channels">القنوات (افصل بينها بفاصلة ,):</label><input type="text" id="match-channels"></div>
-                            <button type="submit" class="w-full"><i class="fas fa-save"></i> حفظ المباراة</button>
-                        </form>
-                    </section>
-                    <section class="card">
-                        <h3 class="text-xl"><i class="fas fa-file-csv"></i> إضافة عدة مباريات (CSV)</h3>
-                        <form id="bulk-add-matches-form">
-                            <textarea id="csv-data" class="code-input" rows="8" placeholder="الفريق1,شعار1,الفريق2,شعار2,الدوري,YYYY-MM-DDTHH:MM,القنوات(افصلها بـ ; )"></textarea>
-                            <button type="submit" class="mt-2"><i class="fas fa-upload"></i> رفع وإضافة المباريات</button>
-                        </form>
-                    </section>
-                </div>
-
-                <div class="card xl:col-span-2">
-                    <h3 class="text-xl"><i class="fas fa-list-ul"></i> المباريات الحالية</h3>
-                    <div id="matches-grid" class="items-grid mt-4 max-h-[700px] overflow-y-auto pr-2"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== TAB: ARTICLES ==================== -->
-        <div id="tab-articles" class="tab-content hidden">
-             <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <div class="xl:col-span-1 space-y-6">
-                    <section class="card">
-                        <h3 class="text-xl"><i class="fas fa-pen-alt"></i> إضافة مقال</h3>
-                        <form id="add-article-form" class="space-y-4 mt-4">
-                            <div><label for="article-title">عنوان المقال:</label><input type="text" id="article-title" required></div>
-                            <div><label for="article-image">رابط صورة المقال:</label><input type="url" id="article-image" required></div>
-                            <div><label for="article-content">محتوى المقال (HTML):</label><textarea id="article-content" class="code-input" rows="10" required></textarea></div>
-                            <button type="submit" class="w-full"><i class="fas fa-paper-plane"></i> نشر المقال</button>
-                        </form>
-                    </section>
-                    <section class="card">
-                        <h3 class="text-xl"><i class="fas fa-file-alt"></i> إضافة عدة مقالات</h3>
-                        <form id="bulk-add-articles-form">
-                            <textarea id="bulk-articles-data" class="code-input" rows="12" placeholder="عنوان|||صورة|||محتوى
----ARTICLE---"></textarea>
-                            <button type="submit" class="mt-2"><i class="fas fa-upload"></i> رفع وإضافة المقالات</button>
-                        </form>
-                    </section>
-                </div>
-                <div class="card xl:col-span-2">
-                    <h3 class="text-xl"><i class="fas fa-list-ul"></i> المقالات المنشورة</h3>
-                    <div id="articles-grid" class="items-grid mt-4 max-h-[700px] overflow-y-auto pr-2"></div>
-                </div>
-            </div>
-        </div>
+        <h1 class="text-3xl">لوحة التحكم تعمل!</h1>
+        <!-- The rest of the admin panel is here, but hidden for now -->
     </div>
-    
-    <!-- ==================== MODALS ==================== -->
-    <div id="edit-modal" class="modal-overlay">
-         <div class="modal-content">
-            <h3 id="edit-modal-title" class="text-2xl font-bold">تعديل العنصر</h3>
-            <form id="edit-form" class="space-y-4 mt-4"></form>
-            <div class="mt-6 flex gap-2">
-                <button id="save-edit-btn"><i class="fas fa-save"></i> حفظ التعديلات</button>
-                <button id="cancel-edit-btn" class="bg-gray-500 hover:bg-gray-600"><i class="fas fa-times"></i> إلغاء</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="details-modal" class="modal-overlay">
-        <div class="modal-content">
-           <div class="flex justify-between items-center">
-                <h3 id="details-modal-title" class="text-2xl font-bold m-0 p-0 border-none">التفاصيل</h3>
-                <button id="close-details-btn" class="bg-transparent text-2xl text-gray-400 hover:text-white">×</button>
-           </div>
-           <div id="details-modal-body" class="mt-4 space-y-3"></div>
-       </div>
-   </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // ==================== CONFIG & SETUP ====================
-            const ADMIN_PASSWORD = '1122';
-            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-            const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            
-            let currentEditData = { id: null, type: null };
-            let matchTimerInterval;
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- رسالة التنبيه رقم 1 ---
+        // إذا رأيت هذه الرسالة، فهذا يعني أن الصفحة تم تحميلها والسكريبت بدأ بالعمل.
+        alert("1. السكريبت بدأ بالعمل.");
 
-            // ==================== DOM ELEMENTS ====================
-            const loginScreen = document.getElementById('login-screen');
-            const adminPanel = document.getElementById('admin-panel');
-            const loginButton = document.getElementById('login-button');
-            const passwordInput = document.getElementById('password-input');
-            const matchesGrid = document.getElementById('matches-grid');
-            const articlesGrid = document.getElementById('articles-grid');
-            
-            // Modals
-            const editModal = document.getElementById('edit-modal');
-            const editForm = document.getElementById('edit-form');
-            const saveEditBtn = document.getElementById('save-edit-btn');
-            const cancelEditBtn = document.getElementById('cancel-edit-btn');
-            
-            const detailsModal = document.getElementById('details-modal');
-            const detailsModalTitle = document.getElementById('details-modal-title');
-            const detailsModalBody = document.getElementById('details-modal-body');
-            const closeDetailsBtn = document.getElementById('close-details-btn');
-            
-            const toastContainer = document.getElementById('toast-container');
+        // ==================== CONFIG & SETUP ====================
+        const ADMIN_PASSWORD = '1122'; // <--- تأكد 100% أن هذه هي كلمة المرور التي تدخلها
+        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+        
+        let supabase;
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            alert('خطأ فادح: فشل الاتصال بـ Supabase. تأكد من أن مفاتيحك صحيحة وأن مكتبة Supabase تم تحميلها.');
+            return;
+        }
 
-            // ==================== HELPER FUNCTIONS ====================
-            
-            const showToast = (message, type = 'success') => {
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-                toastContainer.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.animation = 'slideOut 0.5s forwards';
-                    setTimeout(() => toast.remove(), 500);
-                }, 4000);
-            };
+        // ==================== DOM ELEMENTS ====================
+        const loginScreen = document.getElementById('login-screen');
+        const adminPanel = document.getElementById('admin-panel');
+        const loginButton = document.getElementById('login-button');
+        const passwordInput = document.getElementById('password-input');
+        
+        // التحقق من وجود العناصر الأساسية
+        if (!loginScreen || !adminPanel || !loginButton || !passwordInput) {
+            alert("خطأ فادح: أحد عناصر واجهة المستخدم الرئيسية (مثل زر الدخول أو حقل كلمة المرور) غير موجود في الصفحة. تأكد من أن معرفات HTML (id) صحيحة.");
+            return; // أوقف تنفيذ السكريبت
+        }
 
-            const setButtonLoading = (button, isLoading) => {
-                const icon = button.querySelector('i');
-                if (isLoading) {
-                    button.disabled = true;
-                    if(icon) icon.dataset.originalClass = icon.className;
-                    button.innerHTML = `<div class="loader"></div> ${button.textContent}`;
-                } else {
-                    button.disabled = false;
-                    const originalText = button.textContent.trim();
-                    button.innerHTML = '';
-                    if (icon && icon.dataset.originalClass) {
-                        const newIcon = document.createElement('i');
-                        newIcon.className = icon.dataset.originalClass;
-                        button.appendChild(newIcon);
-                    }
-                     button.append(` ${originalText}`);
-                }
-            };
-            
-            // ==================== AUTH & TABS (RELIABLE VERSION) ====================
-            const login = () => {
-                const enteredPassword = passwordInput.value.trim();
-                if (enteredPassword === ADMIN_PASSWORD) {
-                    loginScreen.style.display = 'none';
-                    adminPanel.style.display = 'block';
-                    adminPanel.classList.remove('hidden'); // For animation
-                    loadAllData();
-                } else {
-                    showToast('كلمة المرور غير صحيحة!', 'error');
-                }
-            };
+        // --- رسالة التنبيه رقم 2 ---
+        // إذا رأيت هذه الرسالة، فهذا يعني أن السكريبت وجد زر الدخول وحقل كلمة المرور بنجاح.
+        alert("2. تم العثور على عناصر الدخول.");
 
-            if (loginButton) {
-                loginButton.addEventListener('click', login);
+        // ==================== AUTH FUNCTION (with alerts) ====================
+        const login = () => {
+            // --- رسالة التنبيه رقم 3 ---
+            // إذا رأيت هذه الرسالة، فهذا يعني أن الضغط على الزر يعمل وينفذ وظيفة login.
+            alert("3. تم استدعاء وظيفة الدخول.");
+
+            const enteredPassword = passwordInput.value.trim();
+            const correctPassword = ADMIN_PASSWORD;
+
+            // --- رسالة التنبيه رقم 4 ---
+            // هذه أهم رسالة، ستظهر لك ما كتبته بالضبط وما هي الكلمة الصحيحة.
+            alert(`4. كلمة المرور المدخلة: [${enteredPassword}]\nكلمة المرور الصحيحة: [${correctPassword}]`);
+
+            if (enteredPassword === correctPassword) {
+                // --- رسالة التنبيه رقم 5 (نجاح) ---
+                alert("5. كلمة المرور صحيحة! سيتم الآن إظهار لوحة التحكم.");
+                loginScreen.style.display = 'none';
+                adminPanel.style.display = 'block';
+                // بعد التأكد من نجاح الدخول، سنعيد تفعيل الكود الكامل
+                // loadAllData(); 
+            } else {
+                // --- رسالة التنبيه رقم 5 (فشل) ---
+                alert("5. كلمة المرور غير صحيحة.");
             }
-            if (passwordInput) {
-                passwordInput.addEventListener('keyup', (e) => {
-                    if (e.key === 'Enter') {
-                        login();
-                    }
-                });
-            }
+        };
 
-            document.querySelector('.tabs').addEventListener('click', (e) => {
-                const target = e.target.closest('button.tab-button');
-                if (!target) return;
-                
-                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                target.classList.add('active');
-                
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-                document.getElementById(`tab-${target.dataset.tab}`).classList.remove('hidden');
-                document.getElementById(`tab-${target.dataset.tab}`).classList.add('active');
-            });
-            
-            // ==================== DATA LOADING & RENDERING ====================
-            
-            const loadAllData = () => {
-                loadMatches();
-                loadArticles();
-            };
-
-            const renderMatchCard = (match) => {
-                 const predictionCount = match.predictions ? match.predictions[0].count : 0;
-                 return `
-                    <div class="item-card" data-id="${match.id}" data-datetime="${match.datetime}">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs bg-gray-700 px-2 py-1 rounded">${match.league}</span>
-                                <div class="match-status" data-status="upcoming"></div>
-                            </div>
-                            <div class="match-card-header">
-                                <div class="team">
-                                    <img src="${match.team1_logo}" alt="${match.team1_name}">
-                                    <span class="font-bold text-sm">${match.team1_name}</span>
-                                </div>
-                                <div class="vs">vs</div>
-                                <div class="team">
-                                    <img src="${match.team2_logo}" alt="${match.team2_name}">
-                                    <span class="font-bold text-sm">${match.team2_name}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item-card-footer">
-                            <button class="info-btn" data-type="prediction"><i class="fas fa-poll"></i> التوقعات (${predictionCount})</button>
-                            <button class="edit-btn" data-type="match"><i class="fas fa-edit"></i> تعديل</button>
-                            <button class="delete-btn" data-type="match"><i class="fas fa-trash"></i> حذف</button>
-                        </div>
-                    </div>`;
-            };
-
-            const renderArticleCard = (article) => {
-                const commentCount = article.comments ? article.comments[0].count : 0;
-                return `
-                    <div class="item-card" data-id="${article.id}">
-                        <div>
-                            <h4 class="font-bold text-white mb-2">${article.title}</h4>
-                            <p class="text-sm text-gray-500">نشر في: ${new Date(article.created_at).toLocaleDateString('ar-EG')}</p>
-                        </div>
-                        <div class="item-card-footer">
-                            <button class="info-btn" data-type="comment"><i class="fas fa-comments"></i> التعليقات (${commentCount})</button>
-                            <button class="edit-btn" data-type="article"><i class="fas fa-edit"></i> تعديل</button>
-                            <button class="delete-btn" data-type="article"><i class="fas fa-trash"></i> حذف</button>
-                        </div>
-                    </div>`;
-            };
-            
-            async function loadMatches() {
-                matchesGrid.innerHTML = '<div class="loader mx-auto mt-10"></div>';
-                const { data, error } = await supabase.from('matches').select('*, predictions(count)').order('datetime', { ascending: false });
-                if (error) {
-                    showToast(`خطأ في تحميل المباريات: ${error.message}`, 'error');
-                    matchesGrid.innerHTML = `<p class="text-red-500">فشل التحميل.</p>`;
-                    return;
-                }
-                
-                matchesGrid.innerHTML = data.length === 0 ? '<p>لا توجد مباريات حالياً.</p>' : data.map(renderMatchCard).join('');
-                updateMatchTimers();
-                if (matchTimerInterval) clearInterval(matchTimerInterval);
-                matchTimerInterval = setInterval(updateMatchTimers, 60000);
-            }
-            
-            function updateMatchTimers() {
-                document.querySelectorAll('.match-status').forEach(el => {
-                    const card = el.closest('.item-card');
-                    const matchTime = new Date(card.dataset.datetime).getTime();
-                    const now = new Date().getTime();
-                    const diffMinutes = (now - matchTime) / 60000;
-
-                    el.classList.remove('status-live', 'status-upcoming', 'status-finished');
-
-                    if (diffMinutes < 0) {
-                        el.textContent = `تبدأ ${new Date(matchTime).toLocaleString('ar-EG', {hour: 'numeric', minute: 'numeric', hour12: true})}`;
-                        el.classList.add('status-upcoming');
-                    } else if (diffMinutes >= 0 && diffMinutes <= 110) { // Approx. match duration
-                        el.textContent = `مباشر - دقيقة ${Math.floor(diffMinutes)}'`;
-                        el.classList.add('status-live');
-                    } else {
-                        el.textContent = 'انتهت';
-                        el.classList.add('status-finished');
-                    }
-                });
-            }
-
-            async function loadArticles() {
-                articlesGrid.innerHTML = '<div class="loader mx-auto mt-10"></div>';
-                const { data, error } = await supabase.from('articles').select('*, comments(count)').order('created_at', { ascending: false });
-                if (error) {
-                    showToast(`خطأ في تحميل المقالات: ${error.message}`, 'error');
-                    articlesGrid.innerHTML = `<p class="text-red-500">فشل التحميل.</p>`;
-                    return;
-                }
-                articlesGrid.innerHTML = data.length === 0 ? '<p>لا توجد مقالات منشورة.</p>' : data.map(renderArticleCard).join('');
-            }
-            
-            // ==================== FORM SUBMISSIONS ====================
-
-            document.getElementById('add-match-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const submitBtn = form.querySelector('button[type="submit"]');
-                setButtonLoading(submitBtn, true);
-                const newMatch = {
-                    team1_name: form['match-team1-name'].value, team1_logo: form['match-team1-logo'].value,
-                    team2_name: form['match-team2-name'].value, team2_logo: form['match-team2-logo'].value,
-                    league: form['match-league'].value, datetime: form['match-datetime'].value,
-                    channels: form['match-channels'].value.split(',').map(c => c.trim()).filter(Boolean)
-                };
-                const { error } = await supabase.from('matches').insert([newMatch]);
-                setButtonLoading(submitBtn, false);
-                if (error) showToast(`فشل إضافة المباراة: ${error.message}`, 'error');
-                else { showToast('تم إضافة المباراة بنجاح.'); form.reset(); loadMatches(); }
-            });
-
-            document.getElementById('bulk-add-matches-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const textarea = document.getElementById('csv-data');
-                const lines = textarea.value.split('\n').filter(line => line.trim() !== '');
-                if (lines.length === 0) return showToast('الرجاء إدخال بيانات المباريات.', 'error');
-                
-                setButtonLoading(submitBtn, true);
-                const matchesToAdd = lines.map(line => {
-                    const [team1_name, team1_logo, team2_name, team2_logo, league, datetime, channelsStr] = line.split(',');
-                    return { team1_name, team1_logo, team2_name, team2_logo, league, datetime, channels: (channelsStr || '').split(';').map(c => c.trim()).filter(Boolean) };
-                });
-                
-                const { error } = await supabase.from('matches').insert(matchesToAdd);
-                setButtonLoading(submitBtn, false);
-                if (error) showToast(`فشل إضافة المباريات: ${error.message}`, 'error');
-                else { showToast(`تم إضافة ${matchesToAdd.length} مباراة بنجاح!`); textarea.value = ''; loadMatches(); }
-            });
-
-            document.getElementById('add-article-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const submitBtn = form.querySelector('button[type="submit"]');
-                setButtonLoading(submitBtn, true);
-                const newArticle = { title: form['article-title'].value, image_url: form['article-image'].value, content: form['article-content'].value };
-                const { error } = await supabase.from('articles').insert([newArticle]);
-                setButtonLoading(submitBtn, false);
-                if (error) showToast(`فشل إضافة المقال: ${error.message}`, 'error');
-                else { showToast('تم إضافة المقال بنجاح.'); form.reset(); loadArticles(); }
-            });
-
-            document.getElementById('bulk-add-articles-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const textarea = document.getElementById('bulk-articles-data');
-                const articlesText = textarea.value.split('---ARTICLE---').filter(text => text.trim() !== '');
-                if (articlesText.length === 0) return showToast('الرجاء إدخال بيانات المقالات.', 'error');
-                
-                setButtonLoading(submitBtn, true);
-                const articlesToAdd = articlesText.map(text => {
-                    const parts = text.trim().split('|||');
-                    if (parts.length !== 3) return null;
-                    return { title: parts[0].trim(), image_url: parts[1].trim(), content: parts[2].trim() };
-                }).filter(Boolean);
-                
-                if (articlesToAdd.length === 0) {
-                    setButtonLoading(submitBtn, false);
-                    return showToast('لم يتم العثور على مقالات صالحة.', 'error');
-                }
-                
-                const { error } = await supabase.from('articles').insert(articlesToAdd);
-                setButtonLoading(submitBtn, false);
-                if (error) showToast(`فشل إضافة المقالات: ${error.message}`, 'error');
-                else { showToast(`تمت إضافة ${articlesToAdd.length} مقالات بنجاح!`); textarea.value = ''; loadArticles(); }
-            });
-
-            // ==================== ITEM ACTIONS (EDIT, DELETE, INFO) ====================
-
-            adminPanel.addEventListener('click', async (e) => {
-                const button = e.target.closest('button[data-type]');
-                if (!button) return;
-
-                const card = e.target.closest('.item-card');
-                const id = card.dataset.id;
-                const type = button.dataset.type;
-                const isInfoAction = button.classList.contains('info-btn');
-                const isEditAction = button.classList.contains('edit-btn');
-                const isDeleteAction = button.classList.contains('delete-btn');
-
-                if (isDeleteAction) {
-                    if (!confirm(`هل أنت متأكد من حذف هذا العنصر؟`)) return;
-                    const table = type === 'match' ? 'matches' : 'articles';
-                    const { error } = await supabase.from(table).delete().eq('id', id);
-                    if (error) showToast(`فشل الحذف: ${error.message}`, 'error');
-                    else { showToast('تم الحذف بنجاح.'); if (type === 'match') loadMatches(); else loadArticles(); }
-                } 
-                else if (isEditAction) {
-                    const table = type === 'match' ? 'matches' : 'articles';
-                    const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
-                    if (error) showToast(`فشل جلب البيانات للتعديل: ${error.message}`, 'error');
-                    else openEditModal(data, type);
-                }
-                else if (isInfoAction) {
-                    if (type === 'prediction') await showPredictions(id);
-                    else if (type === 'comment') await showComments(id);
-                }
-            });
-
-            // ==================== MODAL LOGIC ====================
-            
-            // --- Edit Modal ---
-            function openEditModal(item, type) {
-                currentEditData = { id: item.id, type };
-                editForm.innerHTML = '';
-                if (type === 'match') {
-                    document.getElementById('edit-modal-title').textContent = "تعديل مباراة";
-                    editForm.innerHTML = `
-                        <div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${item.team1_name || ''}" required></div>
-                        <div><label>شعار الفريق الأول:</label><input type="text" name="team1_logo" value="${item.team1_logo || ''}" required></div>
-                        <div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${item.team2_name || ''}" required></div>
-                        <div><label>شعار الفريق الثاني:</label><input type="text" name="team2_logo" value="${item.team2_logo || ''}" required></div>
-                        <div><label>الدوري:</label><input type="text" name="league" value="${item.league || ''}" required></div>
-                        <div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${item.datetime ? new Date(new Date(item.datetime).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}" required></div>
-                        <div><label>القنوات:</label><input type="text" name="channels" value="${(item.channels || []).join(', ')}"></div>`;
-                } else if (type === 'article') {
-                    document.getElementById('edit-modal-title').textContent = "تعديل مقال";
-                    editForm.innerHTML = `
-                        <div><label>عنوان المقال:</label><input type="text" name="title" value="${item.title || ''}" required></div>
-                        <div><label>رابط الصورة:</label><input type="text" name="image_url" value="${item.image_url || ''}" required></div>
-                        <div><label>المحتوى (HTML):</label><textarea name="content" rows="10" class="code-input">${item.content || ''}</textarea></div>`;
-                }
-                editModal.classList.add('active');
-            }
-
-            const closeEditModal = () => editModal.classList.remove('active');
-
-            async function saveChanges() {
-                setButtonLoading(saveEditBtn, true);
-                const formData = new FormData(editForm);
-                const updates = Object.fromEntries(formData.entries());
-                
-                if (currentEditData.type === 'match' && updates.channels) {
-                    updates.channels = updates.channels.split(',').map(c => c.trim()).filter(Boolean);
-                }
-                
-                const table = currentEditData.type === 'match' ? 'matches' : 'articles';
-                const { error } = await supabase.from(table).update(updates).eq('id', currentEditData.id);
-                setButtonLoading(saveEditBtn, false);
-                
-                if (error) showToast(`فشل حفظ التعديلات: ${error.message}`, 'error');
-                else { showToast('تم حفظ التعديلات بنجاح!'); closeEditModal(); if (currentEditData.type === 'match') loadMatches(); else loadArticles(); }
-            }
-
-            cancelEditBtn.addEventListener('click', closeEditModal);
-            saveEditBtn.addEventListener('click', saveChanges);
-
-            // --- Details (Comments/Predictions) Modal ---
-            const closeDetailsModal = () => detailsModal.classList.remove('active');
-            closeDetailsBtn.addEventListener('click', closeDetailsModal);
-            
-            async function showPredictions(matchId) {
-                detailsModalTitle.textContent = "توقعات المباراة";
-                detailsModalBody.innerHTML = '<div class="loader mx-auto mt-4"></div>';
-                detailsModal.classList.add('active');
-                
-                const { data, error } = await supabase.from('predictions').select('*').eq('match_id', matchId).order('created_at', { ascending: false });
-                
-                if (error) {
-                    detailsModalBody.innerHTML = `<p class="text-red-500">فشل في جلب التوقعات: ${error.message}</p>`;
-                    return;
-                }
-                
-                if (data.length === 0) {
-                    detailsModalBody.innerHTML = '<p>لا توجد توقعات لهذه المباراة بعد.</p>';
-                    return;
-                }
-
-                detailsModalBody.innerHTML = data.map(p => `
-                    <div class="bg-dark p-3 rounded-lg border border-border-color">
-                        <div class="flex justify-between items-center">
-                            <p class="font-bold text-white">${p.predictor_name || 'مجهول'}</p>
-                            <p class="text-lg font-bold text-accent-yellow">${p.prediction_team1_score} - ${p.prediction_team2_score}</p>
-                        </div>
-                        <p class="text-xs text-text-secondary mt-1">${new Date(p.created_at).toLocaleString('ar-EG')}</p>
-                    </div>
-                `).join('');
-            }
-
-            async function showComments(articleId) {
-                detailsModalTitle.textContent = "تعليقات المقال";
-                detailsModalBody.innerHTML = '<div class="loader mx-auto mt-4"></div>';
-                detailsModal.classList.add('active');
-                
-                const { data, error } = await supabase.from('comments').select('*').eq('article_id', articleId).order('created_at', { ascending: false });
-
-                if (error) {
-                    detailsModalBody.innerHTML = `<p class="text-red-500">فشل في جلب التعليقات: ${error.message}</p>`;
-                    return;
-                }
-
-                if (data.length === 0) {
-                    detailsModalBody.innerHTML = '<p>لا توجد تعليقات على هذا المقال بعد.</p>';
-                    return;
-                }
-                
-                detailsModalBody.innerHTML = data.map(c => `
-                    <div class="bg-dark p-3 rounded-lg border border-border-color">
-                        <div class="flex justify-between items-center mb-2">
-                            <p class="font-bold text-white">${c.author_name || 'زائر'}</p>
-                            <p class="text-xs text-text-secondary">${new Date(c.created_at).toLocaleString('ar-EG')}</p>
-                        </div>
-                        <p class="text-text-primary">${c.comment_text}</p>
-                    </div>
-                `).join('');
+        loginButton.addEventListener('click', login);
+        passwordInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                login();
             }
         });
+
+        // تم تبسيط الكود للتركيز على مشكلة الدخول.
+        // سيتم إعادة إضافة باقي الدوال بعد حل هذه المشكلة.
+    });
     </script>
 </body>
 </html>
