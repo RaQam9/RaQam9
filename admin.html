@@ -99,7 +99,6 @@
 
         // ==================== UI INITIALIZATION ====================
         function initializePanels() {
-            // This function remains the same as before
             tabContents.matches.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-1 space-y-6"><section class="card"><h3 class="text-xl"><i class="fas fa-plus-circle"></i> إضافة مباراة</h3><form id="add-match-form" class="space-y-4 mt-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" required></div></div><div><label>الدوري:</label><input type="text" name="league" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels"></div><button type="submit" class="w-full"><i class="fas fa-save"></i> حفظ المباراة</button></form></section></div><div class="card xl:col-span-2"><h3 class="text-xl"><i class="fas fa-list-ul"></i> المباريات الحالية</h3><div id="matches-grid" class="items-grid mt-4 max-h-[80vh] overflow-y-auto p-2"></div></div></div>`;
             tabContents.articles.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-1 space-y-6"><section class="card"><h3 class="text-xl"><i class="fas fa-pen-alt"></i> إضافة مقال</h3><form id="add-article-form" class="space-y-4 mt-4"><div><label>عنوان المقال:</label><input type="text" name="title" required></div><div><label>رابط صورة المقال:</label><input type="url" name="image_url" required></div><div><label>المحتوى (HTML):</label><textarea name="content" class="h-40 font-mono text-left" dir="ltr" required></textarea></div><button type="submit" class="w-full"><i class="fas fa-paper-plane"></i> نشر المقال</button></form></section></div><div class="card xl:col-span-2"><h3 class="text-xl"><i class="fas fa-list-ul"></i> المقالات المنشورة</h3><div id="articles-grid" class="items-grid mt-4 max-h-[80vh] overflow-y-auto p-2"></div></div></div>`;
             tabContents.comments.innerHTML = `<div class="card"><h3 class="text-xl"><i class="fas fa-comments"></i> إدارة التعليقات</h3><div id="comment-sub-tabs" class="flex gap-2 mb-4 border-b border-gray-700 pb-2"><button class="sub-tab-button active" data-comment-type="matches">تعليقات المباريات</button><button class="sub-tab-button" data-comment-type="articles">تعليقات المقالات</button></div><div id="match-comments-grid" class="comment-content-grid active items-grid max-h-[70vh] overflow-y-auto p-2"></div><div id="article-comments-grid" class="comment-content-grid items-grid max-h-[70vh] overflow-y-auto p-2"></div></div>`;
@@ -107,19 +106,73 @@
         }
 
         // ==================== AUTH & TABS ====================
-        const login = async () => { /* This function is unchanged */ };
+        const login = async () => {
+            loginButton.disabled = true;
+            loginError.classList.add('hidden');
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: emailInput.value,
+                password: passwordInput.value,
+            });
+            if (error) {
+                loginError.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+                loginError.classList.remove('hidden');
+                loginButton.disabled = false;
+            } else {
+                loginScreen.style.display = 'none';
+                adminPanel.style.display = 'block';
+                initializePanels();
+                loadAllData();
+            }
+        };
         loginButton.addEventListener('click', login);
         passwordInput.addEventListener('keyup', (e) => e.key === 'Enter' && login());
 
-        document.querySelector('.tabs')?.addEventListener('click', (e) => { /* This function is unchanged */ });
+        document.querySelector('.tabs')?.addEventListener('click', (e) => {
+            const target = e.target.closest('button.tab-button'); if (!target) return;
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            target.classList.add('active');
+            Object.values(tabContents).forEach(content => content.classList.remove('active'));
+            tabContents[target.dataset.tab].classList.add('active');
+        });
 
-        // ==================== DATA LOADING & RENDERING ====================
-        const loadAllData = () => { /* This function is unchanged */ };
+        // ==================== DATA LOADING & RENDERING (ALL FUNCTIONS ARE COMPLETE) ====================
+        const loadAllData = () => { 
+            loadData.matches(); 
+            loadData.articles(); 
+            loadData.matchComments(); 
+            loadData.articleComments(); 
+            loadData.predictions(); 
+        };
+
         const loadData = {
-            matches: async () => { /* ... (unchanged) ... */ },
-            articles: async () => { /* ... (unchanged) ... */ },
-            matchComments: async () => { /* ... (unchanged) ... */ },
-            articleComments: async () => { /* ... (unchanged) ... */ },
+            matches: async () => { 
+                const grid = document.getElementById('matches-grid'); if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                grid.innerHTML = data.length === 0 ? '<p>لا توجد مباريات حالية.</p>' : data.map(renderData.match).join('');
+            },
+            articles: async () => { 
+                const grid = document.getElementById('articles-grid'); if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                grid.innerHTML = data.length === 0 ? '<p>لا توجد مقالات منشورة.</p>' : data.map(renderData.article).join('');
+            },
+            matchComments: async () => {
+                 const grid = document.getElementById('match-comments-grid'); if(!grid) return;
+                 grid.innerHTML = '<div class="loader"></div>';
+                 const { data, error } = await supabaseClient.from('comments').select('*, matches(team1_name, team2_name)').order('created_at', { ascending: false });
+                 if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                 grid.innerHTML = data.length === 0 ? '<p>لا توجد تعليقات على المباريات.</p>' : data.map(renderData.matchComment).join('');
+            },
+            articleComments: async () => {
+                 const grid = document.getElementById('article-comments-grid'); if(!grid) return;
+                 grid.innerHTML = '<div class="loader"></div>';
+                 const { data, error } = await supabaseClient.from('news_comments').select('*, articles(title)').order('created_at', { ascending: false });
+                 if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                 grid.innerHTML = data.length === 0 ? '<p>لا توجد تعليقات على المقالات.</p>' : data.map(renderData.articleComment).join('');
+            },
             predictions: async () => {
                 const grid = document.getElementById('predictions-management-grid'); if(!grid) return;
                 grid.innerHTML = '<div class="loader"></div>';
@@ -128,53 +181,40 @@
                 grid.innerHTML = data.length === 0 ? '<p>لا توجد توقعات.</p>' : data.map(renderData.prediction).join('');
             }
         };
+
         const renderData = {
-            match: (match) => { /* ... (unchanged) ... */ },
-            article: (article) => { /* ... (unchanged) ... */ },
-            matchComment: (comment) => { /* ... (unchanged) ... */ },
-            articleComment: (comment) => { /* ... (unchanged) ... */ },
-            // --- FIX IS HERE: Using the correct column names from your database ---
+            match: (match) => { 
+                const dt = match.datetime.split('T');
+                const datePart = dt[0].split('-').reverse().join('/');
+                const timePart = dt.length > 1 ? dt[1].substring(0, 5) : '';
+                const formattedDate = `${datePart} - ${timePart}`;
+                return `<div class="item-card"><div><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div><span class="text-gray-400">ضد</span><div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div></div><p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p><p class="text-sm text-center text-gray-400" dir="ltr">${formattedDate}</p></div><div class="item-card-footer"><button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
+            },
+            article: (article) => { 
+                return `<div class="item-card"><div><img src="${article.image_url}" alt="${article.title}" class="w-full h-32 object-cover rounded-md mb-2"><h4 class="font-bold text-white mb-2">${article.title}</h4><p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p></div><div class="item-card-footer"><button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
+            },
+            matchComment: (comment) => {
+                const matchInfo = comment.matches ? `${comment.matches.team1_name} ضد ${comment.matches.team2_name}` : 'مباراة محذوفة';
+                return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="match_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
+            },
+            articleComment: (comment) => {
+                const articleInfo = comment.articles ? comment.articles.title : 'مقال محذوف';
+                return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${articleInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
+            },
             prediction: (prediction) => { 
                 const matchInfo = prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة';
-                
-                // Get winner and scorer, with a fallback for empty values
                 const winner = prediction.predicted_winner || 'لم يحدد';
                 const scorer = prediction.predicted_scorer || 'لم يحدد';
-                
-                // Combine them for a clear display
                 const predictionText = `الفائز: ${winner} | الهداف: ${scorer}`;
-                
-                // Get the author's name from the correct column
                 const authorName = prediction.social_account || 'مجهول';
-                
                 return `
                     <div class="item-card">
                         <p class="font-bold text-white">"${predictionText}"</p>
-                        <p class="text-sm text-gray-400 mt-2">
-                            بواسطة: ${authorName} - 
-                            على مباراة: <span class="text-yellow-400">${matchInfo}</span>
-                        </p>
-                        <div class="item-card-footer">
-                            <button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف التوقع</button>
-                        </div>
+                        <p class="text-sm text-gray-400 mt-2">بواسطة: ${authorName} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p>
+                        <div class="item-card-footer"><button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف التوقع</button></div>
                     </div>`;
             }
         };
-
-        // Re-populating all the unchanged functions to keep the code complete
-        const loginFunc = async () => { loginButton.disabled = true; loginError.classList.add('hidden'); const { data, error } = await supabaseClient.auth.signInWithPassword({ email: emailInput.value, password: passwordInput.value, }); if (error) { loginError.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'; loginError.classList.remove('hidden'); loginButton.disabled = false; } else { loginScreen.style.display = 'none'; adminPanel.style.display = 'block'; initializePanels(); loadAllData(); } };
-        loginButton.addEventListener('click', loginFunc); passwordInput.addEventListener('keyup', (e) => e.key === 'Enter' && loginFunc());
-        document.querySelector('.tabs')?.addEventListener('click', (e) => { const target = e.target.closest('button.tab-button'); if (!target) return; document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active')); target.classList.add('active'); Object.values(tabContents).forEach(content => content.classList.remove('active')); tabContents[target.dataset.tab].classList.add('active'); });
-        const allDataFunc = () => { loadData.matches(); loadData.articles(); loadData.matchComments(); loadData.articleComments(); loadData.predictions(); };
-        loadAllData = allDataFunc;
-        loadData.matches = async () => { const grid = document.getElementById('matches-grid'); if(!grid) return; grid.innerHTML = '<div class="loader"></div>'; const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false }); if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; } grid.innerHTML = data.length === 0 ? '<p>لا توجد مباريات حالية.</p>' : data.map(renderData.match).join(''); };
-        loadData.articles = async () => { const grid = document.getElementById('articles-grid'); if(!grid) return; grid.innerHTML = '<div class="loader"></div>'; const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false }); if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; } grid.innerHTML = data.length === 0 ? '<p>لا توجد مقالات منشورة.</p>' : data.map(renderData.article).join(''); };
-        loadData.matchComments = async () => { const grid = document.getElementById('match-comments-grid'); if(!grid) return; grid.innerHTML = '<div class="loader"></div>'; const { data, error } = await supabaseClient.from('comments').select('*, matches(team1_name, team2_name)').order('created_at', { ascending: false }); if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; } grid.innerHTML = data.length === 0 ? '<p>لا توجد تعليقات على المباريات.</p>' : data.map(renderData.matchComment).join(''); };
-        loadData.articleComments = async () => { const grid = document.getElementById('article-comments-grid'); if(!grid) return; grid.innerHTML = '<div class="loader"></div>'; const { data, error } = await supabaseClient.from('news_comments').select('*, articles(title)').order('created_at', { ascending: false }); if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; } grid.innerHTML = data.length === 0 ? '<p>لا توجد تعليقات على المقالات.</p>' : data.map(renderData.articleComment).join(''); };
-        renderData.match = (match) => { const dt = match.datetime.split('T'); const datePart = dt[0].split('-').reverse().join('/'); const timePart = dt.length > 1 ? dt[1].substring(0, 5) : ''; const formattedDate = `${datePart} - ${timePart}`; return `<div class="item-card"><div><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div><span class="text-gray-400">ضد</span><div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div></div><p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p><p class="text-sm text-center text-gray-400" dir="ltr">${formattedDate}</p></div><div class="item-card-footer"><button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`; };
-        renderData.article = (article) => { return `<div class="item-card"><div><img src="${article.image_url}" alt="${article.title}" class="w-full h-32 object-cover rounded-md mb-2"><h4 class="font-bold text-white mb-2">${article.title}</h4><p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p></div><div class="item-card-footer"><button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`; };
-        renderData.matchComment = (comment) => { const matchInfo = comment.matches ? `${comment.matches.team1_name} ضد ${comment.matches.team2_name}` : 'مباراة محذوفة'; return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="match_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`; };
-        renderData.articleComment = (comment) => { const articleInfo = comment.articles ? comment.articles.title : 'مقال محذوف'; return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${articleInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`; };
 
         // ==================== ACTIONS HANDLING ====================
         adminPanel.addEventListener('click', async (e) => {
