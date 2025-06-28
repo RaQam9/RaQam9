@@ -124,9 +124,7 @@
         function initializePanels() {
             tabContents.matches.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-1 space-y-6"><section class="card"><h3 class="text-xl"><i class="fas fa-plus-circle"></i> إضافة مباراة</h3><form id="add-match-form" class="space-y-4 mt-4"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" required></div></div><div><label>الدوري:</label><input type="text" name="league" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels"></div><button type="submit" class="w-full"><i class="fas fa-save"></i> حفظ المباراة</button></form></section><section class="card"><h3 class="text-xl"><i class="fas fa-upload"></i> إضافة مباريات دفعة واحدة</h3><form id="bulk-add-matches-form" class="space-y-4 mt-4"><div><label>لصق بيانات المباريات هنا:</label><p class="text-xs text-gray-400 mb-2">كل مباراة في سطر. التنسيق: <br><code class="text-yellow-400 text-left block" dir="ltr">Team1,Logo1,Team2,Logo2,League,YYYY-MM-DD HH:MM,Channels</code></p><textarea id="bulk-matches-input" class="h-40 font-mono text-left" dir="ltr" required placeholder="ريال مدريد,https://.../real.png,برشلونة,https://.../barca.png,الدوري الإسباني,2024-10-26 22:00,beIN Sports 1\nمانشستر سيتي,..."></textarea></div><button type="submit" class="w-full bg-green-600 hover:bg-green-700"><i class="fas fa-check-double"></i> إضافة الكل</button></form></section></div><div class="card xl:col-span-2"><div class="flex justify-between items-center mb-4"><h3 class="text-xl m-0 p-0 border-none"><i class="fas fa-list-ul"></i> المباريات الحالية</h3><div class="flex items-center gap-4"><div class="flex items-center gap-2"><input type="checkbox" id="select-all-matches" class="w-4 h-4"><label for="select-all-matches" class="m-0 text-sm">تحديد الكل</label></div><button id="delete-selected-matches-btn" class="delete-btn" disabled><i class="fas fa-trash-alt"></i> حذف المحدد</button></div></div><div id="matches-grid" class="items-grid mt-4 max-h-[80vh] overflow-y-auto p-2"></div></div></div>`;
             
-            // <!-- START: الإضافة الجديدة -->
             tabContents.articles.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6"><div class="xl:col-span-1 space-y-6"><section class="card"><h3 class="text-xl"><i class="fas fa-pen-alt"></i> إضافة مقال</h3><form id="add-article-form" class="space-y-4 mt-4"><div><label>عنوان المقال:</label><input type="text" name="title" required></div><div><label>رابط صورة المقال:</label><input type="url" name="image_url" required></div><div><label>المحتوى (HTML):</label><textarea name="content" class="h-40 font-mono text-left" dir="ltr" required></textarea></div><button type="submit" class="w-full"><i class="fas fa-paper-plane"></i> نشر المقال</button></form></section><section class="card"><h3 class="text-xl"><i class="fas fa-upload"></i> إضافة مقالات دفعة واحدة</h3><form id="bulk-add-articles-form" class="space-y-4 mt-4"><div><label>لصق بيانات المقالات هنا:</label><p class="text-xs text-gray-400 mb-2">كل مقال في سطر. استخدم الفاصل <code class="text-yellow-400">|</code>. التنسيق: <br><code class="text-yellow-400 text-left block" dir="ltr">Title|ImageURL|Content</code></p><textarea id="bulk-articles-input" class="h-40 font-mono text-left" dir="ltr" required placeholder="عنوان المقال الأول|https://.../img1.png|محتوى المقال هنا...\nعنوان المقال الثاني|https://.../img2.png|محتوى المقال الثاني هنا..."></textarea></div><button type="submit" class="w-full bg-green-600 hover:bg-green-700"><i class="fas fa-check-double"></i> إضافة الكل</button></form></section></div><div class="card xl:col-span-2"><h3 class="text-xl"><i class="fas fa-list-ul"></i> المقالات المنشورة</h3><div id="articles-grid" class="items-grid mt-4 max-h-[80vh] overflow-y-auto p-2"></div></div></div>`;
-            // <!-- END: الإضافة الجديدة -->
 
             tabContents.comments.innerHTML = `<div class="card"><h3 class="text-xl"><i class="fas fa-comments"></i> إدارة التعليقات</h3><div id="comment-sub-tabs" class="flex gap-2 mb-4 border-b border-gray-700 pb-2"><button class="sub-tab-button active" data-comment-type="matches">تعليقات المباريات</button><button class="sub-tab-button" data-comment-type="articles">تعليقات المقالات</button></div><div id="match-comments-grid" class="comment-content-grid active items-grid max-h-[70vh] overflow-y-auto p-2"></div><div id="article-comments-grid" class="comment-content-grid items-grid max-h-[70vh] overflow-y-auto p-2"></div></div>`;
             tabContents.predictions.innerHTML = `<div class="card"><h3 class="text-xl"><i class="fas fa-poll"></i> جميع التوقعات</h3><div id="predictions-management-grid" class="items-grid mt-4 max-h-[70vh] overflow-y-auto p-2"></div></div>`;
@@ -134,10 +132,7 @@
             document.getElementById('add-match-form')?.addEventListener('submit', handleAddOrUpdate);
             document.getElementById('bulk-add-matches-form')?.addEventListener('submit', handleBulkAddMatches);
             document.getElementById('add-article-form')?.addEventListener('submit', handleAddOrUpdate);
-
-            // START: الإضافة الجديدة
             document.getElementById('bulk-add-articles-form')?.addEventListener('submit', handleBulkAddArticles);
-            // END: الإضافة الجديدة
         }
 
         // ==================== AUTH & TABS ====================
@@ -263,6 +258,11 @@
             const formData = new FormData(form);
             const dataToInsert = Object.fromEntries(formData.entries());
 
+            // For match form, handle channels
+            if (isMatchForm && dataToInsert.channels) {
+                dataToInsert.channels = dataToInsert.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
+            }
+
             const { error } = await supabaseClient.from(table).insert([dataToInsert]);
             
             if (error) {
@@ -317,7 +317,6 @@
             button.innerHTML = '<i class="fas fa-check-double"></i> إضافة الكل';
         };
 
-        // START: الإضافة الجديدة
         const handleBulkAddArticles = async (e) => {
             e.preventDefault();
             const button = e.target.querySelector('button');
@@ -333,7 +332,6 @@
             const failedLines = [];
 
             lines.forEach((line, i) => {
-                // نستخدم | كفاصل لأن المحتوى قد يحتوي على ,
                 const parts = line.split('|').map(p => p.trim());
                 if (parts.length !== 3) {
                     failedLines.push(i + 1);
@@ -359,7 +357,7 @@
                     }
                     alert(msg);
                     textarea.value = '';
-                    loadData.articles(); // تحديث قائمة المقالات
+                    loadData.articles();
                 }
             } else {
                 alert('لم يتم العثور على مقالات صالحة للإضافة. يرجى مراجعة التنسيق.');
@@ -367,7 +365,6 @@
             button.disabled = false;
             button.innerHTML = '<i class="fas fa-check-double"></i> إضافة الكل';
         };
-        // END: الإضافة الجديدة
 
         const handleBulkDeleteMatches = async () => {
             const selectedIds = Array.from(document.querySelectorAll('.match-checkbox:checked')).map(cb => cb.dataset.id);
@@ -398,7 +395,9 @@
 
             if (type === 'match') {
                 title = `تعديل مباراة`;
-                formHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name}" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo}" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name}" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo}" required></div></div><div><label>الدوري:</label><input type="text" name="league" value="${data.league}" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime.slice(0, 16)}" required></div><div><label>القنوات:</label><input type="text" name="channels" value="${data.channels || ''}"></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
+                // <-- التصحيح هنا: تحويل مصفوفة القنوات إلى نص للعرض
+                const channelsText = (data.channels || []).join(', ');
+                formHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name}" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo}" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name}" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo}" required></div></div><div><label>الدوري:</label><input type="text" name="league" value="${data.league}" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime.slice(0, 16)}" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels" value="${channelsText}"></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
             } else if (type === 'article') {
                 title = `تعديل مقال`;
                 formHtml = `<div><label>عنوان المقال:</label><input type="text" name="title" value="${data.title}" required></div><div><label>رابط الصورة:</label><input type="url" name="image_url" value="${data.image_url}" required></div><div><label>المحتوى (HTML):</label><textarea name="content" class="h-48 font-mono text-left" dir="ltr" required>${data.content}</textarea></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
@@ -420,6 +419,15 @@
             const formData = new FormData(e.target);
             const updatedData = Object.fromEntries(formData.entries());
             const tableName = type === 'match' ? 'matches' : 'articles';
+
+            // <-- التصحيح هنا: تحويل نص القنوات إلى مصفوفة قبل الإرسال
+            if (type === 'match' && typeof updatedData.channels === 'string') {
+                if (updatedData.channels.trim() === '') {
+                    updatedData.channels = []; // إرسال مصفوفة فارغة إذا كان الحقل فارغاً
+                } else {
+                    updatedData.channels = updatedData.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
+                }
+            }
             
             const { error } = await supabaseClient.from(tableName).update(updatedData).eq('id', id);
 
