@@ -142,6 +142,7 @@
             
             let currentEditData = { id: null, type: null };
 
+            // DOM Elements
             const loginScreen = document.getElementById('login-screen');
             const adminPanel = document.getElementById('admin-panel');
             const loginButton = document.getElementById('login-button');
@@ -159,19 +160,15 @@
                     adminPanel.classList.remove('hidden');
                     loadMatches();
                     loadArticles();
-                } else {
-                    // Optional: Show error only if they press the button with wrong pass
                 }
             }
 
-            // --- Login Events ---
             loginButton.addEventListener('click', () => {
                 if (passwordInput.value !== ADMIN_PASSWORD) alert('كلمة المرور غير صحيحة!');
                 else login();
             });
-            passwordInput.addEventListener('input', login); // Automatic login on correct password
+            passwordInput.addEventListener('input', login);
 
-            // --- Tab Switching ---
             document.querySelector('.tabs').addEventListener('click', (e) => {
                 const target = e.target.closest('button.tab-button');
                 if(target) {
@@ -179,23 +176,27 @@
                     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
                     target.classList.add('active');
                     document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
+                        content.classList.remove('active', 'block');
                         content.classList.add('hidden');
                     });
                     const activeTab = document.getElementById(`tab-${tabId}`);
-                    activeTab.classList.add('active');
+                    activeTab.classList.add('active', 'block');
                     activeTab.classList.remove('hidden');
                 }
             });
 
-            // --- Load Data Functions ---
             async function loadMatches() {
                 matchesGrid.innerHTML = '<p>جاري التحميل...</p>';
                 const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
-                if (error) return matchesGrid.innerHTML = `<p class="text-red-500">خطأ: ${error.message}</p>`;
+                if (error) {
+                    matchesGrid.innerHTML = `<p class="text-red-500">خطأ في تحميل المباريات: ${error.message}</p>`;
+                    return;
+                }
                 
                 matchesGrid.innerHTML = '';
-                if(data.length === 0) matchesGrid.innerHTML = '<p>لا توجد مباريات.</p>';
+                if(data.length === 0) {
+                    matchesGrid.innerHTML = '<p>لا توجد مباريات حالياً.</p>';
+                }
                 data.forEach(match => {
                     const card = document.createElement('div');
                     card.className = 'item-card';
@@ -217,10 +218,17 @@
             async function loadArticles() {
                 articlesGrid.innerHTML = '<p>جاري التحميل...</p>';
                 const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
-                if (error) return articlesGrid.innerHTML = `<p class="text-red-500">خطأ: ${error.message}</p>`;
-
-                articlesGrid.innerHTML = '';
-                if(data.length === 0) articlesGrid.innerHTML = '<p>لا توجد مقالات.</p>';
+                if (error) {
+                    articlesGrid.innerHTML = `<p class="text-red-500">خطأ في تحميل المقالات: ${error.message}</p>`;
+                    return;
+                }
+                
+                // --- THE FIX IS HERE ---
+                // This now correctly targets `articlesGrid` instead of `matchesGrid`
+                articlesGrid.innerHTML = ''; // <-- تم إصلاح الخطأ هنا
+                if(data.length === 0) {
+                    articlesGrid.innerHTML = '<p>لا توجد مقالات منشورة.</p>';
+                }
                 data.forEach(article => {
                     const card = document.createElement('div');
                     card.className = 'item-card';
@@ -238,14 +246,12 @@
                 });
             }
 
-            // --- Form Submissions ---
-            
-            // NEW: Add Single Match Manually
+            // --- Form Submissions and other functions remain the same ---
+
             document.getElementById('add-match-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const form = e.target;
                 const channels = form['match-channels'].value.split(',').map(c => c.trim()).filter(Boolean);
-                
                 const newMatch = {
                     team1_name: form['match-team1-name'].value,
                     team1_logo: form['match-team1-logo'].value,
@@ -255,40 +261,26 @@
                     datetime: form['match-datetime'].value,
                     channels: channels
                 };
-
                 const { error } = await supabaseClient.from('matches').insert([newMatch]);
-                if (error) {
-                    alert(`فشل إضافة المباراة: ${error.message}`);
-                } else {
-                    alert('تم إضافة المباراة بنجاح.');
-                    form.reset();
-                    loadMatches();
-                }
+                if (error) { alert(`فشل إضافة المباراة: ${error.message}`); } 
+                else { alert('تم إضافة المباراة بنجاح.'); form.reset(); loadMatches(); }
             });
 
-            // Add Bulk Matches (CSV)
             document.getElementById('bulk-add-matches-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const textarea = document.getElementById('csv-data');
                 const lines = textarea.value.split('\n').filter(line => line.trim() !== '');
                 if (lines.length === 0) return alert('الرجاء إدخال بيانات المباريات.');
-
                 const matchesToAdd = lines.map(line => {
                     const [team1_name, team1_logo, team2_name, team2_logo, league, datetime, channelsStr] = line.split(',');
                     const channels = (channelsStr || '').split(';').map(c => c.trim()).filter(Boolean);
                     return { team1_name, team1_logo, team2_name, team2_logo, league, datetime, channels };
                 });
-
                 const { error } = await supabaseClient.from('matches').insert(matchesToAdd);
                 if (error) alert(`فشل إضافة المباريات: ${error.message}`);
-                else {
-                    alert(`تم إضافة ${matchesToAdd.length} مباراة بنجاح!`);
-                    textarea.value = '';
-                    loadMatches();
-                }
+                else { alert(`تم إضافة ${matchesToAdd.length} مباراة بنجاح!`); textarea.value = ''; loadMatches(); }
             });
 
-            // Add Single Article Manually
             document.getElementById('add-article-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const form = e.target;
@@ -299,56 +291,38 @@
                 };
                 const { error } = await supabaseClient.from('articles').insert([newArticle]);
                 if (error) alert(`فشل إضافة المقال: ${error.message}`);
-                else {
-                    alert('تم إضافة المقال بنجاح.');
-                    form.reset();
-                    loadArticles();
-                }
+                else { alert('تم إضافة المقال بنجاح.'); form.reset(); loadArticles(); }
             });
             
-            // Add Bulk Articles
             document.getElementById('bulk-add-articles-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const textarea = document.getElementById('bulk-articles-data');
                 const articlesText = textarea.value.split('---ARTICLE---').filter(text => text.trim() !== '');
                 if (articlesText.length === 0) return alert('الرجاء إدخال بيانات المقالات.');
-
                 const articlesToAdd = articlesText.map(text => {
                     const parts = text.trim().split('|||');
                     if (parts.length !== 3) return null;
                     const [title, image_url, content] = parts;
                     return { title: title.trim(), image_url: image_url.trim(), content: content.trim() };
                 }).filter(Boolean);
-
                 if (articlesToAdd.length === 0) return alert('لم يتم العثور على مقالات صالحة.');
-
                 const { error } = await supabaseClient.from('articles').insert(articlesToAdd);
                 if (error) alert(`فشل إضافة المقالات: ${error.message}`);
-                else {
-                    alert(`تمت إضافة ${articlesToAdd.length} مقالات بنجاح!`);
-                    textarea.value = '';
-                    loadArticles();
-                }
+                else { alert(`تمت إضافة ${articlesToAdd.length} مقالات بنجاح!`); textarea.value = ''; loadArticles(); }
             });
 
-            // --- Edit/Delete Click Handler ---
             adminPanel.addEventListener('click', async (e) => {
                 const button = e.target.closest('button[data-type]');
                 if (!button) return;
-
                 const card = e.target.closest('.item-card');
                 const id = card.dataset.id;
                 const type = button.dataset.type;
                 const table = type === 'match' ? 'matches' : 'articles';
-
                 if (button.classList.contains('delete-btn')) {
                     if (!confirm(`هل أنت متأكد من حذف هذا العنصر؟`)) return;
                     const { error } = await supabaseClient.from(table).delete().eq('id', id);
                     if (error) alert(`فشل الحذف: ${error.message}`);
-                    else {
-                        alert('تم الحذف بنجاح.');
-                        if (type === 'match') loadMatches(); else loadArticles();
-                    }
+                    else { alert('تم الحذف بنجاح.'); if (type === 'match') loadMatches(); else loadArticles(); }
                 } else if (button.classList.contains('edit-btn')) {
                     const { data, error } = await supabaseClient.from(table).select('*').eq('id', id).single();
                     if (error) alert(`فشل جلب البيانات للتعديل: ${error.message}`);
@@ -356,11 +330,9 @@
                 }
             });
 
-            // --- Modal Functions ---
             function openEditModal(item, type) {
                 currentEditData = { id: item.id, type };
                 editForm.innerHTML = '';
-                
                 if (type === 'match') {
                     document.getElementById('modal-title').textContent = "تعديل مباراة";
                     editForm.innerHTML = `
@@ -370,15 +342,13 @@
                         <div><label>شعار الفريق الثاني:</label><input type="text" name="team2_logo" value="${item.team2_logo || ''}" required></div>
                         <div><label>الدوري:</label><input type="text" name="league" value="${item.league || ''}" required></div>
                         <div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${item.datetime ? new Date(new Date(item.datetime).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}" required></div>
-                        <div><label>القنوات:</label><input type="text" name="channels" value="${(item.channels || []).join(', ')}"></div>
-                    `;
+                        <div><label>القنوات:</label><input type="text" name="channels" value="${(item.channels || []).join(', ')}"></div>`;
                 } else if (type === 'article') {
                     document.getElementById('modal-title').textContent = "تعديل مقال";
                     editForm.innerHTML = `
                         <div><label>عنوان المقال:</label><input type="text" name="title" value="${item.title || ''}" required></div>
                         <div><label>رابط الصورة:</label><input type="text" name="image_url" value="${item.image_url || ''}" required></div>
-                        <div><label>المحتوى (HTML):</label><textarea name="content" rows="10" class="text-left" dir="ltr">${item.content || ''}</textarea></div>
-                    `;
+                        <div><label>المحتوى (HTML):</label><textarea name="content" rows="10" class="text-left" dir="ltr">${item.content || ''}</textarea></div>`;
                 }
                 editModal.classList.add('active');
             }
@@ -390,21 +360,13 @@
             async function saveChanges() {
                 const formData = new FormData(editForm);
                 const updates = Object.fromEntries(formData.entries());
-                
                 if(currentEditData.type === 'match' && updates.channels) {
                     updates.channels = updates.channels.split(',').map(c => c.trim()).filter(c => c);
                 }
-                
                 const table = currentEditData.type === 'match' ? 'matches' : 'articles';
                 const { error } = await supabaseClient.from(table).update(updates).eq('id', currentEditData.id);
-
-                if (error) {
-                    alert(`فشل حفظ التعديلات: ${error.message}`);
-                } else {
-                    alert('تم حفظ التعديلات بنجاح!');
-                    closeEditModal();
-                    if(currentEditData.type === 'match') loadMatches(); else loadArticles();
-                }
+                if (error) { alert(`فشل حفظ التعديلات: ${error.message}`); } 
+                else { alert('تم حفظ التعديلات بنجاح!'); closeEditModal(); if(currentEditData.type === 'match') loadMatches(); else loadArticles(); }
             }
             
             cancelEditBtn.addEventListener('click', closeEditModal);
