@@ -22,6 +22,7 @@
             --accent-yellow: #f7b731;
             --accent-green: #238636;
         }
+        html { scroll-behavior: smooth; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); }
         .container { max-width: 1600px; margin: 2rem auto; padding: 0 2rem; }
         .card { background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.5rem; transition: box-shadow 0.3s ease; }
@@ -243,20 +244,29 @@
                 }
             };
             
-            // ==================== AUTH & TABS ====================
-
+            // ==================== AUTH & TABS (RELIABLE VERSION) ====================
             const login = () => {
-                if (passwordInput.value === ADMIN_PASSWORD) {
-                    loginScreen.classList.add('hidden');
-                    adminPanel.classList.remove('hidden');
+                const enteredPassword = passwordInput.value.trim();
+                if (enteredPassword === ADMIN_PASSWORD) {
+                    loginScreen.style.display = 'none';
+                    adminPanel.style.display = 'block';
+                    adminPanel.classList.remove('hidden'); // For animation
                     loadAllData();
                 } else {
                     showToast('كلمة المرور غير صحيحة!', 'error');
                 }
             };
-            
-            loginButton.addEventListener('click', login);
-            passwordInput.addEventListener('keypress', (e) => e.key === 'Enter' && login());
+
+            if (loginButton) {
+                loginButton.addEventListener('click', login);
+            }
+            if (passwordInput) {
+                passwordInput.addEventListener('keyup', (e) => {
+                    if (e.key === 'Enter') {
+                        login();
+                    }
+                });
+            }
 
             document.querySelector('.tabs').addEventListener('click', (e) => {
                 const target = e.target.closest('button.tab-button');
