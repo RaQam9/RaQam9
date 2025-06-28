@@ -69,9 +69,11 @@
     <div id="news-page" class="page-container hidden relative">
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
         <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div><form id="comment-form" name="news-comment-form">
+            <!-- الحقل المخفي سيتم تعبئته تلقائياً بواسطة الجافاسكربت -->
             <input type="hidden" id="article-title-hidden-input" name="article_title" value="" />
             <h3>أضف تعليقك</h3>
-            <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (اختياري)">
+            <!-- اسم المستخدم سيتم جلبه من بيانات المستخدم المسجلة -->
+            <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (سيظهر اسمك المسجل)" disabled>
             <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
             <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
         </form></div></div>
@@ -80,31 +82,52 @@
     </div>
 
 <script>
+    // ==========================================================
+    // SECTION 0: GLOBAL SETUP (Supabase Client & Page Switching)
+    // ==========================================================
+    const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     document.addEventListener('DOMContentLoaded', () => {
         const predictionsBtn = document.getElementById('nav-predictions-btn');
         const newsBtn = document.getElementById('nav-news-btn');
         const predictionsPage = document.getElementById('predictions-page');
         const newsPage = document.getElementById('news-page');
+        
         function switchPage(pageToShow) { 
             if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
-            if (pageToShow === 'predictions') { predictionsPage.classList.remove('hidden'); newsPage.classList.add('hidden'); predictionsBtn.classList.add('bg-blue-600', 'text-white'); predictionsBtn.classList.remove('text-gray-400'); newsBtn.classList.remove('bg-blue-600', 'text-white'); newsBtn.classList.add('text-gray-400'); } else { newsPage.classList.remove('hidden'); predictionsPage.classList.add('hidden'); newsBtn.classList.add('bg-blue-600', 'text-white'); newsBtn.classList.remove('text-gray-400'); predictionsBtn.classList.remove('bg-blue-600', 'text-white'); predictionsBtn.classList.add('text-gray-400'); } 
+            if (pageToShow === 'predictions') { 
+                predictionsPage.classList.remove('hidden'); 
+                newsPage.classList.add('hidden'); 
+                predictionsBtn.classList.add('bg-blue-600', 'text-white'); 
+                predictionsBtn.classList.remove('text-gray-400'); 
+                newsBtn.classList.remove('bg-blue-600', 'text-white'); 
+                newsBtn.classList.add('text-gray-400'); 
+            } else { 
+                newsPage.classList.remove('hidden'); 
+                predictionsPage.classList.add('hidden'); 
+                newsBtn.classList.add('bg-blue-600', 'text-white'); 
+                newsBtn.classList.remove('text-gray-400'); 
+                predictionsBtn.classList.remove('bg-blue-600', 'text-white'); 
+                predictionsBtn.classList.add('text-gray-400'); 
+            } 
         }
+        
         predictionsBtn.addEventListener('click', () => switchPage('predictions'));
         newsBtn.addEventListener('click', () => switchPage('news'));
+        
         initializePredictionsPage();
         initializeNewsPage();
     });
 
     // ======================================================================
-    // SECTION 1: PREDICTIONS PAGE LOGIC (Supabase Predictions & Comments)
+    // SECTION 1: PREDICTIONS PAGE LOGIC
     // ======================================================================
     async function initializePredictionsPage() {
-        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
         try {
             const container = document.getElementById('matches-container');
             container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             let { data: matchesDataFromDB, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
             if (error) { throw error; }
             const formattedMatches = matchesDataFromDB.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
@@ -137,6 +160,7 @@
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
             submitBtn.disabled = true;
+            
             const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
             if (!userInfo.username) {
                 alert('الرجاء حفظ اسم المستخدم أولاً من خلال أيقونة القلم للمشاركة.');
@@ -145,10 +169,6 @@
                 openUserModal();
                 return;
             }
-            
-            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             if (form.name === 'prediction-form') {
                 const matchCard = form.closest('.match-card');
@@ -176,19 +196,26 @@
                 const matchId = matchCard.dataset.matchId;
                 const commentText = form.querySelector('textarea').value;
                 try {
-                    if (!commentText.trim()) { throw new Error("لا يمكن إرسال تعليق فارغ."); }
+                    if (!commentText.trim()) { alert("لا يمكن إرسال تعليق فارغ."); throw new Error("Empty comment"); }
                     const { error } = await supabaseClient.from('comments').insert([{ match_id: matchId, author: userInfo.username, comment_text: commentText }]);
                     if (error) throw error;
                     const commentList = form.closest('.comments-section').querySelector('.comment-list');
                     if (commentList.querySelector('p')) { commentList.innerHTML = ''; }
                     addCommentToDOM(commentList, { author: userInfo.username, text: commentText });
                     form.querySelector('textarea').value = '';
-                } catch (error) { console.error('Error submitting comment:', error); alert('حدث خطأ أثناء إرسال تعليقك.');
-                } finally { submitBtn.innerHTML = "إرسال"; submitBtn.disabled = false; }
+                } catch (error) { 
+                    console.error('Error submitting comment:', error); 
+                    if (error.message !== "Empty comment") {
+                        alert('حدث خطأ أثناء إرسال تعليقك.');
+                    }
+                } finally { 
+                    submitBtn.innerHTML = "إرسال"; 
+                    submitBtn.disabled = false; 
+                }
             }
         }
         
-        async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; l.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; const u = 'https://uxtxavurcgdeueeemmdi.supabase.co'; const a = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; const c = supabase.createClient(u, a); try { let { data: o, error: e } = await c.from('comments').select('author, comment_text, created_at').eq('match_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(l, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); l.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+        async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; l.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; try { let { data: o, error: e } = await supabaseClient.from('comments').select('author, comment_text, created_at').eq('match_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(l, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); l.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
         function addCommentToDOM(l, d) { const c = document.createElement('div'); c.className = 'comment'; c.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-user"></i></div><div class="comment-body"><span class="comment-author">${d.author}</span><p class="comment-text">${d.text}</p></div>`; l.appendChild(c); l.scrollTop = l.scrollHeight; }
         function loadFromStorage() { document.querySelectorAll('.match-card').forEach(c => { const i = c.dataset.matchId; const p = localStorage.getItem(`prediction-${i}`); if (p) { const d = JSON.parse(p); const f = c.querySelector('.prediction-form'); const w = f.querySelector(`input[value="${d.winner}"]`); if (w) w.checked = true; f.querySelector('.scorer-input').value = d.scorer; [...f.elements].forEach(el => el.disabled = true); f.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅'; } }); }
         
@@ -204,133 +231,170 @@
         loadFromStorage();
     }
 
-                            // ==========================================================
-        // SECTION 2: NEWS PAGE LOGIC (REVISED & CLEANED)
-        // ==========================================================
-        function initializeNewsPage() {
-            // --- 1. الإعدادات والتعريفات الأساسية ---
-            const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-            
-            // تحقق من وجود مكتبة Supabase قبل استخدامها
-            if (typeof supabase === 'undefined') {
-                console.error("Supabase library is not loaded!");
-                const articlesGrid = document.getElementById('articles-grid');
-                if(articlesGrid) articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">خطأ فادح: مكتبة Supabase غير محملة.</p>`;
-                return;
-            }
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ==========================================================
+    // SECTION 2: NEWS PAGE LOGIC (REVISED & FULLY FUNCTIONAL)
+    // ==========================================================
+    function initializeNewsPage() {
+        const articlesGrid = document.getElementById('articles-grid');
+        const articleContent = document.getElementById('article-content');
+        const newsHomePage = document.getElementById('home-page');
+        const newsArticlePage = document.getElementById('article-page');
+        const exitToast = document.getElementById('exit-toast');
+        const commentForm = document.getElementById('comment-form');
 
-            // تعريف عناصر DOM
-            const articlesGrid = document.getElementById('articles-grid');
-            const articleContent = document.getElementById('article-content');
-            const newsHomePage = document.getElementById('home-page');
-            const newsArticlePage = document.getElementById('article-page');
-            const exitToast = document.getElementById('exit-toast');
-
-            // التحقق من وجود العناصر الأساسية
-            if (!articlesGrid || !articleContent || !newsHomePage || !newsArticlePage || !exitToast) {
-                console.error("One or more essential news page elements are missing from the HTML.");
-                return;
-            }
-            
-            let articlesCache = []; // لتخزين المقالات التي تم جلبها
-            let currentNewsSubPage = 'home';
-            let firstBackPressTime = 0;
-
-            // --- 2. الدوال الرئيسية ---
-
-            // دالة جلب البيانات من Supabase
-            async function fetchArticlesFromDB() {
-                articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
-                
-                const { data, error } = await supabaseClient
-                    .from('articles')
-                    .select('id, title, image_url, content') // اطلب فقط الأعمدة التي تحتاجها
-                    .order('created_at', { ascending: false });
-
-                if (error) {
-                    console.error("Supabase error:", error);
-                    articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار. الخطأ: ${error.message}</p>`;
-                    return null;
-                }
-                
-                return data;
-            }
-
-            // دالة بناء الصفحة الرئيسية للأخبار
-            function renderArticleCards(articles) {
-                articlesGrid.innerHTML = '';
-                if (!articles || articles.length === 0) {
-                     articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
-                     return;
-                }
-                articles.forEach(article => {
-                    const card = document.createElement('div');
-                    card.className = 'article-card';
-                    card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
-                    card.addEventListener('click', () => renderArticleDetail(article.id));
-                    articlesGrid.appendChild(card);
-                });
-            }
-            
-            // دالة عرض تفاصيل المقال
-            function renderArticleDetail(articleId) {
-                const article = articlesCache.find(a => a.id === articleId);
-                if (!article) return;
-
-                // يمكنك إضافة كود جلب التعليقات هنا لاحقاً
-                articleContent.innerHTML = `
-                    <div id="article-header"><h1>${article.title}</h1></div>
-                    <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
-                    <div>${article.content}</div>
-                `;
-                navigateToSubPage('article');
-            }
-
-            // دالة التنقل بين الصفحات الفرعية
-            function navigateToSubPage(pageName) { 
-                currentNewsSubPage = pageName; 
-                if (pageName === 'article') { 
-                    newsHomePage.style.transform = 'translateX(-100%)'; 
-                    newsArticlePage.style.transform = 'translateX(0)';
-                    newsArticlePage.scrollTop = 0;
-                } else { 
-                    newsHomePage.style.transform = 'translateX(0)'; 
-                    newsArticlePage.style.transform = 'translateX(100%)'; 
-                } 
-            }
-            
-            // --- 3. بدء تشغيل المنطق وربط الأحداث ---
-            async function start() {
-                const fetchedArticles = await fetchArticlesFromDB();
-                if (fetchedArticles) {
-                    articlesCache = fetchedArticles; 
-                    renderArticleCards(articlesCache);
-                }
-            }
-            
-            // ربط زر الرجوع في الهاتف (إذا كان موجوداً)
-            document.addEventListener('backbutton', (e) => {
-                e.preventDefault();
-                const newsPage = document.getElementById('news-page');
-                if (!newsPage || newsPage.classList.contains('hidden')) return;
-
-                if (currentNewsSubPage === 'article') {
-                    navigateToSubPage('home');
-                } else {
-                    if (new Date().getTime() - firstBackPressTime < 2000) {
-                        if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); }
-                    } else {
-                        firstBackPressTime = new Date().getTime();
-                        exitToast.classList.add('show');
-                        setTimeout(() => { exitToast.classList.remove('show'); }, 2000);
-                    }
-                }
-            }, false);
-
-            start(); // تشغيل كل شيء
+        if (!articlesGrid || !articleContent || !newsHomePage || !newsArticlePage || !exitToast || !commentForm) {
+            console.error("One or more essential news page elements are missing from the HTML.");
+            return;
         }
+        
+        let articlesCache = [];
+        let currentNewsSubPage = 'home';
+        let firstBackPressTime = 0;
+
+        async function fetchArticlesFromDB() {
+            articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+            const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
+            if (error) {
+                console.error("Supabase error:", error);
+                articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار. الخطأ: ${error.message}</p>`;
+                return null;
+            }
+            return data;
+        }
+
+        function renderArticleCards(articles) {
+            articlesGrid.innerHTML = '';
+            if (!articles || articles.length === 0) {
+                 articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
+                 return;
+            }
+            articles.forEach(article => {
+                const card = document.createElement('div');
+                card.className = 'article-card';
+                card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
+                card.addEventListener('click', () => renderArticleDetail(article.id));
+                articlesGrid.appendChild(card);
+            });
+        }
+        
+        function renderArticleDetail(articleId) {
+            const article = articlesCache.find(a => a.id === articleId);
+            if (!article) return;
+
+            // --- التعديل: تعبئة عنوان المقال في الحقل المخفي ---
+            document.getElementById('article-title-hidden-input').value = article.title;
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            if (userInfo && userInfo.username) {
+                document.getElementById('comment-name').value = userInfo.username;
+            }
+            
+            // يمكنك إضافة كود جلب التعليقات هنا
+            articleContent.innerHTML = `
+                <div id="article-header"><h1>${article.title}</h1></div>
+                <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+                <div>${article.content}</div>
+            `;
+            navigateToSubPage('article');
+        }
+
+        function navigateToSubPage(pageName) { 
+            currentNewsSubPage = pageName; 
+            if (pageName === 'article') { 
+                newsHomePage.style.transform = 'translateX(-100%)'; 
+                newsArticlePage.style.transform = 'translateX(0)';
+                newsArticlePage.scrollTop = 0;
+            } else { 
+                newsHomePage.style.transform = 'translateX(0)'; 
+                newsArticlePage.style.transform = 'translateX(100%)'; 
+            } 
+        }
+        
+        async function start() {
+            const fetchedArticles = await fetchArticlesFromDB();
+            if (fetchedArticles) {
+                articlesCache = fetchedArticles; 
+                renderArticleCards(articlesCache);
+            }
+        }
+        
+        // --- إضافة Event Listener لنموذج تعليقات الأخبار ---
+        commentForm.addEventListener('submit', handleNewsCommentSubmit);
+        
+        document.addEventListener('backbutton', (e) => {
+            e.preventDefault();
+            const newsPage = document.getElementById('news-page');
+            if (!newsPage || newsPage.classList.contains('hidden')) return;
+
+            if (currentNewsSubPage === 'article') {
+                navigateToSubPage('home');
+            } else {
+                if (new Date().getTime() - firstBackPressTime < 2000) {
+                    if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); }
+                } else {
+                    firstBackPressTime = new Date().getTime();
+                    exitToast.classList.add('show');
+                    setTimeout(() => { exitToast.classList.remove('show'); }, 2000);
+                }
+            }
+        }, false);
+
+        start();
+    }
+
+    // --- دالة جديدة لمعالجة إرسال تعليقات الأخبار ---
+    async function handleNewsCommentSubmit(event) {
+        event.preventDefault(); 
+
+        const submitBtn = document.getElementById('submit-comment-btn');
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
+
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        if (!userInfo || !userInfo.username) {
+            alert('يجب تسجيل اسمك أولاً للتعليق. اذهب إلى صفحة التوقعات، اضغط على أيقونة القلم واحفظ اسمك.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            return;
+        }
+        
+        const articleTitle = document.getElementById('article-title-hidden-input').value;
+        const commentText = document.getElementById('comment-text').value.trim();
+        const authorName = userInfo.username;
+
+        if (!commentText) {
+            alert('لا يمكن إرسال تعليق فارغ.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            return;
+        }
+        
+        try {
+            // ملاحظة: هذا يفترض أن لديك جدولاً في Supabase اسمه 'news_comments'
+            const { data, error } = await supabaseClient
+                .from('news_comments') 
+                .insert([{ 
+                    article_title: articleTitle, 
+                    author: authorName, 
+                    comment_text: commentText 
+                }]);
+
+            if (error) {
+                throw error;
+            }
+
+            alert('تم إرسال تعليقك بنجاح!');
+            document.getElementById('comment-text').value = ''; 
+            // لاحقاً: يمكنك إضافة كود لجلب التعليقات الجديدة وعرضها هنا فوراً
+
+        } catch (error) {
+            console.error('Error submitting news comment:', error);
+            alert(`حدث خطأ أثناء إرسال تعليقك: ${error.message}`);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
+    }
     </script>
 </body>
 </html>
