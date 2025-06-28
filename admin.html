@@ -44,7 +44,7 @@
         .sub-tab-button { background-color: var(--bg-medium); border: 1px solid var(--border-color); }
         .sub-tab-button.active { background-color: var(--accent-green); color: white; border-color: var(--accent-green); }
         .comment-content-grid { display: none; }
-        .comment-content-grid.active { display: block; }
+        .comment-content-grid.active { display: grid; } /* Corrected from block to grid */
     </style>
 </head>
 <body>
@@ -108,8 +108,6 @@
             document.getElementById('add-match-form')?.addEventListener('submit', handleAdd);
             document.getElementById('bulk-add-matches-form')?.addEventListener('submit', handleBulkAdd);
             document.getElementById('add-article-form')?.addEventListener('submit', handleAdd);
-            // The bulk articles form was missing its listener, adding it.
-            document.getElementById('bulk-add-articles-form')?.addEventListener('submit', handleBulkAdd);
         }
 
         // ==================== AUTH & TABS ====================
@@ -136,15 +134,31 @@
 
         // ==================== DATA LOADING ====================
         const loadAllData = () => { 
-            loadMatches(); 
-            loadArticles(); 
-            loadMatchComments(); 
-            loadArticleComments(); 
-            loadAllPredictions(); 
+            loadData.matches(); 
+            loadData.articles(); 
+            loadData.matchComments(); 
+            loadData.articleComments(); 
+            loadData.predictions(); 
         };
+        
+        // *** NEW/FIXED SECTION START ***
         const loadData = {
-            matches: async () => { /* Logic to load matches */ },
-            articles: async () => { /* Logic to load articles */ },
+            matches: async () => { 
+                const grid = document.getElementById('matches-grid');
+                if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                grid.innerHTML = data.length === 0 ? '<p>لا توجد مباريات حالية.</p>' : data.map(renderData.match).join('');
+            },
+            articles: async () => { 
+                const grid = document.getElementById('articles-grid');
+                if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                grid.innerHTML = data.length === 0 ? '<p>لا توجد مقالات منشورة.</p>' : data.map(renderData.article).join('');
+            },
             matchComments: async () => {
                  const grid = document.getElementById('match-comments-grid');
                  if(!grid) return;
@@ -170,12 +184,49 @@
                 grid.innerHTML = data.length === 0 ? '<p>لا توجد توقعات.</p>' : data.map(renderData.prediction).join('');
             }
         };
-        Object.assign(window, { loadMatches: loadData.matches, loadArticles: loadData.articles, loadMatchComments: loadData.matchComments, loadArticleComments: loadData.articleComments, loadAllPredictions: loadData.predictions });
 
         // ==================== RENDER FUNCTIONS ====================
         const renderData = {
-            match: (match) => { /* Render logic for match card */ },
-            article: (article) => { /* Render logic for article card */ },
+            match: (match) => { 
+                const matchDate = new Date(match.datetime);
+                const formattedDate = matchDate.toLocaleString(LOCALE, { dateStyle: 'long', timeStyle: 'short' });
+                return `
+                    <div class="item-card">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2">
+                                    <img src="${match.team1_logo}" class="w-6 h-6 object-contain">
+                                    <span class="font-bold">${match.team1_name}</span>
+                                </div>
+                                <span class="text-gray-400">ضد</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold">${match.team2_name}</span>
+                                    <img src="${match.team2_logo}" class="w-6 h-6 object-contain">
+                                </div>
+                            </div>
+                            <p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p>
+                            <p class="text-sm text-center text-gray-400">${formattedDate}</p>
+                        </div>
+                        <div class="item-card-footer">
+                            <button class="edit-btn" data-type="match" data-id="${match.id}"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
+                    </div>`;
+            },
+            article: (article) => { 
+                return `
+                    <div class="item-card">
+                        <div>
+                            <img src="${article.image_url}" alt="${article.title}" class="w-full h-32 object-cover rounded-md mb-2">
+                            <h4 class="font-bold text-white mb-2">${article.title}</h4>
+                            <p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p>
+                        </div>
+                        <div class="item-card-footer">
+                            <button class="edit-btn" data-type="article" data-id="${article.id}"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
+                    </div>`;
+            },
             matchComment: (comment) => {
                 const matchInfo = comment.matches ? `${comment.matches.team1_name} ضد ${comment.matches.team2_name}` : 'مباراة محذوفة';
                 return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="match_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
@@ -184,12 +235,34 @@
                 const articleInfo = comment.articles ? comment.articles.title : 'مقال محذوف';
                 return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${articleInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
             },
-            prediction: (prediction) => { /* Render logic for prediction card */ }
+            prediction: (prediction) => { 
+                const matchInfo = prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة';
+                return `
+                    <div class="item-card">
+                        <p class="font-bold text-white">"${prediction.prediction_text}"</p>
+                        <p class="text-sm text-gray-400 mt-2">
+                            بواسطة: ${prediction.author} - 
+                            على مباراة: <span class="text-yellow-400">${matchInfo}</span>
+                        </p>
+                        <div class="item-card-footer">
+                            <button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف التوقع</button>
+                        </div>
+                    </div>`;
+            }
         };
+        // *** NEW/FIXED SECTION END ***
         
         // ==================== FORM & ACTIONS HANDLING (EVENT DELEGATION) ====================
-        async function handleAdd(e) { /* Unchanged */ }
-        async function handleBulkAdd(e) { /* Unchanged */ }
+        async function handleAdd(e) { 
+            e.preventDefault();
+            // This function should be implemented to add single items
+            alert('وظيفة الإضافة الفردية لم تكتمل بعد.');
+        }
+        async function handleBulkAdd(e) { 
+            e.preventDefault();
+            // This function should be implemented to add bulk items from CSV
+            alert('وظيفة الإضافة الجماعية لم تكتمل بعد.');
+        }
 
         adminPanel.addEventListener('click', async (e) => {
             const target = e.target;
@@ -216,27 +289,19 @@
                 return; // Stop further processing
             }
 
-            // --- *** NEW AND CORRECTED LOGIC FOR SUB-TABS *** ---
+            // --- Logic for Comment Sub-Tabs (Corrected) ---
             const subTabButton = target.closest('.sub-tab-button');
             if (subTabButton && subTabButton.parentElement.id === 'comment-sub-tabs') {
-                // Remove active class from all sub-tabs and add it to the clicked one
-                document.querySelectorAll('.sub-tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('#comment-sub-tabs .sub-tab-button').forEach(btn => btn.classList.remove('active'));
                 subTabButton.classList.add('active');
 
-                // Hide all comment grids
-                document.querySelectorAll('.comment-content-grid').forEach(grid => grid.style.display = 'none');
+                document.querySelectorAll('.comment-content-grid').forEach(grid => grid.classList.remove('active'));
                 
-                // Show the correct grid based on the data-attribute
-                const gridToShowId = (subTabButton.dataset.commentType === 'matches') 
-                    ? 'match-comments-grid' 
-                    : 'article-comments-grid';
-                const gridToShow = document.getElementById(gridToShowId);
-                if(gridToShow) gridToShow.style.display = 'grid'; // Use grid to match the items-grid class
+                const gridId = subTabButton.dataset.commentType === 'matches' ? 'match-comments-grid' : 'article-comments-grid';
+                document.getElementById(gridId)?.classList.add('active');
             }
         });
         
-        // Dummy functions to avoid reference errors from the parts you didn't provide
-        loadData.matches = async () => {}; loadData.articles = async () => {}; renderData.match = () => {}; renderData.article = () => {}; renderData.prediction = () => {}; handleAdd = async (e) => {e.preventDefault()}; handleBulkAdd = async (e) => {e.preventDefault()};
     });
     </script>
 </body>
