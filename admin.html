@@ -57,11 +57,11 @@
     <div id="admin-panel" class="container hidden">
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
             <h1 class="text-3xl m-0 p-0 border-none">لوحة التحكم</h1>
-            <div class="tabs flex gap-2 overflow-x-auto pb-2">
-                <button class="tab-button" data-tab="predictions"><i class="fas fa-poll"></i> التوقعات</button>
-                <button class="tab-button" data-tab="comments"><i class="fas fa-comments"></i> التعليقات</button>
-                <button class="tab-button" data-tab="articles"><i class="fas fa-newspaper"></i> المقالات</button>
+            <div class="tabs flex flex-row-reverse gap-2 overflow-x-auto pb-2">
                 <button class="tab-button active" data-tab="matches"><i class="fas fa-futbol"></i> المباريات</button>
+                <button class="tab-button" data-tab="articles"><i class="fas fa-newspaper"></i> المقالات</button>
+                <button class="tab-button" data-tab="comments"><i class="fas fa-comments"></i> التعليقات</button>
+                <button class="tab-button" data-tab="predictions"><i class="fas fa-poll"></i> التوقعات</button>
             </div>
         </div>
         
@@ -78,9 +78,7 @@
         const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        // --- FIX [1]: Changed locale to fr-MA for French numbers ---
-        const LOCALE = 'fr-MA'; 
+        const LOCALE = 'fr-MA';
 
         if (!supabaseClient) { alert("فشل تهيئة Supabase."); return; }
 
@@ -184,32 +182,18 @@
         // ==================== RENDER FUNCTIONS ====================
         const renderData = {
             match: (match) => { 
-                // --- FIX [2]: Display time exactly as entered, no timezone conversion ---
                 const dt = match.datetime.split('T');
-                const datePart = dt[0].split('-').reverse().join('/'); // YYYY-MM-DD -> DD/MM/YYYY
-                const timePart = dt[1].substring(0, 5); // HH:MM:SS -> HH:MM
+                const datePart = dt[0].split('-').reverse().join('/');
+                const timePart = dt.length > 1 ? dt[1].substring(0, 5) : '';
                 const formattedDate = `${datePart} - ${timePart}`;
-
                 return `
                     <div class="item-card">
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <div class="flex items-center gap-2">
-                                    <img src="${match.team1_logo}" class="w-6 h-6 object-contain">
-                                    <span class="font-bold">${match.team1_name}</span>
-                                </div>
-                                <span class="text-gray-400">ضد</span>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold">${match.team2_name}</span>
-                                    <img src="${match.team2_logo}" class="w-6 h-6 object-contain">
-                                </div>
-                            </div>
+                            <div class="flex justify-between items-center mb-2"><div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div><span class="text-gray-400">ضد</span><div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div></div>
                             <p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p>
                             <p class="text-sm text-center text-gray-400" dir="ltr">${formattedDate}</p>
                         </div>
-                        <div class="item-card-footer">
-                            <button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button>
-                        </div>
+                        <div class="item-card-footer"><button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button></div>
                     </div>`;
             },
             article: (article) => { 
@@ -220,9 +204,7 @@
                             <h4 class="font-bold text-white mb-2">${article.title}</h4>
                             <p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p>
                         </div>
-                        <div class="item-card-footer">
-                            <button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button>
-                        </div>
+                        <div class="item-card-footer"><button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button></div>
                     </div>`;
             },
             matchComment: (comment) => {
@@ -233,14 +215,16 @@
                 const articleInfo = comment.articles ? comment.articles.title : 'مقال محذوف';
                 return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${articleInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
             },
+            // --- FIX: Using prediction.prediction_text ---
             prediction: (prediction) => { 
-                // --- FIX [3]: Changed prediction.prediction_text to prediction.prediction and added fallbacks ---
                 const matchInfo = prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة';
+                const predictionText = prediction.prediction_text || 'لا يوجد نص للتوقع'; // The fix is here
+                const authorName = prediction.author || 'مجهول';
                 return `
                     <div class="item-card">
-                        <p class="font-bold text-white">"${prediction.prediction || 'لا يوجد نص للتوقع'}"</p>
+                        <p class="font-bold text-white">"${predictionText}"</p>
                         <p class="text-sm text-gray-400 mt-2">
-                            بواسطة: ${prediction.author || 'مجهول'} - 
+                            بواسطة: ${authorName} - 
                             على مباراة: <span class="text-yellow-400">${matchInfo}</span>
                         </p>
                         <div class="item-card-footer">
@@ -271,7 +255,12 @@
                     default: return;
                 }
                 const { error } = await supabaseClient.from(table).delete().eq('id', id);
-                if (!error) refreshFunc(); else alert(`فشل الحذف: ${error.message}`);
+                if (error) {
+                    alert(`فشل الحذف: ${error.message}\n\nتنبيه: هل قمت بتفعيل سياسة الحذف (DELETE policy) لهذا الجدول في لوحة تحكم Supabase؟`);
+                } else {
+                    alert('تم الحذف بنجاح!');
+                    refreshFunc();
+                }
                 return;
             }
             const subTabButton = target.closest('.sub-tab-button');
