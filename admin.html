@@ -32,8 +32,9 @@
         .item-card { background-color: #0d1117; padding: 1rem; border-radius: 6px; border: 1px solid #30363d; display: flex; flex-direction: column; justify-content: space-between; }
         .item-card-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
         .item-card-actions button { flex-grow: 1; padding: 0.5rem; font-size: 0.9em; justify-content: center;}
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background-color: #161b22; padding: 2rem; border-radius: 8px; width: 90%; max-width: 600px; border: 1px solid #30363d; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: #161b22; padding: 2rem; border-radius: 8px; width: 90%; max-width: 700px; border: 1px solid #30363d; max-height: 90vh; overflow-y: auto;}
     </style>
 </head>
 <body>
@@ -47,9 +48,10 @@
     <div id="admin-panel" class="container hidden">
         <h1 class="text-3xl">لوحة التحكم الشاملة</h1>
         <div class="tabs flex gap-2 mb-4">
-            <button class="tab-button active" data-tab="matches"><i class="fas fa-futbol"></i> إدارة المباريات</button>
-            <button class="tab-button" data-tab="articles"><i class="fas fa-newspaper"></i> إدارة المقالات</button>
+            <button class="tab-button active" data-tab="matches">إدارة المباريات</button>
+            <button class="tab-button" data-tab="articles">إدارة المقالات</button>
         </div>
+
         <div id="tab-matches" class="tab-content active">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <section class="card">
@@ -65,24 +67,34 @@
                 </div>
             </div>
         </div>
+
         <div id="tab-articles" class="tab-content hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <section class="card">
+                    <h3 class="text-xl">إضافة مقال يدوياً</h3>
+                    <form id="add-article-form" class="space-y-4 mt-4">
+                        <div><label for="article-title">عنوان المقال:</label><input type="text" id="article-title" required></div>
+                        <div><label for="article-image">رابط صورة المقال:</label><input type="text" id="article-image" required></div>
+                        <div><label for="article-content">محتوى المقال (HTML):</label><textarea id="article-content" rows="5" required></textarea></div>
+                        <button type="submit" class="w-full">نشر المقال</button>
+                    </form>
+                </section>
                 <section class="card">
                     <h3 class="text-xl">إضافة عدة مقالات</h3>
                     <form id="bulk-add-articles-form">
-                        <textarea id="bulk-articles-data" rows="12" placeholder="عنوان|||صورة|||محتوى\n---ARTICLE---\nعنوان2|||صورة2|||محتوى2"></textarea>
+                        <textarea id="bulk-articles-data" rows="12" placeholder="عنوان|||صورة|||محتوى\n---ARTICLE---"></textarea>
                         <button type="submit" class="mt-2"><i class="fas fa-plus-circle"></i> إضافة المقالات</button>
                     </form>
                 </section>
-                <div class="card">
+                <div class="card xl:col-span-1">
                     <h3 class="text-xl">المقالات المنشورة</h3>
-                    <div id="articles-grid" class="items-grid mt-4 max-h-[500px] overflow-y-auto pr-2"></div>
+                    <div id="articles-grid" class="items-grid mt-4 max-h-[700px] overflow-y-auto pr-2"></div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div id="edit-modal" class="modal-overlay hidden">
+    <div id="edit-modal" class="modal-overlay">
          <div class="modal-content">
             <h3 id="modal-title" class="text-2xl font-bold">تعديل العنصر</h3>
             <form id="edit-form" class="space-y-4 mt-4"></form>
@@ -95,7 +107,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const ADMIN_PASSWORD = '1122'; // <-- غيّر كلمة المرور هنا!
+            const ADMIN_PASSWORD = '1122';
             const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -112,7 +124,7 @@
             const editForm = document.getElementById('edit-form');
             const saveEditBtn = document.getElementById('save-edit-btn');
             const cancelEditBtn = document.getElementById('cancel-edit-btn');
-            
+
             function login() {
                 if (passwordInput.value === ADMIN_PASSWORD) {
                     loginScreen.classList.add('hidden');
@@ -120,42 +132,34 @@
                     loadMatches();
                     loadArticles();
                 } else {
-                    // مسح الحقل وإظهار رسالة إذا كانت كلمة المرور خاطئة بعد اكتمالها
                     if (passwordInput.value.length >= ADMIN_PASSWORD.length) {
                          alert('كلمة المرور غير صحيحة!');
-                         passwordInput.value = '';
                     }
                 }
             }
 
             // --- ربط أحداث تسجيل الدخول ---
             loginButton.addEventListener('click', login);
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    login();
-                }
-            });
-            // !! الخاصية الجديدة: الدخول التلقائي !!
-            passwordInput.addEventListener('input', () => {
-                if (passwordInput.value.length >= ADMIN_PASSWORD.length) {
-                    login();
-                }
-            });
+            passwordInput.addEventListener('input', login); // الدخول التلقائي عند اكتمال كلمة المرور
 
-            function openEditModal(item, type) { /* ... نفس الدالة ... */ }
-            function closeEditModal() { /* ... نفس الدالة ... */ }
-            async function saveChanges() { /* ... نفس الدالة ... */ }
-            async function loadMatches() { /* ... نفس الدالة ... */ }
-            async function loadArticles() { /* ... نفس الدالة ... */ }
-            document.getElementById('bulk-add-matches-form').addEventListener('submit', async (e) => { /* ... نفس الدالة ... */ });
-            document.getElementById('bulk-add-articles-form').addEventListener('submit', async (e) => { /* ... نفس الدالة ... */ });
-            adminPanel.addEventListener('click', async (e) => { /* ... نفس الدالة ... */ });
+            // ... (بقية دوال الجافاسكربت من الإجابة السابقة)
+            // سأقوم بلصقها كاملة هنا لضمان عدم وجود أي نقص
+            
+            function openEditModal(item, type) { /* ... */ }
+            function closeEditModal() { /* ... */ }
+            async function saveChanges() { /* ... */ }
+            async function loadMatches() { /* ... */ }
+            async function loadArticles() { /* ... */ }
+            document.getElementById('bulk-add-matches-form').addEventListener('submit', async (e) => { /* ... */ });
+            document.getElementById('bulk-add-articles-form').addEventListener('submit', async (e) => { /* ... */ });
+            document.getElementById('add-article-form').addEventListener('submit', async (e) => { /* ... */ });
+            adminPanel.addEventListener('click', async (e) => { /* ... */ });
+            document.querySelector('.tabs').addEventListener('click', (e) => { /* ... */ });
             cancelEditBtn.addEventListener('click', closeEditModal);
             saveEditBtn.addEventListener('click', saveChanges);
-            document.querySelector('.tabs').addEventListener('click', (e) => { /* ... نفس الدالة ... */ });
 
-             // --- لصق كل الدوال كاملة هنا ---
-             function openEditModal(item, type) {
+            // --- التفاصيل الكاملة للدوال ---
+            function openEditModal(item, type) {
                 currentEditData = { id: item.id, type };
                 editForm.innerHTML = '';
                 
@@ -175,14 +179,14 @@
                     editForm.innerHTML = `
                         <div><label>عنوان المقال:</label><input type="text" name="title" value="${item.title || ''}" required></div>
                         <div><label>رابط الصورة:</label><input type="text" name="image_url" value="${item.image_url || ''}" required></div>
-                        <div><label>المحتوى:</label><textarea name="content" rows="10">${item.content || ''}</textarea></div>
+                        <div><label>المحتوى (HTML):</label><textarea name="content" rows="10">${item.content || ''}</textarea></div>
                     `;
                 }
-                editModal.classList.remove('hidden');
+                editModal.classList.add('active');
             }
 
             function closeEditModal() {
-                editModal.classList.add('hidden');
+                editModal.classList.remove('active');
             }
 
             async function saveChanges() {
@@ -205,52 +209,8 @@
                 }
             }
             
-            async function loadMatches() {
-                matchesGrid.innerHTML = '<p>جاري التحميل...</p>';
-                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
-                if (error) return matchesGrid.innerHTML = `<p style="color: red;">خطأ: ${error.message}</p>`;
-                
-                matchesGrid.innerHTML = '';
-                if(data.length === 0) matchesGrid.innerHTML = '<p>لا توجد مباريات.</p>';
-                data.forEach(match => {
-                    const card = document.createElement('div');
-                    card.className = 'item-card';
-                    card.innerHTML = `
-                        <div>
-                            <h4 class="font-bold">${match.team1_name} vs ${match.team2_name}</h4>
-                            <p class="text-sm text-gray-400">${match.league}</p>
-                            <p class="text-sm text-gray-500">${new Date(match.datetime).toLocaleString('ar-EG')}</p>
-                        </div>
-                        <div class="item-card-actions">
-                            <button class="edit-btn" data-id="${match.id}" data-type="match"><i class="fas fa-edit"></i> تعديل</button>
-                            <button class="delete-btn" data-id="${match.id}" data-type="match"><i class="fas fa-trash"></i> حذف</button>
-                        </div>`;
-                    matchesGrid.appendChild(card);
-                });
-            }
-
-            async function loadArticles() {
-                articlesGrid.innerHTML = '<p>جاري التحميل...</p>';
-                const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
-                if (error) return articlesGrid.innerHTML = `<p style="color: red;">خطأ: ${error.message}</p>`;
-
-                articlesGrid.innerHTML = '';
-                if(data.length === 0) articlesGrid.innerHTML = '<p>لا توجد مقالات.</p>';
-                data.forEach(article => {
-                    const card = document.createElement('div');
-                    card.className = 'item-card';
-                    card.innerHTML = `
-                        <div>
-                            <h4 class="font-bold">${article.title}</h4>
-                            <p class="text-sm text-gray-500">${new Date(article.created_at).toLocaleDateString('ar-EG')}</p>
-                        </div>
-                        <div class="item-card-actions">
-                            <button class="edit-btn" data-id="${article.id}" data-type="article"><i class="fas fa-edit"></i> تعديل</button>
-                            <button class="delete-btn" data-id="${article.id}" data-type="article"><i class="fas fa-trash"></i> حذف</button>
-                        </div>`;
-                    articlesGrid.appendChild(card);
-                });
-            }
+            async function loadMatches() { /* ... */ } // implementation below
+            async function loadArticles() { /* ... */ } // implementation below
 
             document.getElementById('bulk-add-matches-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -296,12 +256,30 @@
                     loadArticles();
                 }
             });
+
+            document.getElementById('add-article-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const newArticle = {
+                    title: form['article-title'].value,
+                    image_url: form['article-image'].value,
+                    content: form['article-content'].value
+                };
+                const { error } = await supabaseClient.from('articles').insert([newArticle]);
+                if (error) alert(`فشل إضافة المقال: ${error.message}`);
+                else {
+                    alert('تم إضافة المقال بنجاح.');
+                    form.reset();
+                    loadArticles();
+                }
+            });
             
             adminPanel.addEventListener('click', async (e) => {
                 const target = e.target.closest('button');
                 if (!target) return;
 
-                const id = target.dataset.id;
+                const card = e.target.closest('.item-card');
+                const id = card.dataset.id;
                 const type = target.dataset.type;
 
                 if (target.classList.contains('delete-btn')) {
@@ -321,10 +299,7 @@
                     else openEditModal(data, type);
                 }
             });
-
-            cancelEditBtn.addEventListener('click', closeEditModal);
-            saveEditBtn.addEventListener('click', saveChanges);
-
+            
             document.querySelector('.tabs').addEventListener('click', (e) => {
                 const target = e.target.closest('button');
                 if(target && target.classList.contains('tab-button')) {
@@ -335,6 +310,59 @@
                     document.getElementById(`tab-${tabId}`).classList.remove('hidden');
                 }
             });
+
+            async function loadMatches() { /* ... same as before but uses matchesGrid ... */ }
+            async function loadArticles() { /* ... same as before but uses articlesGrid ... */ }
+
+            // Redefining with correct grid element
+            async function loadMatches() {
+                matchesGrid.innerHTML = '<p>جاري التحميل...</p>';
+                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
+                if (error) return matchesGrid.innerHTML = `<p style="color: red;">خطأ: ${error.message}</p>`;
+                
+                matchesGrid.innerHTML = '';
+                if(data.length === 0) matchesGrid.innerHTML = '<p>لا توجد مباريات.</p>';
+                data.forEach(match => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.dataset.id = match.id;
+                    card.innerHTML = `
+                        <div>
+                            <h4 class="font-bold">${match.team1_name} vs ${match.team2_name}</h4>
+                            <p class="text-sm text-gray-400">${match.league}</p>
+                            <p class="text-sm text-gray-500">${new Date(match.datetime).toLocaleString('ar-EG')}</p>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="edit-btn" data-type="match"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="delete-btn" data-type="match"><i class="fas fa-trash"></i> حذف</button>
+                        </div>`;
+                    matchesGrid.appendChild(card);
+                });
+            }
+
+            async function loadArticles() {
+                articlesGrid.innerHTML = '<p>جاري التحميل...</p>';
+                const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+                if (error) return articlesGrid.innerHTML = `<p style="color: red;">خطأ: ${error.message}</p>`;
+
+                articlesGrid.innerHTML = '';
+                if(data.length === 0) articlesGrid.innerHTML = '<p>لا توجد مقالات.</p>';
+                data.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.dataset.id = article.id;
+                    card.innerHTML = `
+                        <div>
+                            <h4 class="font-bold">${article.title}</h4>
+                            <p class="text-sm text-gray-500">${new Date(article.created_at).toLocaleDateString('ar-EG')}</p>
+                        </div>
+                        <div class="item-card-actions">
+                            <button class="edit-btn" data-type="article"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="delete-btn" data-type="article"><i class="fas fa-trash"></i> حذف</button>
+                        </div>`;
+                    articlesGrid.appendChild(card);
+                });
+            }
         });
     </script>
 </body>
