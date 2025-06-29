@@ -121,11 +121,11 @@
 // ==========================================================
 // SECTION 0: GLOBAL SETUP & INITIALIZATION
 // ==========================================================
-const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co'; // *** استبدل هذا بالرابط الخاص بك ***
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; // *** استبدل هذا بالمفتاح الخاص بك ***
+const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const locale = 'ar-EG-u-nu-latn'; 
+const locale = 'ar-EG-u-nu-latn';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Page switching logic
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
     const newsPage = document.getElementById('news-page');
-    
+
     function switchPage(pageToShow) {
         const isPredictions = pageToShow === 'predictions';
         predictionsPage.classList.toggle('hidden', !isPredictions);
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         newsBtn.classList.toggle('text-white', !isPredictions);
         newsBtn.classList.toggle('text-gray-400', isPredictions);
     }
-    
+
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
@@ -166,16 +166,16 @@ async function initializePredictionsPage() {
         let { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
         if (error) throw error;
         if (!data || data.length === 0) {
-             container.innerHTML = '<p class="text-center text-gray-400 mt-8">لا توجد مباريات متاحة حالياً.</p>';
-             return;
+            container.innerHTML = '<p class="text-center text-gray-400 mt-8">لا توجد مباريات متاحة حالياً.</p>';
+            return;
         }
-        const formattedMatches = data.map(match => ({ 
-            id: match.id, 
-            team1: { name: match.team1_name, logo: match.team1_logo }, 
-            team2: { name: match.team2_name, logo: match.team2_logo }, 
-            league: match.league, 
-            datetime: match.datetime, 
-            channels: match.channels || [] 
+        const formattedMatches = data.map(match => ({
+            id: match.id,
+            team1: { name: match.team1_name, logo: match.team1_logo },
+            team2: { name: match.team2_name, logo: match.team2_logo },
+            league: match.league,
+            datetime: match.datetime,
+            channels: match.channels || []
         }));
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
@@ -199,7 +199,7 @@ function initializeAppWithData(matchesData) {
             acc[dateKey].push(match);
             return acc;
         }, {});
-    
+
     if (Object.keys(matchesByDay).length === 0) {
         daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة.</p>`;
         return;
@@ -216,10 +216,10 @@ function initializeAppWithData(matchesData) {
         dayContentEl.className = `day-content ${index === 0 ? 'active' : ''}`;
         dayContentEl.id = `day-${day}`;
         daysContentContainer.appendChild(dayContentEl);
-        
+
         renderMatchesForDay(dayContentEl, sortMatches(matchesByDay[day]));
     });
-    
+
     attachTabEventListeners();
     attachMatchEventListeners();
     loadPredictionsFromStorage();
@@ -247,13 +247,15 @@ function attachMatchEventListeners() {
 
     container.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (e.target.matches('form[name="prediction-form"]') || e.target.matches('form[name="match-comment-form"]')) {
+        // Route to the correct handler based on the form's name
+        if (e.target.matches('form[name="prediction-form"]')) {
             handleFormSubmit(e.target);
+        } else if (e.target.matches('form[name="match-comment-form"]')) {
+            handleMatchCommentSubmit(e.target);
         }
     });
 
     container.addEventListener('click', (e) => {
-        // Find the closest button if an icon inside it was clicked
         const button = e.target.closest('.toggle-comments-btn');
         if (button) {
             handleToggleComments(button);
@@ -280,6 +282,7 @@ async function initializeNewsPage() {
         articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
     }
     document.getElementById('back-to-news-list').addEventListener('click', () => navigateToNewsSubPage('home'));
+    // Dedicated event listener for the news comment form
     document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
 }
 
@@ -295,7 +298,7 @@ function renderArticleCards(articles) {
             <div class="article-title"><h3>${article.title}</h3></div>
         </div>
     `).join('');
-    
+
     document.querySelectorAll('.article-card').forEach(card => {
         card.addEventListener('click', () => {
             const articleId = card.dataset.articleId;
@@ -335,7 +338,9 @@ async function fetchAndRenderNewsComments(articleId) {
     const commentsList = document.getElementById('news-comments-list');
     commentsList.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
     try {
+        // CORRECT: Reads from the 'news_comments' table
         const { data, error } = await supabaseClient.from('news_comments').select('*').eq('article_id', articleId).order('created_at', { ascending: true });
+
         if (error) throw error;
         if (data.length === 0) {
             commentsList.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
@@ -356,6 +361,7 @@ async function fetchAndRenderNewsComments(articleId) {
     }
 }
 
+// Dedicated function for handling news comment submission
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
     const form = event.target;
@@ -378,15 +384,19 @@ async function handleNewsCommentSubmit(event) {
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
     try {
-        const { error } = await supabaseClient.from('news_comments').insert([
-            { article_id: currentArticleId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }
-        ]);
+        // CORRECT: Writes to the 'news_comments' table
+        const { error } = await supabaseClient.from('news_comments').insert([{
+            article_id: currentArticleId,
+            user_id: userInfo.id,
+            author: userInfo.username,
+            comment_text: commentText
+        }]);
         if (error) throw error;
         textarea.value = '';
         fetchAndRenderNewsComments(currentArticleId);
     } catch (error) {
         alert('حدث خطأ أثناء إرسال تعليقك.');
-        console.error('Comment submission error:', error);
+        console.error('News comment submission error:', error);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'إرسال التعليق';
@@ -448,7 +458,6 @@ function createMatchCardHTML(match) {
                 <div class="form-group"><button type="submit" class="submit-btn">${isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div>
             </form>
             
-            <!-- ====== START: MODIFIED CODE - Comments Section ====== -->
             <div class="match-footer">
                 <button class="toggle-comments-btn">
                     <i class="fa-solid fa-comments mr-2"></i> عرض التعليقات
@@ -463,7 +472,6 @@ function createMatchCardHTML(match) {
                     </form>
                 </div>
             </div>
-            <!-- ====== END: MODIFIED CODE ====== -->
         </div>
     </div>`;
 }
@@ -600,7 +608,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 });
 
 // ======================================================================
-// SECTION 5: FORM SUBMISSION HANDLER
+// SECTION 5: FORM SUBMISSION HANDLER (FOR PREDICTIONS ONLY)
 // ======================================================================
 async function handleFormSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -615,52 +623,48 @@ async function handleFormSubmit(form) {
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     submitBtn.disabled = true;
     
-    if (form.name === 'prediction-form') {
-        const matchId = form.closest('.match-card').dataset.matchId;
-        const winnerRadio = form.querySelector('input[name="winner"]:checked');
-        if (!winnerRadio) {
-            alert('الرجاء اختيار نتيجة المباراة.');
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-            return;
-        }
-        
-        const predictionData = { 
-            match_id: parseInt(matchId), 
-            user_id: userInfo.id,
-            username: userInfo.username,
-            predicted_winner: winnerRadio.value, 
-            predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
-        };
+    const matchId = form.closest('.match-card').dataset.matchId;
+    const winnerRadio = form.querySelector('input[name="winner"]:checked');
+    if (!winnerRadio) {
+        alert('الرجاء اختيار نتيجة المباراة.');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        return;
+    }
+    
+    const predictionData = { 
+        match_id: parseInt(matchId), 
+        user_id: userInfo.id,
+        username: userInfo.username,
+        predicted_winner: winnerRadio.value, 
+        predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
+    };
 
-        try {
-            const { error } = await supabaseClient.from('predictions').insert([predictionData]);
-            if (error) {
-                if (error.code === '23505') throw new Error('لقد قمت بالتوقع لهذه المباراة من قبل.');
-                else throw error;
-            }
-            submitBtn.innerHTML = `تم الإرسال ✅`;
-            [...form.elements].forEach(el => el.disabled = true);
-            localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
-        } catch (error) {
-            alert(`حدث خطأ: ${error.message}`);
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+    try {
+        const { error } = await supabaseClient.from('predictions').insert([predictionData]);
+        if (error) {
+            if (error.code === '23505') throw new Error('لقد قمت بالتوقع لهذه المباراة من قبل.');
+            else throw error;
         }
-    } else if (form.name === 'match-comment-form') {
-        // This is now handled by its own function
-        await handleMatchCommentSubmit(form);
+        submitBtn.innerHTML = `تم الإرسال ✅`;
+        [...form.elements].forEach(el => el.disabled = true);
+        localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
+    } catch (error) {
+        alert(`حدث خطأ: ${error.message}`);
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 }
 
 // ======================================================================
-// SECTION 6: MATCH COMMENTS LOGIC (NEW SECTION)
+// SECTION 6: MATCH COMMENTS LOGIC
 // ======================================================================
 async function fetchAndRenderMatchComments(matchId, listElement) {
     listElement.innerHTML = '<p class="text-center text-xs p-2">جاري تحميل التعليقات...</p>';
     try {
+        // CORRECT: Reads from the 'comments' table for matches
         const { data, error } = await supabaseClient
-            .from('match_comments')
+            .from('comments')
             .select('*')
             .eq('match_id', matchId)
             .order('created_at', { ascending: true });
@@ -702,27 +706,29 @@ function handleToggleComments(button) {
         : '<i class="fa-solid fa-eye-slash mr-2"></i> إخفاء التعليقات';
 }
 
+// Dedicated function for handling match comment submission
 async function handleMatchCommentSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
     const textarea = form.querySelector('textarea');
     const commentText = textarea.value.trim();
     const matchId = form.closest('.match-card').dataset.matchId;
 
     if (!commentText) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'إرسال';
         return;
     }
 
-    const userInfo = await getUserInfo(); // Already checked in parent function, but good for safety
+    const userInfo = await getUserInfo();
     if (!userInfo) {
         document.getElementById('user-choice-modal').classList.add('show');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'إرسال';
         return;
     }
-
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    
     try {
+        // CORRECT: Writes to the 'comments' table for matches
         const { error } = await supabaseClient.from('comments').insert([
             { match_id: matchId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }
         ]);
@@ -734,7 +740,7 @@ async function handleMatchCommentSubmit(form) {
         console.error('Match comment submission error:', error);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'إرسال';
+        submitBtn.innerHTML = originalText;
     }
 }
 
