@@ -57,18 +57,14 @@
         <div class="modal" id="auth-modal">
             <div class="modal-content">
                 <span class="close-button" id="close-auth-modal-btn">×</span>
-                <!-- Logged In View -->
-<div id="loggedin-view" style="display: none;">
-    <h2>أهلاً بك!</h2>
-    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
-    
-    <!-- تأكد من وجود هذا الزر -->
-    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
-        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
-    </button>
-    
-    <button id="logout-btn">تسجيل الخروج</button>
-</div>
+                <!-- Login View -->
+                <div id="login-view">
+                    <h2>تسجيل الدخول</h2>
+                    <form id="login-form">
+                        <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
+                        <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
+                        <button type="submit">دخول</button>
+                    </form>
                     <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
                 </div>
                 <!-- Signup View -->
