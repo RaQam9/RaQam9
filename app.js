@@ -635,19 +635,58 @@ data.forEach(comment => {
                 return;
             }
 
-            // Handle updates for news comments
-            if (payload.table === 'news_comments') {
-                const newComment = payload.new;
-                const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
+// Handle updates for match comments
+if (payload.table === 'comments') {
+    const newComment = payload.new;
+    const matchCard = document.querySelector(`.match-card[data-match-id='${newComment.match_id}']`);
+    
+    if (matchCard) {
+        const commentsSection = matchCard.querySelector('.comments-section');
+        if (commentsSection && commentsSection.style.display === 'block') {
+             const commentList = commentsSection.querySelector('.comment-list');
+             // ✅ التحسين: أضف التعليق الجديد مباشرة
+             addCommentToDOM(commentList, { author: newComment.author, text: newComment.comment_text });
+        }
+    }
+    return;
+}
 
-                // Only update if the user is currently viewing the article that received a new comment
-                if (articleIdOnPage && parseInt(articleIdOnPage) === newComment.article_id) {
-                    console.log(`New comment for article ${newComment.article_id}. Refreshing its comments.`);
-                    showNotification('💬 تم إضافة تعليق جديد!');
-                    fetchAndRenderNewsComments(newComment.article_id);
-                }
-                return;
-            }
+// Handle updates for news comments
+if (payload.table === 'news_comments') {
+    const newComment = payload.new;
+    const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
+
+    if (articleIdOnPage && parseInt(articleIdOnPage) === newComment.article_id) {
+        showNotification('💬 تم إضافة تعليق جديد!');
+        const commentsListDiv = document.getElementById('comments-list');
+        
+        // ✅ التحسين: أضف التعليق الجديد مباشرة
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment-item';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'comment-header';
+        
+        const authorSpan = document.createElement('span');
+        authorSpan.className = 'comment-author';
+        authorSpan.textContent = newComment.author;
+        
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'comment-date';
+        dateSpan.style.fontSize = '0.8rem';
+        dateSpan.textContent = new Date(newComment.created_at).toLocaleDateString('ar-EG');
+        
+        headerDiv.append(authorSpan, dateSpan);
+        
+        const bodyP = document.createElement('p');
+        bodyP.className = 'comment-body';
+        bodyP.textContent = newComment.comment_text;
+        
+        commentEl.append(headerDiv, bodyP);
+        commentsListDiv.appendChild(commentEl);
+    }
+    return;
+}
         };
 
         const channel = supabaseClient
