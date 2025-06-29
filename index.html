@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // SECTION 1: PREDICTIONS PAGE LOGIC
 // ======================================================================
 async function initializePredictionsPage() {
-    await updateUserStatus();
+    // The updateUserStatus and data fetching will be handled by the onAuthStateChange event
     try {
         const container = document.getElementById('matches-container');
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
@@ -179,6 +179,7 @@ async function initializePredictionsPage() {
         }));
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
+        await updateUserStatus(); // Initial status check
     } catch (error) {
         console.error("Error initializing predictions page:", error);
         document.getElementById('matches-container').innerHTML = `<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى التأكد من سياسات الأمان (RLS).</p>`;
@@ -222,7 +223,6 @@ function initializeAppWithData(matchesData) {
 
     attachTabEventListeners();
     attachMatchEventListeners();
-    loadPredictionsFromStorage();
     populateTicker();
 }
 
@@ -247,7 +247,6 @@ function attachMatchEventListeners() {
 
     container.addEventListener('submit', (e) => {
         e.preventDefault();
-        // Route to the correct handler based on the form's name
         if (e.target.matches('form[name="prediction-form"]')) {
             handleFormSubmit(e.target);
         } else if (e.target.matches('form[name="match-comment-form"]')) {
@@ -264,7 +263,7 @@ function attachMatchEventListeners() {
 }
 
 // ======================================================================
-// SECTION 2: NEWS PAGE LOGIC
+// SECTION 2: NEWS PAGE LOGIC (No changes needed here)
 // ======================================================================
 let articlesCache = [];
 let currentArticleId = null;
@@ -282,7 +281,6 @@ async function initializeNewsPage() {
         articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
     }
     document.getElementById('back-to-news-list').addEventListener('click', () => navigateToNewsSubPage('home'));
-    // Dedicated event listener for the news comment form
     document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
 }
 
@@ -339,7 +337,6 @@ async function fetchAndRenderNewsComments(articleId) {
     commentsList.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
     try {
         const { data, error } = await supabaseClient.from('news_comments').select('*').eq('article_id', articleId).order('created_at', { ascending: true });
-
         if (error) throw error;
         if (data.length === 0) {
             commentsList.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
@@ -366,28 +363,13 @@ async function handleNewsCommentSubmit(event) {
     const submitBtn = form.querySelector('button[type="submit"]');
     const textarea = form.querySelector('textarea');
     const commentText = textarea.value.trim();
-
-    if (!commentText) {
-        alert("لا يمكن إرسال تعليق فارغ.");
-        return;
-    }
-
+    if (!commentText) { alert("لا يمكن إرسال تعليق فارغ."); return; }
     const userInfo = await getUserInfo();
-    if (!userInfo) {
-        document.getElementById('user-choice-modal').classList.add('show');
-        return;
-    }
-
+    if (!userInfo) { document.getElementById('user-choice-modal').classList.add('show'); return; }
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
     try {
-        const { error } = await supabaseClient.from('news_comments').insert([{
-            article_id: currentArticleId,
-            user_id: userInfo.id,
-            author: userInfo.username,
-            comment_text: commentText
-        }]);
+        const { error } = await supabaseClient.from('news_comments').insert([{ article_id: currentArticleId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }]);
         if (error) throw error;
         textarea.value = '';
         fetchAndRenderNewsComments(currentArticleId);
@@ -399,7 +381,6 @@ async function handleNewsCommentSubmit(event) {
         submitBtn.textContent = 'إرسال التعليق';
     }
 }
-
 
 // ======================================================================
 // SECTION 3: HELPER FUNCTIONS (RENDERING, SORTING, ETC.)
@@ -460,9 +441,7 @@ function createMatchCardHTML(match) {
                     <i class="fa-solid fa-comments mr-2"></i> عرض التعليقات
                 </button>
                 <div class="comments-section">
-                    <div class="comment-list p-2">
-                        <!-- Comments will be loaded here by JavaScript -->
-                    </div>
+                    <div class="comment-list p-2"></div>
                     <form class="comment-form" name="match-comment-form">
                         <textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea>
                         <button type="submit">إرسال</button>
@@ -471,23 +450,6 @@ function createMatchCardHTML(match) {
             </div>
         </div>
     </div>`;
-}
-
-function loadPredictionsFromStorage() {
-    document.querySelectorAll('.match-card').forEach(card => {
-        const matchId = card.dataset.matchId;
-        const prediction = JSON.parse(localStorage.getItem(`prediction-${matchId}`));
-        if (prediction) {
-            const form = card.querySelector('.prediction-form');
-            if (form) {
-                const winnerRadio = form.querySelector(`input[value="${prediction.winner}"]`);
-                if (winnerRadio) winnerRadio.checked = true;
-                form.querySelector('.scorer-input').value = prediction.scorer || '';
-                [...form.elements].forEach(el => el.disabled = true);
-                form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
-            }
-        }
-    });
 }
 
 function populateTicker() {
@@ -501,40 +463,8 @@ function populateTicker() {
 }
 
 // ======================================================================
-// SECTION 4: AUTH & GUEST USER MANAGEMENT
+// SECTION 4: AUTH & GUEST USER MANAGEMENT (MODIFIED SECTION)
 // ======================================================================
-
-// Function to clear user-specific data from localStorage
-function clearUserLocalData() {
-    // Loop through all items in localStorage
-    Object.keys(localStorage).forEach(key => {
-        // If a key starts with "prediction-", remove it
-        if (key.startsWith('prediction-')) {
-            localStorage.removeItem(key);
-        }
-    });
-    // Also remove guest information
-    localStorage.removeItem('guestInfo');
-    console.log("User-specific local data cleared for logout.");
-}
-
-// Function to reset prediction forms to their initial state
-function resetPredictionFormsUI() {
-    document.querySelectorAll('.prediction-form').forEach(form => {
-        form.reset(); // Clears all inputs (radios, text)
-        const submitBtn = form.querySelector('.submit-btn');
-        const isEnded = form.classList.contains('disabled');
-        
-        // Re-enable all elements unless the match has ended
-        if (!isEnded) {
-             [...form.elements].forEach(el => el.disabled = false);
-        }
-
-        // Reset button text and state
-        submitBtn.innerHTML = isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع';
-    });
-    console.log("Prediction forms UI has been reset to default.");
-}
 
 function setupAuthAndGuestListeners() {
     const userIconBtn = document.getElementById('user-icon-btn');
@@ -556,10 +486,11 @@ function setupAuthAndGuestListeners() {
 
     userIconBtn.addEventListener('click', async () => {
         const { data: { user } } = await supabaseClient.auth.getUser();
-        if (user) {
-            if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) {
-                 await supabaseClient.auth.signOut();
-                 // The onAuthStateChange listener will automatically handle cleaning up the UI
+        const guestInfo = JSON.parse(localStorage.getItem('guestInfo'));
+
+        if (user || guestInfo) {
+            if (confirm('هل أنت متأكد من تسجيل الخروج / إنهاء جلسة الضيف؟')) {
+                await handleLogout();
             }
         } else {
             modal.classList.add('show');
@@ -574,36 +505,107 @@ function setupAuthAndGuestListeners() {
     document.getElementById('show-signup-link-inner').addEventListener('click', e => { e.preventDefault(); document.getElementById('login-view-inner').style.display = 'none'; document.getElementById('signup-view-inner').style.display = 'block'; });
     document.getElementById('show-login-link-inner').addEventListener('click', e => { e.preventDefault(); document.getElementById('signup-view-inner').style.display = 'none'; document.getElementById('login-view-inner').style.display = 'block'; });
 
-    document.getElementById('guest-form').addEventListener('submit', (e) => {
+    document.getElementById('guest-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('guest-username').value.trim();
         if (username) {
+            await handleLogout(); // Clear any previous session first
             localStorage.setItem('guestInfo', JSON.stringify({ username }));
-            updateUserStatus();
             modal.classList.remove('show');
+            updateUserStatus();
         }
     });
 
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = document.getElementById('signup-username').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
         authStatus.textContent = 'جاري إنشاء الحساب...';
-        const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { username } } });
+        const { error } = await supabaseClient.auth.signUp({ 
+            email: document.getElementById('signup-email').value, 
+            password: document.getElementById('signup-password').value, 
+            options: { data: { username: document.getElementById('signup-username').value } } 
+        });
         if (error) { authStatus.textContent = `خطأ: ${error.message}`; authStatus.style.color = 'red'; }
         else { authStatus.textContent = 'تم إرسال رابط التفعيل إلى بريدك الإلكتروني.'; authStatus.style.color = 'green'; }
     });
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
         authStatus.textContent = 'جاري تسجيل الدخول...';
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await supabaseClient.auth.signInWithPassword({ 
+            email: document.getElementById('login-email').value, 
+            password: document.getElementById('login-password').value 
+        });
         if (error) { authStatus.textContent = `خطأ: ${error.message}`; authStatus.style.color = 'red'; }
-        else { authStatus.textContent = 'تم تسجيل الدخول بنجاح!'; authStatus.style.color = 'green'; setTimeout(() => modal.classList.remove('show'), 1500); }
+        else { authStatus.textContent = 'تم تسجيل الدخول بنجاح!'; authStatus.style.color = 'green'; }
     });
+}
+
+/** [NEW] Resets all prediction forms to their initial state. */
+function resetAllPredictionForms() {
+    document.querySelectorAll('.match-card').forEach(card => {
+        const form = card.querySelector('.prediction-form');
+        if (form) {
+            form.reset();
+            const submitBtn = form.querySelector('.submit-btn');
+            if (!form.classList.contains('disabled')) {
+                [...form.elements].forEach(el => el.disabled = false);
+                submitBtn.innerHTML = 'إرسال التوقع';
+            }
+        }
+    });
+}
+
+/** [NEW] Clears only prediction data from localStorage. */
+function clearLocalPredictions() {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('prediction-')) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+}
+
+/** [NEW] Handles the complete logout process for both users and guests. */
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    localStorage.removeItem('guestInfo');
+    clearLocalPredictions();
+    resetAllPredictionForms();
+    // The onAuthStateChange listener will handle the rest.
+}
+
+/** [NEW] Fetches predictions for a logged-in user and applies them to the UI. */
+async function fetchAndApplyUserPredictions(userId) {
+    if (!userId) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('predictions')
+            .select('match_id, predicted_winner, predicted_scorer')
+            .eq('user_id', userId);
+        
+        if (error) throw error;
+
+        data.forEach(p => {
+            const card = document.querySelector(`.match-card[data-match-id="${p.match_id}"]`);
+            if (card) {
+                const form = card.querySelector('.prediction-form');
+                if (form) {
+                    const winnerRadio = form.querySelector(`input[value="${p.predicted_winner}"]`);
+                    if (winnerRadio) winnerRadio.checked = true;
+                    form.querySelector('.scorer-input').value = p.predicted_scorer || '';
+                    [...form.elements].forEach(el => el.disabled = true);
+                    form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+                    // Save to localStorage for this session to handle page reloads smoothly
+                    localStorage.setItem(`prediction-${p.match_id}`, JSON.stringify({ winner: p.predicted_winner, scorer: p.predicted_scorer }));
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching user predictions:", error);
+    }
 }
 
 async function updateUserStatus() {
@@ -615,7 +617,7 @@ async function updateUserStatus() {
     if (user) {
         userIcon.className = 'fa-solid fa-right-from-bracket';
         userIconBtn.title = `تسجيل الخروج (${user.user_metadata.username || user.email})`;
-        localStorage.removeItem('guestInfo');
+        localStorage.removeItem('guestInfo'); // Ensure no guest info conflicts
     } else if (guestInfo) {
         userIcon.className = 'fa-solid fa-user-pen';
         userIconBtn.title = `المشاركة كضيف (${guestInfo.username})`;
@@ -637,21 +639,22 @@ async function getUserInfo() {
     return null;
 }
 
-// This is now the central place to manage UI changes on auth state change.
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    updateUserStatus();
+// [MODIFIED] This listener now orchestrates the data flow on login/logout
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    // Clean the UI first, regardless of the event
+    resetAllPredictionForms();
+    clearLocalPredictions();
 
-    // If the user has signed out, clean up their local data and reset the forms
-    if (event === 'SIGNED_OUT') {
-        clearUserLocalData();
-        resetPredictionFormsUI();
-    }
+    if (event === 'SIGNED_IN' && session?.user) {
+        // User logged in: close modal, fetch their specific data
+        document.getElementById('user-choice-modal').classList.remove('show');
+        await fetchAndApplyUserPredictions(session.user.id);
+    } 
+    // For SIGNED_OUT or INITIAL_SESSION with no user, the UI is already clean.
     
-    // If the user has signed in, we reload the predictions from localStorage.
-    if (event === 'SIGNED_IN') {
-        loadPredictionsFromStorage();
-    }
+    updateUserStatus();
 });
+
 
 // ======================================================================
 // SECTION 5: FORM SUBMISSION HANDLER (FOR PREDICTIONS ONLY)
@@ -680,7 +683,7 @@ async function handleFormSubmit(form) {
     
     const predictionData = { 
         match_id: parseInt(matchId), 
-        user_id: userInfo.id,
+        user_id: userInfo.id, // Will be null for guests
         username: userInfo.username,
         predicted_winner: winnerRadio.value, 
         predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
@@ -694,10 +697,8 @@ async function handleFormSubmit(form) {
         }
         submitBtn.innerHTML = `تم الإرسال ✅`;
         [...form.elements].forEach(el => el.disabled = true);
-        
-        // Save to localStorage ONLY on successful submission
+        // Always save to localStorage for the current session's UI state
         localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
-
     } catch (error) {
         alert(`حدث خطأ: ${error.message}`);
         submitBtn.innerHTML = originalText;
@@ -706,19 +707,13 @@ async function handleFormSubmit(form) {
 }
 
 // ======================================================================
-// SECTION 6: MATCH COMMENTS LOGIC
+// SECTION 6: MATCH COMMENTS LOGIC (No changes needed here)
 // ======================================================================
 async function fetchAndRenderMatchComments(matchId, listElement) {
     listElement.innerHTML = '<p class="text-center text-xs p-2">جاري تحميل التعليقات...</p>';
     try {
-        const { data, error } = await supabaseClient
-            .from('comments')
-            .select('*')
-            .eq('match_id', matchId)
-            .order('created_at', { ascending: true });
-
+        const { data, error } = await supabaseClient.from('comments').select('*').eq('match_id', matchId).order('created_at', { ascending: true });
         if (error) throw error;
-
         if (data.length === 0) {
             listElement.innerHTML = '<p class="text-center text-xs text-gray-500 p-2">لا توجد تعليقات بعد. كن أول من يعلق!</p>';
         } else {
@@ -741,13 +736,11 @@ async function fetchAndRenderMatchComments(matchId, listElement) {
 function handleToggleComments(button) {
     const commentsSection = button.nextElementSibling;
     const isVisible = commentsSection.style.display === 'block';
-
     if (!isVisible) {
         const matchId = button.closest('.match-card').dataset.matchId;
         const commentList = commentsSection.querySelector('.comment-list');
         fetchAndRenderMatchComments(matchId, commentList);
     }
-
     commentsSection.style.display = isVisible ? 'none' : 'block';
     button.innerHTML = isVisible 
         ? '<i class="fa-solid fa-comments mr-2"></i> عرض التعليقات' 
@@ -760,20 +753,11 @@ async function handleMatchCommentSubmit(form) {
     const textarea = form.querySelector('textarea');
     const commentText = textarea.value.trim();
     const matchId = form.closest('.match-card').dataset.matchId;
-
-    if (!commentText) {
-        return;
-    }
-
+    if (!commentText) return;
     const userInfo = await getUserInfo();
-    if (!userInfo) {
-        document.getElementById('user-choice-modal').classList.add('show');
-        return;
-    }
-    
+    if (!userInfo) { document.getElementById('user-choice-modal').classList.add('show'); return; }
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-    
     try {
         const { error } = await supabaseClient.from('comments').insert([
             { match_id: matchId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }
