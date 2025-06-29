@@ -4,7 +4,7 @@
 const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const ADMIN_EMAIL = "your-email@example.com"; // <-- !! غير هذا إلى بريدك الإلكتروني
 // --!!-- قم بتغيير هذا البريد لبريد المستضيف --!!--
 const HOST_EMAIL = "host@example.com";
 
