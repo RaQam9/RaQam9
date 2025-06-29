@@ -338,7 +338,6 @@ async function fetchAndRenderNewsComments(articleId) {
     const commentsList = document.getElementById('news-comments-list');
     commentsList.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
     try {
-        // CORRECT: Reads from the 'news_comments' table
         const { data, error } = await supabaseClient.from('news_comments').select('*').eq('article_id', articleId).order('created_at', { ascending: true });
 
         if (error) throw error;
@@ -361,7 +360,6 @@ async function fetchAndRenderNewsComments(articleId) {
     }
 }
 
-// Dedicated function for handling news comment submission
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
     const form = event.target;
@@ -384,7 +382,6 @@ async function handleNewsCommentSubmit(event) {
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
     try {
-        // CORRECT: Writes to the 'news_comments' table
         const { error } = await supabaseClient.from('news_comments').insert([{
             article_id: currentArticleId,
             user_id: userInfo.id,
@@ -506,6 +503,39 @@ function populateTicker() {
 // ======================================================================
 // SECTION 4: AUTH & GUEST USER MANAGEMENT
 // ======================================================================
+
+// Function to clear user-specific data from localStorage
+function clearUserLocalData() {
+    // Loop through all items in localStorage
+    Object.keys(localStorage).forEach(key => {
+        // If a key starts with "prediction-", remove it
+        if (key.startsWith('prediction-')) {
+            localStorage.removeItem(key);
+        }
+    });
+    // Also remove guest information
+    localStorage.removeItem('guestInfo');
+    console.log("User-specific local data cleared for logout.");
+}
+
+// Function to reset prediction forms to their initial state
+function resetPredictionFormsUI() {
+    document.querySelectorAll('.prediction-form').forEach(form => {
+        form.reset(); // Clears all inputs (radios, text)
+        const submitBtn = form.querySelector('.submit-btn');
+        const isEnded = form.classList.contains('disabled');
+        
+        // Re-enable all elements unless the match has ended
+        if (!isEnded) {
+             [...form.elements].forEach(el => el.disabled = false);
+        }
+
+        // Reset button text and state
+        submitBtn.innerHTML = isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع';
+    });
+    console.log("Prediction forms UI has been reset to default.");
+}
+
 function setupAuthAndGuestListeners() {
     const userIconBtn = document.getElementById('user-icon-btn');
     const modal = document.getElementById('user-choice-modal');
@@ -527,7 +557,10 @@ function setupAuthAndGuestListeners() {
     userIconBtn.addEventListener('click', async () => {
         const { data: { user } } = await supabaseClient.auth.getUser();
         if (user) {
-            if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) await supabaseClient.auth.signOut();
+            if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) {
+                 await supabaseClient.auth.signOut();
+                 // The onAuthStateChange listener will automatically handle cleaning up the UI
+            }
         } else {
             modal.classList.add('show');
             resetModalViews();
@@ -546,6 +579,7 @@ function setupAuthAndGuestListeners() {
         const username = document.getElementById('guest-username').value.trim();
         if (username) {
             localStorage.setItem('guestInfo', JSON.stringify({ username }));
+            updateUserStatus();
             modal.classList.remove('show');
         }
     });
@@ -603,8 +637,20 @@ async function getUserInfo() {
     return null;
 }
 
+// This is now the central place to manage UI changes on auth state change.
 supabaseClient.auth.onAuthStateChange((event, session) => {
     updateUserStatus();
+
+    // If the user has signed out, clean up their local data and reset the forms
+    if (event === 'SIGNED_OUT') {
+        clearUserLocalData();
+        resetPredictionFormsUI();
+    }
+    
+    // If the user has signed in, we reload the predictions from localStorage.
+    if (event === 'SIGNED_IN') {
+        loadPredictionsFromStorage();
+    }
 });
 
 // ======================================================================
@@ -648,7 +694,10 @@ async function handleFormSubmit(form) {
         }
         submitBtn.innerHTML = `تم الإرسال ✅`;
         [...form.elements].forEach(el => el.disabled = true);
+        
+        // Save to localStorage ONLY on successful submission
         localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
+
     } catch (error) {
         alert(`حدث خطأ: ${error.message}`);
         submitBtn.innerHTML = originalText;
@@ -662,7 +711,6 @@ async function handleFormSubmit(form) {
 async function fetchAndRenderMatchComments(matchId, listElement) {
     listElement.innerHTML = '<p class="text-center text-xs p-2">جاري تحميل التعليقات...</p>';
     try {
-        // CORRECT: Reads from the 'comments' table for matches
         const { data, error } = await supabaseClient
             .from('comments')
             .select('*')
@@ -706,7 +754,6 @@ function handleToggleComments(button) {
         : '<i class="fa-solid fa-eye-slash mr-2"></i> إخفاء التعليقات';
 }
 
-// Dedicated function for handling match comment submission
 async function handleMatchCommentSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
@@ -728,7 +775,6 @@ async function handleMatchCommentSubmit(form) {
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     
     try {
-        // CORRECT: Writes to the 'comments' table for matches
         const { error } = await supabaseClient.from('comments').insert([
             { match_id: matchId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }
         ]);
