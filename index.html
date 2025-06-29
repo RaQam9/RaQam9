@@ -79,14 +79,18 @@
                     <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
                 </div>
                 <!-- Logged In View -->
-                <div id="loggedin-view" style="display: none;">
-                    <h2>أهلاً بك!</h2>
-                    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
-                    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
-                        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
-                    </button>
-                    <button id="logout-btn">تسجيل الخروج</button>
-                </div>
+                <!-- Logged In View -->
+<div id="loggedin-view" style="display: none;">
+    <h2>أهلاً بك!</h2>
+    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
+    
+    <!-- الزر الجديد -->
+    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
+        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
+    </button>
+    
+    <button id="logout-btn">تسجيل الخروج</button>
+</div>
                 <div id="auth-message"></div>
             </div>
         </div>
@@ -105,15 +109,20 @@
         </div></div>
         <div id="notification-toast"></div>
         <div id="exit-toast">انقر مرة أخرى للخروج</div>
-    </div>
   
-    <!-- Profile Page -->
-    <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full">
+<script src="app.js">
+</script>
+    <!-- ======================= -->
+    <!--     Profile Page        -->
+    <!-- ======================= -->
+    <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
         <header class="flex items-center justify-between pb-4 border-b border-[#30363d] mb-6">
             <h1 class="text-2xl font-bold"><i class="fa-solid fa-user-circle ml-3"></i>الملف الشخصي</h1>
             <button id="close-profile-btn" class="text-2xl text-gray-400">×</button>
         </header>
+
         <main>
+            <!-- Change Username Section -->
             <section id="username-section" class="mb-8 p-4 bg-[#161b22] rounded-lg border border-[#30363d]">
                 <h2 class="text-lg font-bold mb-3">تغيير اسم المستخدم</h2>
                 <div class="flex gap-2">
@@ -122,17 +131,23 @@
                 </div>
                 <p id="username-status" class="text-sm mt-2 text-gray-400"></p>
             </section>
+
+            <!-- Predictions Section -->
             <section id="profile-predictions-section" class="mb-8">
                 <h2 class="text-lg font-bold mb-3">آخر توقعاتك</h2>
-                <div id="profile-predictions-list" class="space-y-3"></div>
+                <div id="profile-predictions-list" class="space-y-3">
+                    <!-- Predictions will be loaded here by JS -->
+                </div>
             </section>
+
+            <!-- Comments Section -->
             <section id="profile-comments-section">
                 <h2 class="text-lg font-bold mb-3">آخر تعليقاتك</h2>
-                <div id="profile-comments-list" class="space-y-3"></div>
+                <div id="profile-comments-list" class="space-y-3">
+                    <!-- Comments will be loaded here by JS -->
+                </div>
             </section>
         </main>
     </div>
-
-    <script src="app.js"></script>
 </body>
 </html>
