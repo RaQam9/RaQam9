@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>المركز الرياضي - نسخة مستقرة</title>
+    <title>المركز الرياضي - النسخة النهائية</title>
     
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -19,20 +19,10 @@
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
     </script>
-
-    <!-- Google Analytics (إذا كنت تستخدمه) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-05JCQWTWHK');
-    </script>
     
     <!-- CSS Styles -->
     <style>
-        /* نفس كود الـ CSS من ملفك الأصلي، لم يتغير */
-        :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1,#news-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .dismiss-icon-button{background-color:var(--surface-color);color:var(--secondary-text-color);width:28px;height:28px;border-radius:50%;border:1px solid var(--border-color);font-size:.9rem;display:flex;justify-content:center;align-items:center;cursor:pointer}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}.modal.show{display:flex}.modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}.modal-content h2{font-size:1.2rem;margin-bottom:20px;text-align:center}.modal .form-control input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}.modal .form-control{margin-bottom:15px}.modal button.submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer}.close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .submit-btn.error{background-color:var(--danger-color)}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .toggle-comments-btn:disabled{opacity:.6;cursor:not-allowed}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#news-page{height:calc(100vh - 70px)}#news-page .page{position:absolute;top:0;left:0;width:100%;height:100%;padding:15px;padding-top:0;overflow-y:auto;background-color:var(--bg-color);transition:transform .35s ease-in-out;display:flex;flex-direction:column}#news-page #home-page{transform:translateX(0);z-index:10}#news-page #article-page{transform:translateX(100%);z-index:20;touch-action:pan-y}#news-page #article-content{padding-top:15px;padding-bottom:10px}#news-page #article-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:10px}#news-page #article-header h1{font-size:1.8rem;flex-grow:1;line-height:1.4}#news-page #share-button{background:0 0;border:none;color:var(--secondary-text-color);font-size:1.5rem;cursor:pointer;padding:5px}#news-page #article-content img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px}#news-page #article-content p{font-size:1.1rem;line-height:1.8;margin-bottom:15px;color:var(--secondary-text-color)}#news-page .comments-section{padding:20px 0;margin-top:25px;border-top:1px solid var(--border-color)}#news-page .comments-section h2{font-size:1.5rem;margin-bottom:20px}#news-page .comment-item{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;padding:15px;margin-bottom:10px;position:relative}#news-page .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--secondary-text-color);font-size:.9rem;flex-wrap:wrap}#news-page .comment-author{font-weight:700}#news-page .comment-body{font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word}#news-page .delete-comment-btn{position:absolute;top:10px;left:10px;background:0 0;border:none;color:var(--secondary-text-color);cursor:pointer;font-size:.9rem;transition:color .2s;padding:5px}#news-page .delete-comment-btn:hover{color:var(--danger-color)}#news-page #comment-form input,#news-page #comment-form textarea{width:100%;padding:12px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;color:var(--primary-text-color);margin-bottom:10px;font-size:1rem}#news-page #comment-form button{width:100%;background-color:var(--accent-color);color:white;border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:8px;font-size:1rem;transition:background-color .2s}#news-page #comment-form button:disabled{background-color:var(--secondary-text-color);cursor:not-allowed}#news-page #articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px}#news-page .article-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;position:relative}#news-page .article-card img{width:100%;height:180px;object-fit:cover}#news-page .article-card .article-title{padding:15px;font-size:1.1rem;font-weight:700;flex-grow:1}#exit-toast,#notification-toast{position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,.8);color:white;padding:10px 20px;border-radius:20px;z-index:2000;font-size:.9rem;transition:bottom .3s ease-in-out;box-shadow:0 4px 12px rgba(0,0,0,.2)}#exit-toast.show,#notification-toast.show{bottom:30px}
+        :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}.modal.show{display:flex}.modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}.modal-content h2{font-size:1.4rem;margin-bottom:20px;text-align:center}.modal .form-control input{width:100%;padding:12px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px;font-size:1rem}.modal .form-control{margin-bottom:15px}.modal .form-control label{display:block;margin-bottom:8px;font-size:0.9rem;color:var(--secondary-text-color)}.modal button.submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700}.close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .dismiss-icon-button{background-color:var(--surface-color);color:var(--secondary-text-color);width:28px;height:28px;border-radius:50%;border:1px solid var(--border-color);font-size:.9rem;display:flex;justify-content:center;align-items:center;cursor:pointer}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
     </style>
 </head>
 <body class="bg-[#0d1117]">
@@ -49,26 +39,24 @@
     <div id="predictions-page" class="page-container">
         <div class="container">
             <header><h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
-            <div class="news-ticker"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
+            <div id="news-ticker" class="news-ticker" style="display: none;"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
             <main id="matches-container"><!-- Content is loaded by JavaScript --></main>
         </div>
         <div class="floating-icon-container" id="floating-icon-container">
-            <button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button>
-            <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / إنشاء حساب"><i class="fa-solid fa-user-pen"></i></button>
+            <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / إنشاء حساب"><i class="fa-solid fa-user-plus"></i></button>
         </div>
     </div>
     
-    <!-- News Page -->
-    <div id="news-page" class="page-container hidden relative">
-        <!-- نفس محتوى صفحة الأخبار، لم يتغير -->
+    <!-- News Page (You can add its content here later) -->
+    <div id="news-page" class="page-container hidden">
+        <p class="text-center text-2xl mt-10">صفحة الأخبار - سيتم بناؤها لاحقًا</p>
     </div>
 
-    <!-- ===== NEW MODAL FOR AUTH/GUEST ===== -->
+    <!-- Modal for Auth/Guest -->
     <div class="modal" id="user-choice-modal">
         <div class="modal-content">
             <span class="close-button" id="close-choice-modal-btn">×</span>
             
-            <!-- View 1: The Initial Choice -->
             <div id="choice-view">
                 <h2 class="font-bold">للمشاركة في التوقعات</h2>
                 <p class="text-gray-400 mb-6 text-center">اختر طريقة المشاركة</p>
@@ -76,10 +64,8 @@
                 <button id="show-guest-view-btn" class="w-full p-3 bg-gray-600 text-white rounded-lg font-bold">المتابعة كضيف</button>
             </div>
 
-            <!-- View 2: Login/Signup Form (Initially Hidden) -->
             <div id="auth-view" style="display: none;">
                 <button id="back-to-choice-btn" class="mb-4 text-blue-400">← الرجوع للاختيار</button>
-                <!-- Login Form -->
                 <div id="login-view-inner">
                     <h2 class="font-bold">تسجيل الدخول</h2>
                     <form id="login-form">
@@ -89,7 +75,6 @@
                     </form>
                     <p class="text-center mt-4">ليس لديك حساب؟ <a href="#" id="show-signup-link-inner" class="text-blue-400">أنشئ حسابًا</a></p>
                 </div>
-                <!-- Signup Form -->
                 <div id="signup-view-inner" style="display: none;">
                     <h2 class="font-bold">إنشاء حساب جديد</h2>
                     <form id="signup-form">
@@ -103,7 +88,6 @@
                 <div id="auth-status-inner" class="text-center mt-3 h-5"></div>
             </div>
             
-            <!-- View 3: Guest Name Form (Initially Hidden) -->
             <div id="guest-view" style="display: none;">
                 <h2 class="font-bold">المتابعة كضيف</h2>
                 <form id="guest-form">
@@ -120,89 +104,241 @@
 
 <script>
 // ==========================================================
-// SECTION 0: GLOBAL SETUP (Supabase Client & Page Switching)
+// SECTION 0: GLOBAL SETUP & INITIALIZATION
 // ==========================================================
-const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co'; // ضع الرابط الخاص بك
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; // ضع المفتاح الخاص بك
+const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co'; // <--- ضع رابط Supabase الخاص بك هنا
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; // <--- ضع مفتاح Anon الخاص بك هنا
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Page switching logic (no changes)
+    // Page switching logic
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
     const newsPage = document.getElementById('news-page');
     
-    function switchPage(pageToShow) { 
-        if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
-        if (pageToShow === 'predictions') { 
-            predictionsPage.classList.remove('hidden'); 
-            newsPage.classList.add('hidden'); 
-            predictionsBtn.classList.add('bg-blue-600', 'text-white'); 
-            predictionsBtn.classList.remove('text-gray-400'); 
-            newsBtn.classList.remove('bg-blue-600', 'text-white'); 
-            newsBtn.classList.add('text-gray-400'); 
-        } else { 
-            newsPage.classList.remove('hidden'); 
-            predictionsPage.classList.add('hidden'); 
-            newsBtn.classList.add('bg-blue-600', 'text-white'); 
-            newsBtn.classList.remove('text-gray-400'); 
-            predictionsBtn.classList.remove('bg-blue-600', 'text-white'); 
-            predictionsBtn.classList.add('text-gray-400'); 
-        } 
+    function switchPage(pageToShow) {
+        predictionsPage.classList.toggle('hidden', pageToShow !== 'predictions');
+        newsPage.classList.toggle('hidden', pageToShow !== 'news');
+        predictionsBtn.classList.toggle('bg-blue-600', pageToShow === 'predictions');
+        predictionsBtn.classList.toggle('text-white', pageToShow === 'predictions');
+        predictionsBtn.classList.toggle('text-gray-400', pageToShow !== 'predictions');
+        newsBtn.classList.toggle('bg-blue-600', pageToShow === 'news');
+        newsBtn.classList.toggle('text-white', pageToShow === 'news');
+        newsBtn.classList.toggle('text-gray-400', pageToShow !== 'news');
     }
     
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // Initialize both pages
+    // Initialize the main functionality
     initializePredictionsPage();
-    // initializeNewsPage(); // يمكنك تفعيلها عند الحاجة
+    // You can initialize the news page here as well if needed
 });
 
 // ======================================================================
-// SECTION 0.5: AUTH & GUEST USER MANAGEMENT (NEW LOGIC)
+// SECTION 1: PREDICTIONS PAGE CORE LOGIC
 // ======================================================================
-const userIconBtn = document.getElementById('user-icon-btn');
-const userChoiceModal = document.getElementById('user-choice-modal');
-const closeChoiceModalBtn = document.getElementById('close-choice-modal-btn');
-const choiceView = document.getElementById('choice-view');
-const authView = document.getElementById('auth-view');
-const guestView = document.getElementById('guest-view');
+async function initializePredictionsPage() {
+    setupAuthAndGuestListeners();
+    await updateUserStatus();
 
-function setupAuthAndGuestListeners() {
-    const showLoginViewBtn = document.getElementById('show-login-view-btn');
-    const showGuestViewBtn = document.getElementById('show-guest-view-btn');
-    const backToChoiceBtn = document.getElementById('back-to-choice-btn');
-    const guestForm = document.getElementById('guest-form');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const showSignupLink = document.getElementById('show-signup-link-inner');
-    const showLoginLink = document.getElementById('show-login-link-inner');
-    const authStatus = document.getElementById('auth-status-inner');
+    try {
+        const container = document.getElementById('matches-container');
+        container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
+        
+        let { data: matchesDataFromDB, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
 
-    // Main floating button logic
-    userIconBtn.addEventListener('click', async () => {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (user) {
-            if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) {
-                await supabaseClient.auth.signOut();
-            }
-        } else {
-            // If not logged in, open the choice modal
-            userChoiceModal.classList.add('show');
-            resetModalViews();
+        if (error) { throw error; }
+
+        if (!matchesDataFromDB || matchesDataFromDB.length === 0) {
+             container.innerHTML = '<p class="text-center text-gray-400 mt-8">لا توجد مباريات متاحة حالياً.</p>';
+             return;
+        }
+
+        const formattedMatches = matchesDataFromDB.map(match => ({ 
+            id: match.id, 
+            team1: { name: match.team1_name, logo: match.team1_logo }, 
+            team2: { name: match.team2_name, logo: match.team2_logo }, 
+            league: match.league, 
+            datetime: match.datetime, 
+            channels: match.channels || [] 
+        }));
+
+        container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
+        
+        initializeAppWithData(formattedMatches);
+
+    } catch (error) {
+        console.error("Error initializing predictions page:", error);
+        document.getElementById('matches-container').innerHTML = `<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى التأكد من سياسات الأمان (RLS) في Supabase.</p>`;
+    }
+}
+
+function initializeAppWithData(matchesData) {
+    const dateTabsContainer = document.getElementById('date-tabs');
+    const daysContentContainer = document.getElementById('days-content-container');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const matchesByDay = matchesData
+        .filter(m => new Date(new Date(m.datetime).toLocaleDateString('en-CA')) >= today)
+        .reduce((acc, match) => {
+            const dateKey = new Date(match.datetime).toLocaleDateString('en-CA');
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(match);
+            return acc;
+        }, {});
+    
+    if (Object.keys(matchesByDay).length === 0) {
+        daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`;
+        return;
+    }
+
+    Object.keys(matchesByDay).sort().forEach((day, index) => {
+        const tabEl = document.createElement('div');
+        tabEl.className = `date-tab ${index === 0 ? 'active' : ''}`;
+        tabEl.textContent = new Date(day + 'T00:00:00').toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' });
+        tabEl.dataset.tabId = day;
+        dateTabsContainer.appendChild(tabEl);
+
+        const dayContentEl = document.createElement('div');
+        dayContentEl.className = `day-content ${index === 0 ? 'active' : ''}`;
+        dayContentEl.id = `day-${day}`;
+        daysContentContainer.appendChild(dayContentEl);
+        
+        renderMatchesForDay(dayContentEl, sortMatches(matchesByDay[day]));
+    });
+    
+    attachTabEventListeners();
+    attachMatchEventListeners();
+    loadPredictionsFromStorage();
+    populateTicker();
+}
+
+function renderMatchesForDay(container, matches) {
+    container.innerHTML = matches.map(createMatchCardHTML).join('');
+}
+
+function attachTabEventListeners() {
+    document.getElementById('date-tabs')?.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('date-tab')) return;
+        const tabId = e.target.dataset.tabId;
+        document.querySelectorAll('.date-tab').forEach(tab => tab.classList.remove('active'));
+        e.target.classList.add('active');
+        document.querySelectorAll('.day-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(`day-${tabId}`)?.classList.add('active');
+    });
+}
+
+function attachMatchEventListeners() {
+    document.getElementById('days-content-container')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (e.target.matches('form[name="prediction-form"], form[name="match-comment-form"]')) {
+            handleFormSubmit(e.target);
         }
     });
+    // Add listener for comments toggle later if needed
+}
 
-    // Modal view switching
-    closeChoiceModalBtn.addEventListener('click', () => userChoiceModal.classList.remove('show'));
-    showLoginViewBtn.addEventListener('click', () => { choiceView.style.display = 'none'; authView.style.display = 'block'; });
-    showGuestViewBtn.addEventListener('click', () => { choiceView.style.display = 'none'; guestView.style.display = 'block'; });
-    backToChoiceBtn.addEventListener('click', resetModalViews);
+// ======================================================================
+// SECTION 2: HELPER FUNCTIONS (RENDERING, SORTING, ETC.)
+// ======================================================================
 
-    showSignupLink.addEventListener('click', e => { e.preventDefault(); document.getElementById('login-view-inner').style.display = 'none'; document.getElementById('signup-view-inner').style.display = 'block'; });
-    showLoginLink.addEventListener('click', e => { e.preventDefault(); document.getElementById('signup-view-inner').style.display = 'none'; document.getElementById('login-view-inner').style.display = 'block'; });
+function getMatchStatus(datetime) {
+    const diffMinutes = (new Date(datetime).getTime() - new Date().getTime()) / 60000;
+    if (diffMinutes < -125) return 'ended';
+    if (diffMinutes <= 0) return 'live';
+    if (diffMinutes <= 5) return 'soon';
+    return 'scheduled';
+}
+
+function sortMatches(matches) {
+    const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 };
+    return matches.sort((a, b) => {
+        const statusA = getMatchStatus(a.datetime);
+        const statusB = getMatchStatus(b.datetime);
+        return statusOrder[statusA] - statusOrder[statusB] || new Date(a.datetime) - new Date(b.datetime);
+    });
+}
+
+function createMatchCardHTML(match) {
+    const status = getMatchStatus(match.datetime);
+    const isEnded = status === 'ended';
+    const matchDate = new Date(match.datetime);
+
+    let statusHTML;
+    switch (status) {
+        case 'ended': statusHTML = `<span class="match-status ended">انتهت</span>`; break;
+        case 'live': statusHTML = `<span class="match-status live">مباشر</span>`; break;
+        case 'soon': statusHTML = `<span class="match-status soon">بعد قليل</span>`; break;
+        default: statusHTML = `<div class="match-time">${matchDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>`;
+    }
+    
+    return `
+    <div class="match-card" data-match-id="${match.id}">
+        <div class="match-header">
+            <span class="match-league">${match.league}</span>
+            <span class="match-date-time">${matchDate.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' })}</span>
+        </div>
+        <div class="match-body">
+            <div class="teams-row">
+                <div class="team"><img src="${match.team1.logo}" alt="${match.team1.name}" onerror="this.style.display='none'"><span class="team-name">${match.team1.name}</span></div>
+                <div class="match-status-container">${statusHTML}</div>
+                <div class="team"><img src="${match.team2.logo}" alt="${match.team2.name}" onerror="this.style.display='none'"><span class="team-name">${match.team2.name}</span></div>
+            </div>
+            <form name="prediction-form" class="prediction-form ${isEnded ? 'disabled' : ''}">
+                <div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${match.channels.join(' / ') || "غير محددة"}</span></legend></div>
+                <div class="form-group"><legend>توقع النتيجة:</legend>
+                    <div class="prediction-options">
+                        <input type="radio" name="winner" id="win1-${match.id}" value="${match.team1.name}" required><label for="win1-${match.id}">${match.team1.name}</label>
+                        <input type="radio" name="winner" id="draw-${match.id}" value="تعادل"><label for="draw-${match.id}">تعادل</label>
+                        <input type="radio" name="winner" id="win2-${match.id}" value="${match.team2.name}" required><label for="win2-${match.id}">${match.team2.name}</label>
+                    </div>
+                </div>
+                <div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div>
+                <div class="form-group"><button type="submit" class="submit-btn">${isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div>
+            </form>
+        </div>
+    </div>`;
+}
+
+function loadPredictionsFromStorage() {
+    document.querySelectorAll('.match-card').forEach(card => {
+        const matchId = card.dataset.matchId;
+        const prediction = JSON.parse(localStorage.getItem(`prediction-${matchId}`));
+        if (prediction) {
+            const form = card.querySelector('.prediction-form');
+            const winnerRadio = form.querySelector(`input[value="${prediction.winner}"]`);
+            if (winnerRadio) winnerRadio.checked = true;
+            form.querySelector('.scorer-input').value = prediction.scorer || '';
+            [...form.elements].forEach(el => el.disabled = true);
+            form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+        }
+    });
+}
+
+function populateTicker() {
+    const tickerContainer = document.getElementById('news-ticker');
+    const tickerContent = document.getElementById('predictions-ticker-content');
+    const messages = ["🏆 سيتم تكريم أفضل المتوقعين قريباً!", "💡 سجل دخولك للمشاركة في لوحة الصدارة."];
+    if (messages.length > 0) {
+        tickerContent.innerHTML = messages.map(msg => `<span class="ticker-item">${msg}</span>`).join('');
+        tickerContainer.style.display = 'flex';
+    }
+}
+
+// ======================================================================
+// SECTION 3: AUTH & GUEST USER MANAGEMENT
+// ======================================================================
+function setupAuthAndGuestListeners() {
+    const userIconBtn = document.getElementById('user-icon-btn');
+    const modal = document.getElementById('user-choice-modal');
+    const closeBtn = document.getElementById('close-choice-modal-btn');
+    const choiceView = document.getElementById('choice-view');
+    const authView = document.getElementById('auth-view');
+    const guestView = document.getElementById('guest-view');
+    const authStatus = document.getElementById('auth-status-inner');
 
     function resetModalViews() {
         choiceView.style.display = 'block';
@@ -213,200 +349,136 @@ function setupAuthAndGuestListeners() {
         authStatus.textContent = '';
     }
 
-    // Guest form submission
-    guestForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const guestUsername = document.getElementById('guest-username').value.trim();
-        if (guestUsername) {
-            localStorage.setItem('guestInfo', JSON.stringify({ username: guestUsername }));
-            alert(`أهلاً بك كضيف، ${guestUsername}! يمكنك الآن المشاركة. حاول إرسال توقعك مرة أخرى.`);
-            userChoiceModal.classList.remove('show');
-            updateUserStatus(); // Update UI immediately
+    userIconBtn.addEventListener('click', async () => {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+            if (confirm('هل أنت متأكد أنك تريد تسجيل الخروج؟')) await supabaseClient.auth.signOut();
+        } else {
+            modal.classList.add('show');
+            resetModalViews();
         }
     });
 
-    // Signup form submission
-    signupForm.addEventListener('submit', async (e) => {
+    closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+    document.getElementById('show-login-view-btn').addEventListener('click', () => { choiceView.style.display = 'none'; authView.style.display = 'block'; });
+    document.getElementById('show-guest-view-btn').addEventListener('click', () => { choiceView.style.display = 'none'; guestView.style.display = 'block'; });
+    document.getElementById('back-to-choice-btn').addEventListener('click', resetModalViews);
+    document.getElementById('show-signup-link-inner').addEventListener('click', e => { e.preventDefault(); document.getElementById('login-view-inner').style.display = 'none'; document.getElementById('signup-view-inner').style.display = 'block'; });
+    document.getElementById('show-login-link-inner').addEventListener('click', e => { e.preventDefault(); document.getElementById('signup-view-inner').style.display = 'none'; document.getElementById('login-view-inner').style.display = 'block'; });
+
+    document.getElementById('guest-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('guest-username').value.trim();
+        if (username) {
+            localStorage.setItem('guestInfo', JSON.stringify({ username }));
+            modal.classList.remove('show');
+        }
+    });
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('signup-username').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         authStatus.textContent = 'جاري إنشاء الحساب...';
-        
         const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { username } } });
-        
-        if (error) {
-            authStatus.textContent = `خطأ: ${error.message}`;
-            authStatus.style.color = 'red';
-        } else {
-            authStatus.textContent = 'تم إنشاء الحساب! يمكنك الآن تسجيل الدخول.';
-            authStatus.style.color = 'green';
-            setTimeout(() => {
-                document.getElementById('signup-view-inner').style.display = 'none';
-                document.getElementById('login-view-inner').style.display = 'block';
-            }, 2000);
-        }
+        if (error) { authStatus.textContent = `خطأ: ${error.message}`; authStatus.style.color = 'red'; }
+        else { authStatus.textContent = 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.'; authStatus.style.color = 'green'; }
     });
 
-    // Login form submission
-    loginForm.addEventListener('submit', async (e) => {
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
         authStatus.textContent = 'جاري تسجيل الدخول...';
-
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        
-        if (error) {
-            authStatus.textContent = `خطأ: ${error.message}`;
-            authStatus.style.color = 'red';
-        } else {
-            authStatus.textContent = 'تم تسجيل الدخول بنجاح!';
-            authStatus.style.color = 'green';
-            setTimeout(() => { userChoiceModal.classList.remove('show'); }, 1500);
-        }
+        if (error) { authStatus.textContent = `خطأ: ${error.message}`; authStatus.style.color = 'red'; }
+        else { authStatus.textContent = 'تم تسجيل الدخول بنجاح!'; authStatus.style.color = 'green'; setTimeout(() => modal.classList.remove('show'), 1500); }
     });
 }
 
 async function updateUserStatus() {
+    const userIconBtn = document.getElementById('user-icon-btn');
+    const userIcon = userIconBtn.querySelector('i');
     const { data: { user } } = await supabaseClient.auth.getUser();
     const guestInfo = JSON.parse(localStorage.getItem('guestInfo'));
-    const userIcon = userIconBtn.querySelector('i');
 
     if (user) {
-        // Logged-in user
         userIcon.className = 'fa-solid fa-right-from-bracket';
         userIconBtn.title = `تسجيل الخروج (${user.user_metadata.username || user.email})`;
-        localStorage.removeItem('guestInfo'); // Clear guest info if user logs in
+        localStorage.removeItem('guestInfo');
     } else if (guestInfo) {
-        // Guest user
         userIcon.className = 'fa-solid fa-user-pen';
-        userIconBtn.title = `تغيير اسم الضيف (${guestInfo.username})`;
+        userIconBtn.title = `المشاركة كضيف (${guestInfo.username})`;
     } else {
-        // No user, no guest
         userIcon.className = 'fa-solid fa-user-plus';
         userIconBtn.title = 'تسجيل الدخول / إنشاء حساب';
     }
 }
 
-// Listen for auth state changes
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    console.log(`Auth event: ${event}`);
     updateUserStatus();
 });
 
 // ======================================================================
-// SECTION 1: PREDICTIONS PAGE LOGIC (MODIFIED)
+// SECTION 4: FORM SUBMISSION HANDLER
 // ======================================================================
-async function initializePredictionsPage() {
-    setupAuthAndGuestListeners();
-    updateUserStatus();
-
-    // The rest of your initializePredictionsPage function...
-    // ... (This part is mostly unchanged)
-}
-
-// ... Keep your existing functions for rendering matches, etc.
-// `getMatchStatus`, `renderMatchesForDay`, `attachTabEventListeners`, etc.
-
-// CRITICAL MODIFICATION: The form submission handler
 async function handleFormSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
+    const originalText = submitBtn.textContent;
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     submitBtn.disabled = true;
 
-    // --- NEW: User identity check ---
-    let userInfo = null;
+    let userInfo;
     const { data: { user } } = await supabaseClient.auth.getUser();
-
     if (user) {
-        userInfo = { id: user.id, username: user.user_metadata.username || user.email, isGuest: false };
+        userInfo = { id: user.id, username: user.user_metadata.username || user.email };
     } else {
         const guestInfo = JSON.parse(localStorage.getItem('guestInfo'));
-        if (guestInfo) {
-            userInfo = { id: null, username: guestInfo.username, isGuest: true };
-        }
+        if (guestInfo) userInfo = { id: null, username: guestInfo.username };
     }
 
     if (!userInfo) {
-        alert('للمشاركة، يرجى تسجيل الدخول أو المتابعة كضيف.');
-        userChoiceModal.classList.add('show');
+        document.getElementById('user-choice-modal').classList.add('show');
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
         return;
     }
 
-    // --- End of identity check ---
-
     if (form.name === 'prediction-form') {
-        const matchCard = form.closest('.match-card');
-        const matchId = matchCard.dataset.matchId;
+        const matchId = form.closest('.match-card').dataset.matchId;
         const winnerRadio = form.querySelector('input[name="winner"]:checked');
-        if (!winnerRadio) { /*... alert ...*/ return; }
+        if (!winnerRadio) {
+            alert('الرجاء اختيار نتيجة المباراة.');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
         
         const predictionData = { 
             match_id: parseInt(matchId), 
-            user_id: userInfo.id, // Will be null for guests
-            username: userInfo.username, // Username for display
+            user_id: userInfo.id,
+            username: userInfo.username,
             predicted_winner: winnerRadio.value, 
             predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
         };
 
         try {
             const { error } = await supabaseClient.from('predictions').insert([predictionData]);
-            if (error) throw error;
+            if (error) {
+                if (error.code === '23505') throw new Error('لقد قمت بالتوقع لهذه المباراة من قبل.');
+                else throw error;
+            }
             submitBtn.innerHTML = `تم الإرسال ✅`;
             [...form.elements].forEach(el => el.disabled = true);
             localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
         } catch (error) {
-            console.error('Error submitting prediction:', error);
-            alert('حدث خطأ. قد تكون توقعت لهذه المباراة من قبل.');
+            alert(`حدث خطأ: ${error.message}`);
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
     }
-
-    if (form.name === 'match-comment-form') {
-        const matchCard = form.closest('.match-card');
-        const matchId = matchCard.dataset.matchId;
-        const commentText = form.querySelector('textarea').value.trim();
-        if (!commentText) { /* ... handle empty comment ... */ return; }
-        
-        try {
-            const { error } = await supabaseClient.from('comments').insert([{ 
-                match_id: parseInt(matchId), 
-                user_id: userInfo.id, // Will be null for guests
-                author: userInfo.username, 
-                comment_text: commentText 
-            }]);
-            if (error) throw error;
-            // ... (rest of the logic to add comment to DOM)
-        } catch(error) {
-            // ... (error handling)
-        } finally {
-            submitBtn.innerHTML = "إرسال";
-            submitBtn.disabled = false;
-        }
-    }
 }
-
-// You will need to attach this handler to your match container.
-// Make sure the `attachMatchEventListeners` function calls this new `handleFormSubmit`
-function attachMatchEventListeners() {
-    // ...
-    const container = document.getElementById('days-content-container');
-    container.addEventListener('submit', e => {
-        e.preventDefault();
-        if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') {
-            handleFormSubmit(e.target); // Use the new handler
-        }
-    });
-    // ...
-}
-
-// ... Keep all your other functions (`handleToggleComments`, `initializeAppWithData`, etc.)
-// Make sure you haven't deleted any!
 
 </script>
 </body>
