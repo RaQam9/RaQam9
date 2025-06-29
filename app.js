@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePredictionsPage();
     initializeNewsPage();
     initializeRealtimeListeners();
-    initializeGlobalEventListeners(); // <-- ✨ إضافة جديدة: مستمع الأحداث العام
+    initializeGlobalEventListeners(); 
+initializeProfilePageListeners();
+// <-- ✨ إضافة جديدة: مستمع الأحداث العام
 });
 
 // ==========================================================
@@ -573,8 +575,6 @@ function initializeProfilePageListeners() {
     }
 }
 
-// Call the function to set up listeners when the document is ready
-document.addEventListener('DOMContentLoaded', initializeProfilePageListeners);
 
 
 function openProfilePage() {
