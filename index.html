@@ -124,24 +124,17 @@
 const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const locale = 'ar-EG-u-nu-latn';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Page switching logic
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
     const newsPage = document.getElementById('news-page');
 
-    /**
-     *  --- START: THE FIX ---
-     * This is the new, smart function to handle page switching and on-demand content loading.
-    */
     function switchPage(pageToShow) {
         const isPredictions = pageToShow === 'predictions';
         
-        // Step 1: Toggle visibility and button styles
         predictionsPage.classList.toggle('hidden', !isPredictions);
         newsPage.classList.toggle('hidden', isPredictions);
         
@@ -153,30 +146,20 @@ document.addEventListener('DOMContentLoaded', () => {
         newsBtn.classList.toggle('text-white', !isPredictions);
         newsBtn.classList.toggle('text-gray-400', isPredictions);
 
-        // Step 2: Load content only if it hasn't been loaded before
         if (isPredictions && !predictionsPage.hasAttribute('data-loaded')) {
-            // Load predictions content for the first time
             initializePredictionsPage();
             predictionsPage.setAttribute('data-loaded', 'true');
         } else if (!isPredictions && !newsPage.hasAttribute('data-loaded')) {
-            // Load news content for the first time
             initializeNewsPage();
             newsPage.setAttribute('data-loaded', 'true');
         }
     }
 
-    // Update click listeners to use the new function
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // Initialize auth listeners
     setupAuthAndGuestListeners();
-
-    // Trigger initial page load for the default view (Predictions)
     switchPage('predictions'); 
-    /**
-     * --- END: THE FIX ---
-    */
 });
 
 // ======================================================================
@@ -188,7 +171,6 @@ async function initializePredictionsPage() {
     
     try {
         let { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
-        
         if (error) throw error;
         
         if (!data || data.length === 0) {
@@ -207,7 +189,10 @@ async function initializePredictionsPage() {
         
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
-        await updateUserStatus(); // Initial status check
+
+        // ** NEW: Restore user state AFTER rendering the matches to prevent errors **
+        await restoreUserState();
+        
     } catch (error) {
         console.error("Error initializing predictions page:", error);
         container.innerHTML = `<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى.</p>`;
@@ -306,7 +291,6 @@ async function initializeNewsPage() {
         articlesCache = data;
         renderArticleCards(articlesCache);
         
-        // Attach listeners only after a successful load
         document.getElementById('back-to-news-list').addEventListener('click', () => navigateToNewsSubPage('home'));
         document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
     } catch (error) {
@@ -538,10 +522,10 @@ function setupAuthAndGuestListeners() {
         e.preventDefault();
         const username = document.getElementById('guest-username').value.trim();
         if (username) {
-            await handleLogout(); // Clear any previous session first
+            await handleLogout();
             localStorage.setItem('guestInfo', JSON.stringify({ username }));
             modal.classList.remove('show');
-            updateUserStatus();
+            await updateUserStatus();
         }
     });
 
@@ -569,6 +553,11 @@ function setupAuthAndGuestListeners() {
     });
 }
 
+async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    // onAuthStateChange will handle the cleanup
+}
+
 function resetAllPredictionForms() {
     document.querySelectorAll('.match-card').forEach(card => {
         const form = card.querySelector('.prediction-form');
@@ -584,27 +573,22 @@ function resetAllPredictionForms() {
 }
 
 function clearLocalPredictions() {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('prediction-')) {
-            keysToRemove.push(key);
-        }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    Object.keys(localStorage)
+        .filter(key => key.startsWith('prediction-'))
+        .forEach(key => localStorage.removeItem(key));
 }
 
-async function handleLogout() {
-    await supabaseClient.auth.signOut();
-    localStorage.removeItem('guestInfo');
-    clearLocalPredictions();
-    resetAllPredictionForms();
-    // The onAuthStateChange listener will handle the rest.
+async function restoreUserState() {
+    await updateUserStatus();
+    applyLocalPredictions();
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) {
+        await fetchAndApplyUserPredictions(session.user.id);
+    }
 }
 
 async function fetchAndApplyUserPredictions(userId) {
     if (!userId) return;
-
     try {
         const { data, error } = await supabaseClient
             .from('predictions')
@@ -612,7 +596,6 @@ async function fetchAndApplyUserPredictions(userId) {
             .eq('user_id', userId);
         
         if (error) throw error;
-
         data.forEach(p => {
             const card = document.querySelector(`.match-card[data-match-id="${p.match_id}"]`);
             if (card) {
@@ -621,8 +604,10 @@ async function fetchAndApplyUserPredictions(userId) {
                     const winnerRadio = form.querySelector(`input[value="${p.predicted_winner}"]`);
                     if (winnerRadio) winnerRadio.checked = true;
                     form.querySelector('.scorer-input').value = p.predicted_scorer || '';
-                    [...form.elements].forEach(el => el.disabled = true);
-                    form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+                    if (!form.classList.contains('disabled')) {
+                         [...form.elements].forEach(el => el.disabled = true);
+                         form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+                    }
                     localStorage.setItem(`prediction-${p.match_id}`, JSON.stringify({ winner: p.predicted_winner, scorer: p.predicted_scorer }));
                 }
             }
@@ -630,6 +615,26 @@ async function fetchAndApplyUserPredictions(userId) {
     } catch (error) {
         console.error("Error fetching user predictions:", error);
     }
+}
+
+function applyLocalPredictions() {
+    document.querySelectorAll('.match-card').forEach(card => {
+        const matchId = card.dataset.matchId;
+        const storedPrediction = localStorage.getItem(`prediction-${matchId}`);
+        if (storedPrediction) {
+            const { winner, scorer } = JSON.parse(storedPrediction);
+            const form = card.querySelector('.prediction-form');
+            if (form) {
+                const winnerRadio = form.querySelector(`input[value="${winner}"]`);
+                if (winnerRadio) winnerRadio.checked = true;
+                form.querySelector('.scorer-input').value = scorer || '';
+                if (!form.classList.contains('disabled')) {
+                    [...form.elements].forEach(el => el.disabled = true);
+                    form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+                }
+            }
+        }
+    });
 }
 
 async function updateUserStatus() {
@@ -641,7 +646,6 @@ async function updateUserStatus() {
     if (user) {
         userIcon.className = 'fa-solid fa-right-from-bracket';
         userIconBtn.title = `تسجيل الخروج (${user.user_metadata.username || user.email})`;
-        localStorage.removeItem('guestInfo');
     } else if (guestInfo) {
         userIcon.className = 'fa-solid fa-user-pen';
         userIconBtn.title = `المشاركة كضيف (${guestInfo.username})`;
@@ -653,26 +657,28 @@ async function updateUserStatus() {
 
 async function getUserInfo() {
     const { data: { user } } = await supabaseClient.auth.getUser();
-    if (user) {
-        return { id: user.id, username: user.user_metadata.username || user.email };
-    }
+    if (user) return { id: user.id, username: user.user_metadata.username || user.email };
+    
     const guestInfo = JSON.parse(localStorage.getItem('guestInfo'));
-    if (guestInfo) {
-        return { id: null, username: guestInfo.username };
-    }
+    if (guestInfo) return { id: null, username: guestInfo.username };
+    
     return null;
 }
 
+// ** NEW: Simplified listener for active sign-in/sign-out events ONLY **
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    resetAllPredictionForms();
-    clearLocalPredictions();
+    await updateUserStatus();
 
-    if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && session)) {
+    if (event === 'SIGNED_IN') {
         document.getElementById('user-choice-modal').classList.remove('show');
+        localStorage.removeItem('guestInfo');
+        resetAllPredictionForms();
         await fetchAndApplyUserPredictions(session.user.id);
-    } 
-    
-    updateUserStatus();
+    } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('guestInfo');
+        clearLocalPredictions();
+        resetAllPredictionForms();
+    }
 });
 
 // ======================================================================
@@ -708,15 +714,22 @@ async function handleFormSubmit(form) {
         predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
     };
 
+    const isGuest = !userInfo.id;
+
     try {
-        const { error } = await supabaseClient.from('predictions').insert([predictionData]);
-        if (error) {
-            if (error.code === '23505') throw new Error('لقد قمت بالتوقع لهذه المباراة من قبل.');
-            else throw error;
+        if (!isGuest) { // Only save to database for logged-in users
+            const { error } = await supabaseClient.from('predictions').insert([predictionData]);
+            if (error) {
+                if (error.code === '23505') throw new Error('لقد قمت بالتوقع لهذه المباراة من قبل.');
+                else throw error;
+            }
         }
+        
+        // This part runs for both guests and successful submissions for users
         submitBtn.innerHTML = `تم الإرسال ✅`;
         [...form.elements].forEach(el => el.disabled = true);
         localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
+
     } catch (error) {
         alert(`حدث خطأ: ${error.message}`);
         submitBtn.innerHTML = originalText;
