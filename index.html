@@ -31,7 +31,7 @@
     
     <!-- CSS Styles -->
     <style>
-        :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1,#news-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .dismiss-icon-button{background-color:var(--surface-color);color:var(--secondary-text-color);width:28px;height:28px;border-radius:50%;border:1px solid var(--border-color);font-size:.9rem;display:flex;justify-content:center;align-items:center;cursor:pointer}#predictions-page .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}#predictions-page .modal.show{display:flex}#predictions-page .modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}#predictions-page .modal-content h2{font-size:1.2rem;margin-bottom:20px;text-align:center}#predictions-page .modal .form-control input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .modal .form-control{margin-bottom:15px}#predictions-page .modal button{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer}#predictions-page .close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .submit-btn.error{background-color:var(--danger-color)}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .toggle-comments-btn:disabled{opacity:.6;cursor:not-allowed}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#news-page{height:calc(100vh - 70px)}#news-page .page{position:absolute;top:0;left:0;width:100%;height:100%;padding:15px;padding-top:0;overflow-y:auto;background-color:var(--bg-color);transition:transform .35s ease-in-out;display:flex;flex-direction:column}#news-page #home-page{transform:translateX(0);z-index:10}#news-page #article-page{transform:translateX(100%);z-index:20;touch-action:pan-y}#news-page #article-content{padding-top:15px;padding-bottom:10px}#news-page #article-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:10px}#news-page #article-header h1{font-size:1.8rem;flex-grow:1;line-height:1.4}#news-page #share-button{background:0 0;border:none;color:var(--secondary-text-color);font-size:1.5rem;cursor:pointer;padding:5px}#news-page #article-content img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px}#news-page #article-content p{font-size:1.1rem;line-height:1.8;margin-bottom:15px;color:var(--secondary-text-color)}#news-page .comments-section{padding:20px 0;margin-top:25px;border-top:1px solid var(--border-color)}#news-page .comments-section h2{font-size:1.5rem;margin-bottom:20px}#news-page .comment-item{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;padding:15px;margin-bottom:10px;position:relative}#news-page .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--secondary-text-color);font-size:.9rem;flex-wrap:wrap}#news-page .comment-author{font-weight:700}#news-page .comment-body{font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word}#news-page .delete-comment-btn{position:absolute;top:10px;left:10px;background:0 0;border:none;color:var(--secondary-text-color);cursor:pointer;font-size:.9rem;transition:color .2s;padding:5px}#news-page .delete-comment-btn:hover{color:var(--danger-color)}#news-page #comment-form input,#news-page #comment-form textarea{width:100%;padding:12px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;color:var(--primary-text-color);margin-bottom:10px;font-size:1rem}#news-page #comment-form button{width:100%;background-color:var(--accent-color);color:white;border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:8px;font-size:1rem;transition:background-color .2s}#news-page #comment-form button:disabled{background-color:var(--secondary-text-color);cursor:not-allowed}#news-page #articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px}#news-page .article-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;position:relative}#news-page .article-card img{width:100%;height:180px;object-fit:cover}#news-page .article-card .article-title{padding:15px;font-size:1.1rem;font-weight:700;flex-grow:1}#exit-toast,#notification-toast{position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,.8);color:white;padding:10px 20px;border-radius:20px;z-index:2000;font-size:.9rem;transition:bottom .3s ease-in-out;box-shadow:0 4px 12px rgba(0,0,0,.2)}#exit-toast.show,#notification-toast.show{bottom:30px}
+        :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1,#news-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .user-icon-button.logged-in{background-color:var(--success-color)}#predictions-page .dismiss-icon-button{background-color:var(--surface-color);color:var(--secondary-text-color);width:28px;height:28px;border-radius:50%;border:1px solid var(--border-color);font-size:.9rem;display:flex;justify-content:center;align-items:center;cursor:pointer}#predictions-page .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}#predictions-page .modal.show{display:flex}#predictions-page .modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}#predictions-page .modal-content h2{font-size:1.2rem;margin-bottom:20px;text-align:center}#predictions-page .modal .form-control input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .modal .form-control{margin-bottom:15px}#predictions-page .modal button{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer}#predictions-page .close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .modal .auth-toggle{text-align:center;margin-top:15px;font-size:.9rem;color:var(--accent-color);cursor:pointer}#predictions-page .modal #logout-btn{background-color:var(--danger-color);margin-top:10px}#predictions-page .modal #auth-message{text-align:center;margin-top:10px;font-size:0.9rem}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .submit-btn.error{background-color:var(--danger-color)}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .toggle-comments-btn:disabled{opacity:.6;cursor:not-allowed}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#news-page{height:calc(100vh - 70px)}#news-page .page{position:absolute;top:0;left:0;width:100%;height:100%;padding:15px;padding-top:0;overflow-y:auto;background-color:var(--bg-color);transition:transform .35s ease-in-out;display:flex;flex-direction:column}#news-page #home-page{transform:translateX(0);z-index:10}#news-page #article-page{transform:translateX(100%);z-index:20;touch-action:pan-y}#news-page #article-content{padding-top:15px;padding-bottom:10px}#news-page #article-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:10px}#news-page #article-header h1{font-size:1.8rem;flex-grow:1;line-height:1.4}#news-page #share-button{background:0 0;border:none;color:var(--secondary-text-color);font-size:1.5rem;cursor:pointer;padding:5px}#news-page #article-content img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px}#news-page #article-content p{font-size:1.1rem;line-height:1.8;margin-bottom:15px;color:var(--secondary-text-color)}#news-page .comments-section{padding:20px 0;margin-top:25px;border-top:1px solid var(--border-color)}#news-page .comments-section h2{font-size:1.5rem;margin-bottom:20px}#news-page .comment-item{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;padding:15px;margin-bottom:10px;position:relative}#news-page .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--secondary-text-color);font-size:.9rem;flex-wrap:wrap}#news-page .comment-author{font-weight:700}#news-page .comment-body{font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word}#news-page .delete-comment-btn{position:absolute;top:10px;left:10px;background:0 0;border:none;color:var(--secondary-text-color);cursor:pointer;font-size:.9rem;transition:color .2s;padding:5px}#news-page .delete-comment-btn:hover{color:var(--danger-color)}#news-page #comment-form input,#news-page #comment-form textarea{width:100%;padding:12px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;color:var(--primary-text-color);margin-bottom:10px;font-size:1rem}#news-page #comment-form button{width:100%;background-color:var(--accent-color);color:white;border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:8px;font-size:1rem;transition:background-color .2s}#news-page #comment-form button:disabled{background-color:var(--secondary-text-color);cursor:not-allowed}#news-page #articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px}#news-page .article-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;position:relative}#news-page .article-card img{width:100%;height:180px;object-fit:cover}#news-page .article-card .article-title{padding:15px;font-size:1.1rem;font-weight:700;flex-grow:1}#exit-toast,#notification-toast{position:fixed;bottom:-100px;left:50%;transform:translateX(-50%);background-color:rgba(0,0,0,.8);color:white;padding:10px 20px;border-radius:20px;z-index:2000;font-size:.9rem;transition:bottom .3s ease-in-out;box-shadow:0 4px 12px rgba(0,0,0,.2)}#exit-toast.show,#notification-toast.show{bottom:30px}
     </style>
 </head>
 <body class="bg-[#0d1117]">
@@ -53,8 +53,42 @@
                 <!-- Content is loaded by JavaScript -->
             </main>
         </div>
-        <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
-        <div class="modal" id="user-modal"><div class="modal-content"><span class="close-button" id="close-modal-btn">×</span><h2>بيانات المستخدم</h2><form id="user-info-form"><div class="form-control"><label for="username">اسم المستخدم</label><input type="text" id="username" name="username" required></div><div class="form-control"><label for="social_account">حساب التواصل (اختياري)</label><input type="text" id="social_account" name="social_account" placeholder="e.g., @username"></div><button type="submit">حفظ البيانات</button><div id="save-status" style="text-align:center; margin-top:10px;"></div></form></div></div>
+        <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
+        
+        <!-- MODAL FOR AUTHENTICATION -->
+        <div class="modal" id="auth-modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-auth-modal-btn">×</span>
+                <!-- Login View -->
+                <div id="login-view">
+                    <h2>تسجيل الدخول</h2>
+                    <form id="login-form">
+                        <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
+                        <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
+                        <button type="submit">دخول</button>
+                    </form>
+                    <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
+                </div>
+                <!-- Signup View -->
+                <div id="signup-view" style="display: none;">
+                    <h2>إنشاء حساب جديد</h2>
+                    <form id="signup-form">
+                        <div class="form-control"><label for="signup-username">اسم المستخدم (سيظهر في التعليقات)</label><input type="text" id="signup-username" required></div>
+                        <div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div>
+                        <div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div>
+                        <button type="submit">إنشاء حساب</button>
+                    </form>
+                    <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
+                </div>
+                <!-- Logged In View -->
+                <div id="loggedin-view" style="display: none;">
+                    <h2>أهلاً بك!</h2>
+                    <p id="user-email-display" style="text-align: center; margin-bottom: 20px;"></p>
+                    <button id="logout-btn">تسجيل الخروج</button>
+                </div>
+                <div id="auth-message"></div>
+            </div>
+        </div>
     </div>
     
     <!-- News Page -->
@@ -62,11 +96,8 @@
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
         <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
             <form id="comment-form" name="news-comment-form">
-                <!-- الحقول المخفية للبيانات - تم التعديل ليعتمد على article_id -->
                 <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
                 <h3>أضف تعليقك</h3>
-                <!-- اسم المستخدم سيتم جلبه من بيانات المستخدم المسجلة -->
-                <input type="text" id="comment-name" name="comment_name" placeholder="اسمك (سيظهر اسمك المسجل)" disabled>
                 <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
                 <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
             </form>
@@ -77,11 +108,16 @@
 
 <script>
     // ==========================================================
-    // SECTION 0: GLOBAL SETUP (Supabase Client & Page Switching)
+    // SECTION 0: GLOBAL SETUP (Supabase, Constants & Page Switching)
     // ==========================================================
     const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // --!!-- قم بتغيير هذا البريد لبريد المستضيف --!!--
+    const HOST_EMAIL = "host@example.com"; 
+
+    let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         const predictionsBtn = document.getElementById('nav-predictions-btn');
@@ -92,28 +128,208 @@
         function switchPage(pageToShow) { 
             if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
             if (pageToShow === 'predictions') { 
-                predictionsPage.classList.remove('hidden'); 
-                newsPage.classList.add('hidden'); 
-                predictionsBtn.classList.add('bg-blue-600', 'text-white'); 
-                predictionsBtn.classList.remove('text-gray-400'); 
-                newsBtn.classList.remove('bg-blue-600', 'text-white'); 
-                newsBtn.classList.add('text-gray-400'); 
+                predictionsPage.classList.remove('hidden'); newsPage.classList.add('hidden'); 
+                predictionsBtn.classList.add('bg-blue-600', 'text-white'); predictionsBtn.classList.remove('text-gray-400'); 
+                newsBtn.classList.remove('bg-blue-600', 'text-white'); newsBtn.classList.add('text-gray-400'); 
             } else { 
-                newsPage.classList.remove('hidden'); 
-                predictionsPage.classList.add('hidden'); 
-                newsBtn.classList.add('bg-blue-600', 'text-white'); 
-                newsBtn.classList.remove('text-gray-400'); 
-                predictionsBtn.classList.remove('bg-blue-600', 'text-white'); 
-                predictionsBtn.classList.add('text-gray-400'); 
+                newsPage.classList.remove('hidden'); predictionsPage.classList.add('hidden'); 
+                newsBtn.classList.add('bg-blue-600', 'text-white'); newsBtn.classList.remove('text-gray-400'); 
+                predictionsBtn.classList.remove('bg-blue-600', 'text-white'); predictionsBtn.classList.add('text-gray-400'); 
             } 
         }
         
         predictionsBtn.addEventListener('click', () => switchPage('predictions'));
         newsBtn.addEventListener('click', () => switchPage('news'));
         
+        initializeAuth();
         initializePredictionsPage();
         initializeNewsPage();
     });
+
+    // ==========================================================
+    // SECTION 0.5: AUTHENTICATION LOGIC (NEW)
+    // ==========================================================
+    function initializeAuth() {
+        const authModal = document.getElementById('auth-modal');
+        const userIconBtn = document.getElementById('user-icon-btn');
+        const closeModalBtn = document.getElementById('close-auth-modal-btn');
+
+        // Views and Forms
+        const loginView = document.getElementById('login-view');
+        const signupView = document.getElementById('signup-view');
+        const loggedinView = document.getElementById('loggedin-view');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        // Toggles
+        const showSignupBtn = document.getElementById('show-signup');
+        const showLoginBtn = document.getElementById('show-login');
+        const authMessage = document.getElementById('auth-message');
+
+        const openAuthModal = () => authModal.classList.add('show');
+        const closeAuthModal = () => authModal.classList.remove('show');
+
+        const showView = (view) => {
+            loginView.style.display = 'none';
+            signupView.style.display = 'none';
+            loggedinView.style.display = 'none';
+            view.style.display = 'block';
+            authMessage.textContent = '';
+        };
+
+        userIconBtn.addEventListener('click', () => {
+            if (currentUser) {
+                document.getElementById('user-email-display').textContent = `أنت مسجل الدخول بـ: ${currentUser.email}`;
+                showView(loggedinView);
+            } else {
+                showView(loginView);
+            }
+            openAuthModal();
+        });
+
+        closeModalBtn.addEventListener('click', closeAuthModal);
+        authModal.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
+        showSignupBtn.addEventListener('click', () => showView(signupView));
+        showLoginBtn.addEventListener('click', () => showView(loginView));
+        
+        // Handle Signup
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            authMessage.textContent = 'جاري إنشاء الحساب...';
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        username: username // Save username in metadata
+                    }
+                }
+            });
+
+            if (error) {
+                authMessage.textContent = `خطأ: ${error.message}`;
+            } else {
+                authMessage.textContent = 'تم إنشاء الحساب بنجاح! يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب.';
+                signupForm.reset();
+            }
+        });
+
+        // Handle Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            authMessage.textContent = 'جاري تسجيل الدخول...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                authMessage.textContent = `خطأ: ${error.message}`;
+            } else {
+                authMessage.textContent = 'تم تسجيل الدخول بنجاح!';
+                loginForm.reset();
+                setTimeout(closeAuthModal, 1000);
+            }
+        });
+        
+        // Handle Logout
+        logoutBtn.addEventListener('click', async () => {
+            authMessage.textContent = 'جاري تسجيل الخروج...';
+
+            // Special logic for the HOST
+            if (currentUser && currentUser.email === HOST_EMAIL) {
+                console.log("Host is logging out. Deleting their predictions...");
+                const { error: deleteError } = await supabaseClient
+                    .from('predictions')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (deleteError) {
+                    console.error("Error deleting host predictions:", deleteError);
+                    alert("حدث خطأ أثناء حذف بيانات المستضيف.");
+                } else {
+                    console.log("Host predictions deleted successfully.");
+                }
+            }
+
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                authMessage.textContent = `خطأ: ${error.message}`;
+            } else {
+                authMessage.textContent = '';
+                closeAuthModal();
+            }
+        });
+
+        // Listen for auth state changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const userIcon = document.getElementById('user-icon-btn');
+            if (event === 'SIGNED_IN' || event === "INITIAL_SESSION") {
+                currentUser = session.user;
+                userIcon.classList.add('logged-in');
+                userIcon.innerHTML = `<i class="fa-solid fa-user-check"></i>`;
+                loadUserPredictions(); // Fetch user-specific data
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                userIcon.classList.remove('logged-in');
+                userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`;
+                resetUIOnLogout(); // Reset UI to default state
+            }
+        });
+    }
+    
+    // Function to load user-specific predictions after login
+    async function loadUserPredictions() {
+        if (!currentUser) return;
+        
+        const { data, error } = await supabaseClient
+            .from('predictions')
+            .select('match_id, predicted_winner, predicted_scorer')
+            .eq('user_id', currentUser.id);
+            
+        if (error) {
+            console.error("Error fetching user predictions:", error);
+            return;
+        }
+
+        // Apply predictions to the UI
+        data.forEach(p => {
+            const matchCard = document.querySelector(`.match-card[data-match-id='${p.match_id}']`);
+            if (matchCard) {
+                const form = matchCard.querySelector('.prediction-form');
+                const winnerRadio = form.querySelector(`input[value="${p.predicted_winner}"]`);
+                if (winnerRadio) winnerRadio.checked = true;
+                form.querySelector('.scorer-input').value = p.predicted_scorer;
+                [...form.elements].forEach(el => el.disabled = true);
+                form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
+            }
+        });
+    }
+
+    // Function to reset the UI on logout
+    function resetUIOnLogout() {
+        document.querySelectorAll('.prediction-form').forEach(form => {
+            const matchCard = form.closest('.match-card');
+            const matchStatus = getMatchStatus(matchCard.dataset.datetime).state;
+            const isEnded = matchStatus === 'ended';
+
+            // Reset only if match is not ended
+            if (!isEnded) {
+                 [...form.elements].forEach(el => {
+                    el.disabled = false;
+                    if (el.type === 'radio') el.checked = false;
+                    if (el.type === 'text') el.value = '';
+                });
+                form.querySelector('.submit-btn').innerHTML = 'إرسال التوقع';
+            }
+        });
+    }
+
 
     // ======================================================================
     // SECTION 1: PREDICTIONS PAGE LOGIC
@@ -135,34 +351,30 @@
     }
 
     function initializeAppWithData(matchesData) {
-        const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 تأكد من حفظ بياناتك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
+        const tickerMessages = ["🏆 سيتم تكريم أفضل المتوقعين في نهاية كل أسبوع!", "💡 سجل دخولك للمشاركة في السحب.", "🔥 تابعونا في تغطية خاصة لمباريات كأس العالم للأندية."];
         const dateTabsContainer = document.getElementById('date-tabs');
         const daysContentContainer = document.getElementById('days-content-container');
-        function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
-        function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${r ? 'disabled' : ''}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
+        
+        function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.dataset.datetime = t.datetime; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${r ? 'disabled' : ''}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
         function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
-        function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); const u = document.getElementById('user-icon-btn'); const i = document.getElementById('dismiss-icon-btn'); const c = document.getElementById('close-modal-btn'); const m = document.getElementById('user-modal'); const f = document.getElementById('user-info-form'); u.addEventListener('click', openUserModal); i.addEventListener('click', dismissFloatingIcon); c.addEventListener('click', closeUserModal); m.addEventListener('click', (e) => { if (e.target === m) closeUserModal(); }); f.addEventListener('submit', saveUserInfo); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
-        function openUserModal() { document.getElementById('user-modal').classList.add('show'); }
-        function closeUserModal() { document.getElementById('user-modal').classList.remove('show'); }
+        function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); const i = document.getElementById('dismiss-icon-btn'); i.addEventListener('click', dismissFloatingIcon); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
         function dismissFloatingIcon() { document.getElementById('floating-icon-container').classList.add('hidden'); sessionStorage.setItem('isIconDismissed', 'true'); }
-        function saveUserInfo(e) { e.preventDefault(); const m = document.getElementById('user-modal'); const s = document.getElementById('save-status'); const u = { username: m.querySelector('#username').value.trim(), social: m.querySelector('#social_account').value.trim() }; if (!u.username) { alert('الرجاء إدخال اسم المستخدم.'); return; } localStorage.setItem('userInfo', JSON.stringify(u)); s.textContent = 'تم الحفظ ✅'; setTimeout(() => { s.textContent = ''; closeUserModal(); }, 1500); }
-        function loadUserInfo() { const u = JSON.parse(localStorage.getItem('userInfo')); if (u) { document.getElementById('username').value = u.username || ''; document.getElementById('social_account').value = u.social || ''; } }
         function populateTicker() { const t = document.getElementById('predictions-ticker-content'); t.innerHTML = tickerMessages.map(m => `<span class="ticker-item">${m}</span>`).join(''); }
         
         async function handleFormSubmit(form) {
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-            submitBtn.disabled = true;
             
-            const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
-            if (!userInfo.username) {
-                alert('الرجاء حفظ اسم المستخدم أولاً من خلال أيقونة القلم للمشاركة.');
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-                openUserModal();
+            if (!currentUser) {
+                alert('الرجاء تسجيل الدخول أولاً للمشاركة.');
+                document.getElementById('user-icon-btn').click(); // Open auth modal
                 return;
             }
+
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+            submitBtn.disabled = true;
+
+            const username = currentUser.user_metadata.username || currentUser.email;
 
             if (form.name === 'prediction-form') {
                 const matchCard = form.closest('.match-card');
@@ -171,18 +383,17 @@
                 if (!winnerRadio) { alert('الرجاء اختيار نتيجة المباراة.'); submitBtn.innerHTML = originalText; submitBtn.disabled = false; return; }
                 const predictionData = { 
                     match_id: parseInt(matchId), 
-                    username: userInfo.username, 
-                    social_account: userInfo.social, 
+                    user_id: currentUser.id,
+                    user_email: currentUser.email,
+                    username: username, 
                     predicted_winner: winnerRadio.value, 
                     predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
                 };
                 try {
-                    // الكود يرسل البيانات إلى جدول 'predictions' بالأسماء الصحيحة
                     const { error } = await supabaseClient.from('predictions').insert([predictionData]);
                     if (error) throw error;
                     submitBtn.innerHTML = `تم الإرسال ✅`;
                     [...form.elements].forEach(el => el.disabled = true);
-                    localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
                 } catch (error) {
                     console.error('Error submitting prediction:', error);
                     alert('حدث خطأ أثناء إرسال توقعك. قد تكون توقعت لهذه المباراة من قبل.');
@@ -198,18 +409,20 @@
                 const commentText = form.querySelector('textarea').value;
                 try {
                     if (!commentText.trim()) { alert("لا يمكن إرسال تعليق فارغ."); throw new Error("Empty comment"); }
-                     // الكود يرسل البيانات إلى جدول 'comments' بالأسماء الصحيحة
-                    const { error } = await supabaseClient.from('comments').insert([{ match_id: parseInt(matchId), author: userInfo.username, comment_text: commentText }]);
+                    const { error } = await supabaseClient.from('comments').insert([{ 
+                        match_id: parseInt(matchId), 
+                        user_id: currentUser.id, 
+                        author: username, 
+                        comment_text: commentText 
+                    }]);
                     if (error) throw error;
                     const commentList = form.closest('.comments-section').querySelector('.comment-list');
                     if (commentList.querySelector('p')) { commentList.innerHTML = ''; }
-                    addCommentToDOM(commentList, { author: userInfo.username, text: commentText });
+                    addCommentToDOM(commentList, { author: username, text: commentText });
                     form.querySelector('textarea').value = '';
                 } catch (error) { 
                     console.error('Error submitting comment:', error); 
-                    if (error.message !== "Empty comment") {
-                        alert('حدث خطأ أثناء إرسال تعليقك.');
-                    }
+                    if (error.message !== "Empty comment") { alert('حدث خطأ أثناء إرسال تعليقك.'); }
                 } finally { 
                     submitBtn.innerHTML = "إرسال"; 
                     submitBtn.disabled = false; 
@@ -219,9 +432,7 @@
         
         async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; l.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; try { let { data: o, error: e } = await supabaseClient.from('comments').select('author, comment_text, created_at').eq('match_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(l, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); l.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
         function addCommentToDOM(l, d) { const c = document.createElement('div'); c.className = 'comment'; c.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-user"></i></div><div class="comment-body"><span class="comment-author">${d.author}</span><p class="comment-text">${d.text}</p></div>`; l.appendChild(c); l.scrollTop = l.scrollHeight; }
-        function loadFromStorage() { document.querySelectorAll('.match-card').forEach(c => { const i = c.dataset.matchId; const p = localStorage.getItem(`prediction-${i}`); if (p) { const d = JSON.parse(p); const f = c.querySelector('.prediction-form'); const w = f.querySelector(`input[value="${d.winner}"]`); if (w) w.checked = true; f.querySelector('.scorer-input').value = d.scorer; [...f.elements].forEach(el => el.disabled = true); f.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅'; } }); }
         
-        loadUserInfo();
         populateTicker();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -230,11 +441,13 @@
         if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; } else { const s = Object.keys(matchesByDay).sort(); const n = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'}; s.forEach((d, i) => { const a = new Date(d + 'T00:00:00Z'); const t = a.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const b = document.createElement('div'); b.className = `date-tab ${i === 0 ? 'active' : ''}`; b.textContent = t; b.dataset.tabId = d; dateTabsContainer.appendChild(b); const e = document.createElement('div'); e.className = `day-content ${i === 0 ? 'active' : ''}`; e.id = `day-${d}`; daysContentContainer.appendChild(e); const o = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const r = matchesByDay[d].sort((x, y) => { const sA = getMatchStatus(x.datetime).state; const sB = getMatchStatus(y.datetime).state; if (o[sA] !== o[sB]) return o[sA] - o[sB]; return new Date(x.datetime) - new Date(y.datetime); }); renderMatchesForDay(e, r); }); }
         attachTabEventListeners();
         attachMatchEventListeners();
-        loadFromStorage();
+        loadUserPredictions(); // Check for predictions if user is already logged in
     }
 
+    function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
+
     // ==========================================================
-    // SECTION 2: NEWS PAGE LOGIC (CORRECTED AND FINAL VERSION)
+    // SECTION 2: NEWS PAGE LOGIC (WITH SWIPE GESTURE)
     // ==========================================================
     function initializeNewsPage() {
         const articlesGrid = document.getElementById('articles-grid');
@@ -283,21 +496,10 @@
             const article = articlesCache.find(a => a.id === articleId);
             if (!article) return; 
 
-            // تعبئة البيانات اللازمة للتعليقات
             document.getElementById('article-id-hidden-input').value = article.id;
-            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            if (userInfo && userInfo.username) {
-                document.getElementById('comment-name').value = userInfo.username;
-            }
             
-            // عرض محتوى المقال
-            articleContent.innerHTML = `
-                <div id="article-header"><h1>${article.title}</h1></div>
-                <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
-                <div>${article.content}</div>
-            `;
+            articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
             navigateToSubPage('article');
-            
             fetchAndRenderNewsComments(article.id);
         }
 
@@ -340,6 +542,33 @@
                 }
             }
         }, false);
+        
+        // --- SWIPE GESTURE LOGIC ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const swipeThreshold = 50; // Minimum distance for a swipe
+
+        newsArticlePage.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        newsArticlePage.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            // Swipe from Left to Right (to go back)
+            if (touchEndX > touchStartX && (touchEndX - touchStartX > swipeThreshold)) {
+                if (currentNewsSubPage === 'article') {
+                    navigateToSubPage('home');
+                }
+            }
+            // Reset coordinates
+            touchStartX = 0;
+            touchEndX = 0;
+        }
+        // --- END SWIPE GESTURE LOGIC ---
 
         start();
     }
@@ -347,33 +576,18 @@
     async function fetchAndRenderNewsComments(articleId) {
         const commentsListDiv = document.getElementById('comments-list');
         if (!commentsListDiv) return;
-
         commentsListDiv.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
-
         try {
-            const { data, error } = await supabaseClient
-                .from('news_comments')
-                .select('author, comment_text, created_at')
-                .eq('article_id', articleId) // فلترة باستخدام المعرّف
-                .order('created_at', { ascending: true });
-
+            const { data, error } = await supabaseClient.from('news_comments').select('author, comment_text, created_at').eq('article_id', articleId).order('created_at', { ascending: true });
             if (error) throw error;
-
             commentsListDiv.innerHTML = '';
-
             if (data.length === 0) {
                 commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
             } else {
                 data.forEach(comment => {
                     const commentEl = document.createElement('div');
                     commentEl.className = 'comment-item';
-                    commentEl.innerHTML = `
-                        <div class="comment-header">
-                            <span class="comment-author">${comment.author}</span>
-                            <span class="comment-date" style="font-size: 0.8rem;">${new Date(comment.created_at).toLocaleDateString('ar-EG')}</span>
-                        </div>
-                        <p class="comment-body">${comment.comment_text}</p>
-                    `;
+                    commentEl.innerHTML = `<div class="comment-header"><span class="comment-author">${comment.author}</span><span class="comment-date" style="font-size: 0.8rem;">${new Date(comment.created_at).toLocaleDateString('ar-EG')}</span></div><p class="comment-body">${comment.comment_text}</p>`;
                     commentsListDiv.appendChild(commentEl);
                 });
             }
@@ -385,23 +599,21 @@
 
     async function handleNewsCommentSubmit(event) {
         event.preventDefault(); 
-
         const submitBtn = document.getElementById('submit-comment-btn');
         const originalBtnText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
-
-        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-        if (!userInfo || !userInfo.username) {
-            alert('يجب تسجيل اسمك أولاً للتعليق. اذهب إلى صفحة التوقعات، اضغط على أيقونة القلم واحفظ اسمك.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
+        
+        if (!currentUser) {
+            alert('يجب تسجيل الدخول أولاً للتعليق.');
+            document.getElementById('user-icon-btn').click();
             return;
         }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
         
         const articleId = document.getElementById('article-id-hidden-input').value;
         const commentText = document.getElementById('comment-text').value.trim();
-        const authorName = userInfo.username;
+        const authorName = currentUser.user_metadata.username || currentUser.email;
 
         if (!commentText) {
             alert('لا يمكن إرسال تعليق فارغ.');
@@ -411,20 +623,15 @@
         }
         
         try {
-            const { data, error } = await supabaseClient
-                .from('news_comments') 
-                .insert([{ 
-                    article_id: parseInt(articleId), 
-                    author: authorName, 
-                    comment_text: commentText 
-                }]);
-
+            const { data, error } = await supabaseClient.from('news_comments').insert([{ 
+                article_id: parseInt(articleId), 
+                user_id: currentUser.id,
+                author: authorName, 
+                comment_text: commentText 
+            }]);
             if (error) throw error;
-            
             fetchAndRenderNewsComments(articleId);
-
             document.getElementById('comment-text').value = ''; 
-
         } catch (error) {
             console.error('Error submitting news comment:', error);
             alert(`حدث خطأ أثناء إرسال تعليقك: ${error.message}`);
