@@ -134,37 +134,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const predictionsPage = document.getElementById('predictions-page');
     const newsPage = document.getElementById('news-page');
 
+    /**
+     *  --- START: THE FIX ---
+     * This is the new, smart function to handle page switching and on-demand content loading.
+    */
     function switchPage(pageToShow) {
         const isPredictions = pageToShow === 'predictions';
         
-        // Toggle visibility and button styles
+        // Step 1: Toggle visibility and button styles
         predictionsPage.classList.toggle('hidden', !isPredictions);
         newsPage.classList.toggle('hidden', isPredictions);
+        
         predictionsBtn.classList.toggle('bg-blue-600', isPredictions);
         predictionsBtn.classList.toggle('text-white', isPredictions);
         predictionsBtn.classList.toggle('text-gray-400', !isPredictions);
+        
         newsBtn.classList.toggle('bg-blue-600', !isPredictions);
         newsBtn.classList.toggle('text-white', !isPredictions);
         newsBtn.classList.toggle('text-gray-400', isPredictions);
 
-        // --- NEW LOGIC: Load content on demand ---
+        // Step 2: Load content only if it hasn't been loaded before
         if (isPredictions && !predictionsPage.hasAttribute('data-loaded')) {
+            // Load predictions content for the first time
             initializePredictionsPage();
             predictionsPage.setAttribute('data-loaded', 'true');
         } else if (!isPredictions && !newsPage.hasAttribute('data-loaded')) {
+            // Load news content for the first time
             initializeNewsPage();
             newsPage.setAttribute('data-loaded', 'true');
         }
     }
 
+    // Update click listeners to use the new function
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
     // Initialize auth listeners
     setupAuthAndGuestListeners();
 
-    // Trigger initial page load for the default view
-    switchPage('predictions');
+    // Trigger initial page load for the default view (Predictions)
+    switchPage('predictions'); 
+    /**
+     * --- END: THE FIX ---
+    */
 });
 
 // ======================================================================
@@ -286,7 +298,7 @@ let currentArticleId = null;
 
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
-    articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+    articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المقالات...</p>';
     
     try {
         const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
@@ -299,14 +311,14 @@ async function initializeNewsPage() {
         document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
     } catch (error) {
         console.error("Error fetching news:", error);
-        articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
+        articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full mt-8">فشل تحميل الأخبار.</p>`;
     }
 }
 
 function renderArticleCards(articles) {
     const articlesGrid = document.getElementById('articles-grid');
     if (!articles || articles.length === 0) {
-        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
+        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد مقالات متاحة حالياً.</p>';
         return;
     }
     articlesGrid.innerHTML = articles.map(article => `
@@ -779,7 +791,6 @@ async function handleMatchCommentSubmit(form) {
         submitBtn.innerHTML = originalText;
     }
 }
-
 </script>
 </body>
 </html>
