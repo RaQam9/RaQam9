@@ -42,8 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePredictionsPage();
     initializeNewsPage();
     initializeRealtimeListeners();
-    initializeGlobalEventListeners(); // <-- ✨ إضافة جديدة: مستمع الأحداث العام
-    initializeProfilePageListeners(); // <-- ✨ إصلاح: تم نقل التهيئة إلى هنا
+    initializeGlobalEventListeners();
+    initializeProfilePageListeners(); 
 });
 
 // ==========================================================
@@ -141,21 +141,18 @@ function initializeAuth() {
             userIcon.classList.add('logged-in');
             userIcon.innerHTML = `<i class="fa-solid fa-user-check"></i>`;
             loadUserPredictions();
-            // ✨ إعادة رسم التعليقات لإظهار أزرار الحذف
             refreshVisibleComments();
         } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             userIcon.classList.remove('logged-in');
             userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`;
             resetUIOnLogout();
-            // ✨ إعادة رسم التعليقات لإخفاء أزرار الحذف
             refreshVisibleComments();
         }
     });
 }
 
 function refreshVisibleComments() {
-    // تحديث تعليقات المباريات المفتوحة
     document.querySelectorAll('.comments-section').forEach(section => {
         if (section.style.display === 'block') {
             const matchId = section.closest('.match-card').dataset.matchId;
@@ -165,7 +162,6 @@ function refreshVisibleComments() {
             }
         }
     });
-    // تحديث تعليقات المقال المفتوح
     const articlePage = document.getElementById('article-page');
     if (articlePage.style.transform === 'translateX(0px)') {
         const articleId = document.getElementById('article-id-hidden-input').value;
@@ -269,7 +265,6 @@ function initializeAppWithData(matchesData) {
 
     async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const i = b.closest('.match-card').dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
     
-    // ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
     async function fetchAndRenderMatchComments(matchId, listElement) {
         listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
         try {
@@ -284,7 +279,6 @@ function initializeAppWithData(matchesData) {
         } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
     }
     
-    // ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
     function addCommentToDOM(listElement, commentData, tableName) {
         const commentDiv = document.createElement('div');
         commentDiv.className = 'comment';
@@ -310,7 +304,7 @@ function initializeAppWithData(matchesData) {
 
         if (currentUser && currentUser.id === commentData.user_id) {
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-comment-btn'; // استخدم هذا الكلاس في CSS لوضعه في المكان الصحيح
+            deleteBtn.className = 'delete-comment-btn';
             deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
             deleteBtn.dataset.commentId = commentData.id;
             deleteBtn.dataset.tableName = tableName;
@@ -390,7 +384,6 @@ function initializeNewsPage() {
     start();
 }
 
-// ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
 async function fetchAndRenderNewsComments(articleId) {
     const commentsListDiv = document.getElementById('comments-list');
     if (!commentsListDiv) return;
@@ -471,7 +464,6 @@ function showNotification(message) {
 
 function initializeRealtimeListeners() {
     const handleRealtimeChange = (payload) => {
-        // تحديثات القوائم الرئيسية
         if ((payload.table === 'matches' || payload.table === 'articles') && payload.eventType !== 'DELETE') {
             const pageName = payload.table === 'matches' ? 'المباريات' : 'الأخبار';
             showNotification(`📢 تم تحديث قائمة ${pageName}!`);
@@ -479,23 +471,19 @@ function initializeRealtimeListeners() {
             return;
         }
 
-        // تحديثات تعليقات المباريات
         if (payload.table === 'comments') {
             const matchCard = document.querySelector(`.match-card[data-match-id='${payload.new?.match_id || payload.old?.id}']`);
             if (matchCard && matchCard.querySelector('.comments-section').style.display === 'block') {
                 const listElement = matchCard.querySelector('.comment-list');
-                // ✨ تحسين: إعادة رسم التعليقات للتعامل مع الإضافة والحذف
                 fetchAndRenderMatchComments(payload.new?.match_id || payload.old?.id, listElement);
             }
             return;
         }
 
-        // تحديثات تعليقات الأخبار
         if (payload.table === 'news_comments') {
             const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
             if (articleIdOnPage && parseInt(articleIdOnPage) === (payload.new?.article_id || payload.old?.article_id)) {
                 if (payload.eventType === 'INSERT') showNotification('💬 تم إضافة تعليق جديد!');
-                // ✨ تحسين: إعادة رسم التعليقات للتعامل مع الإضافة والحذف
                 fetchAndRenderNewsComments(articleIdOnPage);
             }
             return;
@@ -510,11 +498,10 @@ function initializeRealtimeListeners() {
 
 
 // ==========================================================
-// SECTION 4: GLOBAL EVENT LISTENERS ✨ (قسم جديد)
+// SECTION 4: GLOBAL EVENT LISTENERS
 // ==========================================================
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
-        // التعامل مع حذف التعليقات
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
@@ -527,7 +514,6 @@ function initializeGlobalEventListeners() {
                     const { error } = await supabaseClient.from(tableName).delete().eq('id', commentId);
                     if (error) throw error;
                     
-                    // الحذف من الواجهة فوراً
                     const commentElement = deleteBtn.closest('.comment, .comment-item');
                     if(commentElement) commentElement.remove();
 
@@ -544,15 +530,12 @@ function initializeGlobalEventListeners() {
 //      PROFILE PAGE LOGIC
 // ===================================
 
-// Global variables for profile elements
 let profilePage;
 let openProfileBtn;
 let closeProfileBtn;
 let saveUsernameBtn;
 let profileCommentsList;
 
-// This function should be called ONCE when the app starts.
-// For example, inside the main DOMContentLoaded event listener.
 function initializeProfilePageListeners() {
     profilePage = document.getElementById('profile-page');
     openProfileBtn = document.getElementById('open-profile-btn');
@@ -574,27 +557,42 @@ function initializeProfilePageListeners() {
     }
 }
 
+// ✨ --- تعديل هنا --- ✨
+// دالة فتح صفحة الملف الشخصي
 function openProfilePage() {
-    if (!currentUser) return; // Safety check
-    
+    if (!currentUser || !profilePage) return;
+
     const authModal = document.getElementById('auth-modal');
-    authModal.classList.remove('show'); // Close auth modal if open
+    authModal.classList.remove('show');
 
+    // أزل كلاس 'hidden' لتغيير display: none إلى block
     profilePage.classList.remove('hidden');
-    setTimeout(() => {
-        profilePage.style.transform = 'translateX(0)';
-    }, 10);
 
-    // Load user data into the profile page
+    // استخدم requestAnimationFrame لضمان أن المتصفح قد قام بتحديث العرض
+    // قبل أن نبدأ التحريك. هذا أكثر موثوقية من setTimeout.
+    requestAnimationFrame(() => {
+        profilePage.classList.remove('translate-x-full');
+        profilePage.classList.add('translate-x-0');
+    });
+
     loadProfileData();
 }
 
+// ✨ --- تعديل هنا --- ✨
+// دالة إغلاق صفحة الملف الشخصي
 function closeProfilePage() {
-    profilePage.style.transform = 'translateX(100%)';
+    if (!profilePage) return;
+
+    // ابدأ أنيميشن الخروج
+    profilePage.classList.add('translate-x-full');
+    profilePage.classList.remove('translate-x-0');
+
+    // بعد انتهاء مدة التحريك (300ms)، أضف كلاس 'hidden' لإخفائها تماماً
     setTimeout(() => {
         profilePage.classList.add('hidden');
     }, 300);
 }
+
 
 async function loadProfileData() {
     if (!currentUser) return;
@@ -603,12 +601,10 @@ async function loadProfileData() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     const commentsListDiv = document.getElementById('profile-comments-list');
 
-    // Reset view
     usernameInput.value = currentUser.user_metadata.username || '';
     predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
     commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
 
-    // Fetch and render data in parallel
     fetchAndRenderProfilePredictions();
     fetchAndRenderProfileComments();
 }
@@ -722,7 +718,7 @@ async function handleUpdateUsername(e) {
     } else {
         statusP.textContent = 'تم حفظ الاسم بنجاح!';
         statusP.style.color = 'var(--success-color)';
-        currentUser.user_metadata.username = newUsername; // Update local state
+        currentUser.user_metadata.username = newUsername;
     }
 
     btn.disabled = false;
@@ -747,7 +743,7 @@ async function handleDeleteComment(e) {
         .from(tableName)
         .delete()
         .eq('id', commentId)
-        .eq('user_id', currentUser.id); // Security check
+        .eq('user_id', currentUser.id);
 
     if (error) {
         alert(`فشل حذف التعليق: ${error.message}`);
