@@ -763,3 +763,160 @@ async function handleDeleteComment(e) {
         }
     }
 }
+// ==========================================================
+//      SECTION 5: PROFILE PAGE LOGIC (Diagnostic Version)
+// ==========================================================
+
+// Global variables for profile elements
+let profilePage;
+let openProfileBtn;
+let closeProfileBtn;
+let saveUsernameBtn;
+let profileCommentsList;
+
+// This function should be called ONCE when the app starts.
+function initializeProfilePageListeners() {
+    profilePage = document.getElementById('profile-page');
+    openProfileBtn = document.getElementById('open-profile-btn');
+    closeProfileBtn = document.getElementById('close-profile-btn');
+    saveUsernameBtn = document.getElementById('save-username-btn');
+    
+    if (openProfileBtn) {
+        openProfileBtn.addEventListener('click', openProfilePage);
+    }
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', closeProfilePage);
+    }
+    // Note: Other listeners will be handled by the diagnostic function for now.
+}
+
+
+// THIS IS THE DIAGNOSTIC FUNCTION
+async function openProfilePage() {
+    // إغلاق نافذة المصادقة
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) authModal.classList.remove('show');
+
+    // الوصول إلى صفحة الملف الشخصي ومسح محتواها القديم
+    const profilePage = document.getElementById('profile-page');
+    const profileMainContent = profilePage.querySelector('main');
+    profileMainContent.innerHTML = ''; // مسح المحتوى الحالي
+
+    // دالة مساعدة لعرض رسائل التشخيص على الشاشة
+    function logToScreen(message, isError = false) {
+        const p = document.createElement('p');
+        p.textContent = message;
+        p.style.padding = '8px';
+        p.style.margin = '5px';
+        p.style.borderRadius = '5px';
+        p.style.fontFamily = 'monospace';
+        p.style.direction = 'ltr'; // For consistent display
+        p.style.textAlign = 'left';
+        p.style.wordBreak = 'break-all';
+        if (isError) {
+            p.style.backgroundColor = '#da3633'; // Danger color
+            p.style.color = 'white';
+        } else {
+            p.style.backgroundColor = '#161b22'; // Surface color
+            p.style.color = '#c9d1d9';
+        }
+        profileMainContent.appendChild(p);
+    }
+
+    logToScreen("--- START DIAGNOSTICS ---");
+
+    // 1. التحقق من وجود الصفحة والعناصر
+    if (!profilePage) {
+        alert("CRITICAL ERROR: The element with id 'profile-page' was not found in the HTML.");
+        return;
+    }
+     if (!profileMainContent) {
+        alert("CRITICAL ERROR: The 'main' element inside 'profile-page' was not found.");
+        return;
+    }
+    logToScreen("SUCCESS: Found 'profile-page' and 'main' elements.");
+
+
+    // 2. التحقق من وجود المستخدم
+    if (!currentUser) {
+        logToScreen("ERROR: currentUser is NULL. Cannot proceed. Please log in again.", true);
+        profilePage.classList.remove('hidden');
+        profilePage.style.transform = 'translateX(0)';
+        return;
+    }
+    logToScreen(`SUCCESS: User is logged in. Email: ${currentUser.email}`);
+    logToScreen(`User ID: ${currentUser.id}`);
+
+    // إظهار صفحة التشخيص
+    profilePage.classList.remove('hidden');
+    profilePage.style.transform = 'translateX(0)';
+
+    // 3. محاولة جلب التوقعات
+    logToScreen("\n--- Fetching Predictions ---");
+    try {
+        const { data, error, status } = await supabaseClient
+            .from('predictions')
+            .select(`
+                predicted_winner,
+                matches ( team1_name, team2_name )
+            `)
+            .eq('user_id', currentUser.id)
+            .limit(3); // نجلب 3 فقط للتشخيص
+
+        if (error) {
+            logToScreen(`ERROR fetching predictions: ${error.message}`, true);
+            logToScreen(`Hint: Check Row Level Security (RLS) policies for 'predictions' and 'matches' tables.`, true);
+        } else {
+            logToScreen(`SUCCESS: Fetched ${data.length} prediction(s).`);
+            if (data.length > 0) {
+                logToScreen(`First prediction: ${JSON.stringify(data[0])}`);
+            } else {
+                 logToScreen(`Hint: The user may have no predictions, or RLS is blocking the SELECT query.`);
+            }
+        }
+    } catch (e) {
+        logToScreen(`FATAL EXCEPTION while fetching predictions: ${e.message}`, true);
+    }
+    
+    // 4. محاولة جلب التعليقات
+    logToScreen("\n--- Fetching Comments ---");
+    try {
+        const { data, error } = await supabaseClient
+            .from('comments') // تعليقات المباريات
+            .select('id, comment_text')
+            .eq('user_id', currentUser.id)
+            .limit(3);
+
+        if (error) {
+            logToScreen(`ERROR fetching match comments: ${error.message}`, true);
+            logToScreen(`Hint: Check Row Level Security (RLS) policies for the 'comments' table.`, true);
+        } else {
+            logToScreen(`SUCCESS: Fetched ${data.length} match comment(s).`);
+             if (data.length > 0) {
+                logToScreen(`First comment: ${JSON.stringify(data[0])}`);
+            } else {
+                logToScreen(`Hint: The user may have no comments, or RLS is blocking the SELECT query.`);
+            }
+        }
+    } catch (e) {
+        logToScreen(`FATAL EXCEPTION while fetching comments: ${e.message}`, true);
+    }
+
+    logToScreen("\n--- DIAGNOSTICS COMPLETE ---");
+}
+
+function closeProfilePage() {
+    if(profilePage) {
+        profilePage.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            profilePage.classList.add('hidden');
+        }, 300);
+    }
+}
+
+// These functions are placeholders for now and won't be used by the diagnostic version.
+async function loadProfileData() { /* Not used in diagnostic mode */ }
+async function fetchAndRenderProfilePredictions() { /* Not used in diagnostic mode */ }
+async function fetchAndRenderProfileComments() { /* Not used in diagnostic mode */ }
+async function handleUpdateUsername(e) { /* Not used in diagnostic mode */ }
+async function handleDeleteComment(e) { /* Not used in diagnostic mode */ }
