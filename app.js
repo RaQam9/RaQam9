@@ -557,19 +557,13 @@ function initializeProfilePageListeners() {
     }
 }
 
-// ✨ --- تعديل هنا --- ✨
-// دالة فتح صفحة الملف الشخصي
 function openProfilePage() {
     if (!currentUser || !profilePage) return;
 
     const authModal = document.getElementById('auth-modal');
     authModal.classList.remove('show');
 
-    // أزل كلاس 'hidden' لتغيير display: none إلى block
     profilePage.classList.remove('hidden');
-
-    // استخدم requestAnimationFrame لضمان أن المتصفح قد قام بتحديث العرض
-    // قبل أن نبدأ التحريك. هذا أكثر موثوقية من setTimeout.
     requestAnimationFrame(() => {
         profilePage.classList.remove('translate-x-full');
         profilePage.classList.add('translate-x-0');
@@ -578,16 +572,12 @@ function openProfilePage() {
     loadProfileData();
 }
 
-// ✨ --- تعديل هنا --- ✨
-// دالة إغلاق صفحة الملف الشخصي
 function closeProfilePage() {
     if (!profilePage) return;
 
-    // ابدأ أنيميشن الخروج
     profilePage.classList.add('translate-x-full');
     profilePage.classList.remove('translate-x-0');
 
-    // بعد انتهاء مدة التحريك (300ms)، أضف كلاس 'hidden' لإخفائها تماماً
     setTimeout(() => {
         profilePage.classList.add('hidden');
     }, 300);
@@ -622,7 +612,8 @@ async function fetchAndRenderProfilePredictions() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        console.error("Error fetching profile predictions:", error);
+        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات. تأكد من أن علاقات الجداول صحيحة.</p>';
         return;
     }
 
@@ -656,7 +647,8 @@ async function fetchAndRenderProfileComments() {
     ]);
 
     if (matchComments.error || newsComments.error) {
-        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        console.error("Error fetching profile comments:", matchComments.error || newsComments.error);
+        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات. تأكد من أن علاقات الجداول صحيحة.</p>';
         return;
     }
     
