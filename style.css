@@ -3,6 +3,9 @@
 #profile-page.hidden {
     display: none;
 }
+#profile-page {
+    transition: transform 0.3s ease-in-out;
+}
 
 /* Style for prediction items in profile */
 .profile-prediction-item {
