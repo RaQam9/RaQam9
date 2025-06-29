@@ -296,7 +296,15 @@
                 if (!team1_name || !team1_logo || !team2_name || !team2_logo || !league || !datetimeStr) {
                     failedLines.push(i + 1); return;
                 }
-                matchesToInsert.push({ team1_name, team1_logo, team2_name, team2_logo, league, datetime: datetimeStr.replace(' ', 'T'), channels: channelsParts.join(',') });
+                matchesToInsert.push({ 
+                    team1_name, 
+                    team1_logo, 
+                    team2_name, 
+                    team2_logo, 
+                    league, 
+                    datetime: datetimeStr.replace(' ', 'T'), 
+                    channels: channelsParts // <-- ✨✨✨ THIS IS THE FIX ✨✨✨
+                });
             });
 
             if (matchesToInsert.length > 0) {
@@ -395,7 +403,6 @@
 
             if (type === 'match') {
                 title = `تعديل مباراة`;
-                // <-- التصحيح هنا: تحويل مصفوفة القنوات إلى نص للعرض
                 const channelsText = (data.channels || []).join(', ');
                 formHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name}" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo}" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name}" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo}" required></div></div><div><label>الدوري:</label><input type="text" name="league" value="${data.league}" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime.slice(0, 16)}" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels" value="${channelsText}"></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
             } else if (type === 'article') {
@@ -420,10 +427,9 @@
             const updatedData = Object.fromEntries(formData.entries());
             const tableName = type === 'match' ? 'matches' : 'articles';
 
-            // <-- التصحيح هنا: تحويل نص القنوات إلى مصفوفة قبل الإرسال
             if (type === 'match' && typeof updatedData.channels === 'string') {
                 if (updatedData.channels.trim() === '') {
-                    updatedData.channels = []; // إرسال مصفوفة فارغة إذا كان الحقل فارغاً
+                    updatedData.channels = [];
                 } else {
                     updatedData.channels = updatedData.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
                 }
