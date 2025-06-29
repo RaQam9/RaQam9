@@ -6,7 +6,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_EMAIL = "your-email@example.com"; // <-- !! غير هذا إلى بريدك الإلكتروني
 // --!!-- قم بتغيير هذا البريد لبريد المستضيف --!!--
-const HOST_EMAIL = "host@example.com";
+
 
 let currentUser = null;
 
