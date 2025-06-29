@@ -5,48 +5,46 @@ const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_EMAIL = "your-email@example.com"; // <-- !! غير هذا إلى بريدك الإلكتروني
-const HOST_EMAIL = "host@example.com"; // --!!-- قم بتغيير هذا البريد لبريد المستضيف --!!--
+// --!!-- قم بتغيير هذا البريد لبريد المستضيف --!!--
+const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
 
-// Main entry point for the application
 document.addEventListener('DOMContentLoaded', () => {
-    // Page switching setup
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
+    const predictionsPage = document.getElementById('predictions-page');
+    const newsPage = document.getElementById('news-page');
+
+    function switchPage(pageToShow) {
+        if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
+        if (pageToShow === 'predictions') {
+            predictionsPage.classList.remove('hidden');
+            newsPage.classList.add('hidden');
+            predictionsBtn.classList.add('bg-blue-600', 'text-white');
+            predictionsBtn.classList.remove('text-gray-400');
+            newsBtn.classList.remove('bg-blue-600', 'text-white');
+            newsBtn.classList.add('text-gray-400');
+        } else {
+            newsPage.classList.remove('hidden');
+            predictionsPage.classList.add('hidden');
+            newsBtn.classList.add('bg-blue-600', 'text-white');
+            newsBtn.classList.remove('text-gray-400');
+            predictionsBtn.classList.remove('bg-blue-600', 'text-white');
+            predictionsBtn.classList.add('text-gray-400');
+        }
+    }
+
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // Initialize all application modules
     initializeAuth();
     initializePredictionsPage();
     initializeNewsPage();
     initializeRealtimeListeners();
-    initializeGlobalEventListeners();
-    initializeProfilePageListeners(); // Initialize profile page functionality
+    initializeGlobalEventListeners(); // <-- ✨ إضافة جديدة: مستمع الأحداث العام
+    initializeProfilePageListeners(); // <-- ✨ إصلاح: تم نقل التهيئة إلى هنا
 });
-
-function switchPage(pageToShow) {
-    const predictionsPage = document.getElementById('predictions-page');
-    const newsPage = document.getElementById('news-page');
-    const predictionsBtn = document.getElementById('nav-predictions-btn');
-    const newsBtn = document.getElementById('nav-news-btn');
-
-    if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
-    
-    const isPredictions = pageToShow === 'predictions';
-    predictionsPage.classList.toggle('hidden', !isPredictions);
-    newsPage.classList.toggle('hidden', isPredictions);
-    
-    predictionsBtn.classList.toggle('bg-blue-600', isPredictions);
-    predictionsBtn.classList.toggle('text-white', isPredictions);
-    predictionsBtn.classList.toggle('text-gray-400', !isPredictions);
-
-    newsBtn.classList.toggle('bg-blue-600', !isPredictions);
-    newsBtn.classList.toggle('text-white', !isPredictions);
-    newsBtn.classList.toggle('text-gray-400', isPredictions);
-}
-
 
 // ==========================================================
 // SECTION 0.5: AUTHENTICATION LOGIC
@@ -123,6 +121,10 @@ function initializeAuth() {
 
     logoutBtn.addEventListener('click', async () => {
         authMessage.textContent = 'جاري تسجيل الخروج...';
+        if (currentUser && currentUser.email === HOST_EMAIL) {
+            const { error: deleteError } = await supabaseClient.from('predictions').delete().eq('user_id', currentUser.id);
+            if (deleteError) console.error("Error deleting host predictions:", deleteError);
+        }
         const { error } = await supabaseClient.auth.signOut();
         if (error) {
             authMessage.textContent = `خطأ: ${error.message}`;
@@ -139,30 +141,37 @@ function initializeAuth() {
             userIcon.classList.add('logged-in');
             userIcon.innerHTML = `<i class="fa-solid fa-user-check"></i>`;
             loadUserPredictions();
+            // ✨ إعادة رسم التعليقات لإظهار أزرار الحذف
             refreshVisibleComments();
         } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             userIcon.classList.remove('logged-in');
             userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`;
             resetUIOnLogout();
+            // ✨ إعادة رسم التعليقات لإخفاء أزرار الحذف
             refreshVisibleComments();
         }
     });
 }
 
 function refreshVisibleComments() {
-    document.querySelectorAll('.comments-section:not([style*="display:none"]):not([style*="display: none"]) .comment-list').forEach(listElement => {
-        const matchCard = listElement.closest('.match-card');
-        if (matchCard) {
-            const matchId = matchCard.dataset.matchId;
-            fetchAndRenderMatchComments(matchId, listElement);
+    // تحديث تعليقات المباريات المفتوحة
+    document.querySelectorAll('.comments-section').forEach(section => {
+        if (section.style.display === 'block') {
+            const matchId = section.closest('.match-card').dataset.matchId;
+            const listElement = section.querySelector('.comment-list');
+            if (matchId && listElement) {
+                fetchAndRenderMatchComments(matchId, listElement);
+            }
         }
     });
-    
+    // تحديث تعليقات المقال المفتوح
     const articlePage = document.getElementById('article-page');
     if (articlePage.style.transform === 'translateX(0px)') {
         const articleId = document.getElementById('article-id-hidden-input').value;
-        if (articleId) fetchAndRenderNewsComments(articleId);
+        if (articleId) {
+            fetchAndRenderNewsComments(articleId);
+        }
     }
 }
 
@@ -170,7 +179,6 @@ async function loadUserPredictions() {
     if (!currentUser) return;
     const { data, error } = await supabaseClient.from('predictions').select('match_id, predicted_winner, predicted_scorer').eq('user_id', currentUser.id);
     if (error) { console.error("Error fetching user predictions:", error); return; }
-    
     data.forEach(p => {
         const matchCard = document.querySelector(`.match-card[data-match-id='${p.match_id}']`);
         if (matchCard) {
@@ -199,7 +207,6 @@ function resetUIOnLogout() {
     });
 }
 
-
 // ======================================================================
 // SECTION 1: PREDICTIONS PAGE LOGIC
 // ======================================================================
@@ -223,221 +230,109 @@ function initializeAppWithData(matchesData) {
     const dateTabsContainer = document.getElementById('date-tabs');
     const daysContentContainer = document.getElementById('days-content-container');
 
-    function renderMatchesForDay(dayContainer, matches) {
-        dayContainer.innerHTML = '';
-        if (!matches || matches.length === 0) return;
-        
-        const numMap = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
-        const replaceNumerals = (str) => str.replace(/[٠-٩]/g, c => numMap[c]);
+    function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.dataset.datetime = t.datetime; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${r ? 'disabled' : ''}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
+    function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
+    function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); const i = document.getElementById('dismiss-icon-btn'); i.addEventListener('click', dismissFloatingIcon); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
+    function dismissFloatingIcon() { document.getElementById('floating-icon-container').classList.add('hidden'); sessionStorage.setItem('isIconDismissed', 'true'); }
+    function populateTicker() { const t = document.getElementById('predictions-ticker-content'); t.innerHTML = tickerMessages.map(m => `<span class="ticker-item">${m}</span>`).join(''); }
 
-        matches.forEach(match => {
-            const matchDate = new Date(match.datetime);
-            const dateString = replaceNumerals(matchDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }));
-            const timeString = replaceNumerals(matchDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }));
-            const status = getMatchStatus(match.datetime);
-            const isEnded = status.state === 'ended';
-            
-            let statusHtml;
-            switch (status.state) {
-                case 'ended': statusHtml = `<span class="match-status ended">انتهت</span>`; break;
-                case 'live': statusHtml = `<span class="match-status live">مباشر</span>`; break;
-                case 'soon': statusHtml = `<span class="match-status soon">بعد قليل</span>`; break;
-                default: statusHtml = `<div class="match-time">${timeString}</div>`;
-            }
-
-            const channels = (match.channels && match.channels.length > 0) ? match.channels.join(' / ') : "غير محددة";
-
-            const matchCard = document.createElement('div');
-            matchCard.className = 'match-card';
-            matchCard.dataset.matchId = match.id;
-            matchCard.dataset.datetime = match.datetime;
-            matchCard.innerHTML = `
-                <div class="match-header"><span class="match-league">${match.league}</span><span class="match-date-time">${dateString}</span></div>
-                <div class="match-body">
-                    <div class="teams-row">
-                        <div class="team"><img src="${match.team1.logo}" alt="${match.team1.name}"><span class="team-name">${match.team1.name}</span></div>
-                        <div class="match-status-container">${statusHtml}</div>
-                        <div class="team"><img src="${match.team2.logo}" alt="${match.team2.name}"><span class="team-name">${match.team2.name}</span></div>
-                    </div>
-                    <form name="prediction-form" class="prediction-form ${isEnded ? 'disabled' : ''}">
-                        <div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${channels}</span></legend></div>
-                        <div class="form-group">
-                            <legend>توقع النتيجة:</legend>
-                            <div class="prediction-options">
-                                <input type="radio" name="winner" id="win1-${match.id}" value="${match.team1.name}" required><label for="win1-${match.id}">${match.team1.name}</label>
-                                <input type="radio" name="winner" id="draw-${match.id}" value="تعادل"><label for="draw-${match.id}">تعادل</label>
-                                <input type="radio" name="winner" id="win2-${match.id}" value="${match.team2.name}"><label for="win2-${match.id}">${match.team2.name}</label>
-                            </div>
-                        </div>
-                        <div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div>
-                        <div class="form-group"><button type="submit" class="submit-btn">${isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div>
-                    </form>
-                </div>
-                <div class="match-footer">
-                    <button class="toggle-comments-btn">💬 التعليقات</button>
-                    <div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div>
-                </div>`;
-            dayContainer.appendChild(matchCard);
-        });
-    }
-    
-    function attachTabEventListeners() {
-        dateTabsContainer.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('date-tab')) return;
-            const tabId = e.target.dataset.tabId;
-            document.querySelectorAll('.date-tab').forEach(tab => tab.classList.remove('active'));
-            e.target.classList.add('active');
-            document.querySelectorAll('.day-content').forEach(content => content.classList.remove('active'));
-            document.getElementById(`day-${tabId}`).classList.add('active');
-        });
-    }
-
-    function attachMatchEventListeners() {
-        daysContentContainer.addEventListener('submit', e => {
-            e.preventDefault();
-            if (e.target.matches('.prediction-form, .comment-form')) {
-                handleFormSubmit(e.target);
-            }
-        });
-        daysContentContainer.addEventListener('click', e => {
-            if (e.target.classList.contains('toggle-comments-btn')) {
-                handleToggleComments(e.target);
-            }
-        });
-        document.getElementById('dismiss-icon-btn').addEventListener('click', () => {
-            document.getElementById('floating-icon-container').classList.add('hidden');
-            sessionStorage.setItem('isIconDismissed', 'true');
-        });
-    }
-    
     async function handleFormSubmit(form) {
         const submitBtn = form.querySelector('button[type="submit"]');
-        if (!currentUser) {
-            alert('الرجاء تسجيل الدخول أولاً للمشاركة.');
-            document.getElementById('user-icon-btn').click();
-            return;
-        }
-        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-        submitBtn.disabled = true;
+        if (!currentUser) { alert('الرجاء تسجيل الدخول أولاً للمشاركة.'); document.getElementById('user-icon-btn').click(); return; }
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; submitBtn.disabled = true;
         const username = currentUser.user_metadata.username || currentUser.email;
 
         if (form.name === 'prediction-form') {
             const matchId = form.closest('.match-card').dataset.matchId;
             const winnerRadio = form.querySelector('input[name="winner"]:checked');
-            if (!winnerRadio) {
-                alert('الرجاء اختيار نتيجة المباراة.');
-                submitBtn.innerHTML = 'إرسال التوقع';
-                submitBtn.disabled = false;
-                return;
-            }
+            if (!winnerRadio) { alert('الرجاء اختيار نتيجة المباراة.'); submitBtn.innerHTML = 'إرسال التوقع'; submitBtn.disabled = false; return; }
             const predictionData = { match_id: parseInt(matchId), user_id: currentUser.id, user_email: currentUser.email, username: username, predicted_winner: winnerRadio.value, predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() };
             try {
                 const { error } = await supabaseClient.from('predictions').upsert(predictionData, { onConflict: 'user_id, match_id' });
                 if (error) throw error;
-                submitBtn.innerHTML = `تم الإرسال ✅`;
-                [...form.elements].forEach(el => el.disabled = true);
-            } catch (error) {
-                console.error('Error submitting prediction:', error);
-                alert('حدث خطأ أثناء إرسال توقعك.');
-                submitBtn.innerHTML = 'إرسال التوقع';
-                submitBtn.disabled = false;
-            }
-        } else if (form.name === 'match-comment-form') {
+                submitBtn.innerHTML = `تم الإرسال ✅`; [...form.elements].forEach(el => el.disabled = true);
+            } catch (error) { console.error('Error submitting prediction:', error); alert('حدث خطأ أثناء إرسال توقعك.'); submitBtn.innerHTML = 'إرسال التوقع'; submitBtn.disabled = false; }
+            return;
+        }
+
+        if (form.name === 'match-comment-form') {
             const matchId = form.closest('.match-card').dataset.matchId;
-            const commentText = form.querySelector('textarea').value.trim();
-            if (!commentText) {
-                alert("لا يمكن إرسال تعليق فارغ.");
-                submitBtn.innerHTML = "إرسال";
-                submitBtn.disabled = false;
-                return;
-            }
+            const commentText = form.querySelector('textarea').value;
             try {
+                if (!commentText.trim()) { alert("لا يمكن إرسال تعليق فارغ."); throw new Error("Empty comment"); }
                 const { error } = await supabaseClient.from('comments').insert([{ match_id: parseInt(matchId), user_id: currentUser.id, author: username, comment_text: commentText }]);
                 if (error) throw error;
                 form.querySelector('textarea').value = '';
-            } catch (error) {
-                alert('حدث خطأ أثناء إرسال تعليقك.');
-            } finally {
-                submitBtn.innerHTML = "إرسال";
-                submitBtn.disabled = false;
-            }
+            } catch (error) { if (error.message !== "Empty comment") { alert('حدث خطأ أثناء إرسال تعليقك.'); } } finally { submitBtn.innerHTML = "إرسال"; submitBtn.disabled = false; }
         }
     }
 
-    async function handleToggleComments(button) {
-        const commentsSection = button.nextElementSibling;
-        const isHidden = commentsSection.style.display === 'none' || !commentsSection.style.display;
-        if (isHidden) {
-            const listElement = commentsSection.querySelector('.comment-list');
-            const matchId = button.closest('.match-card').dataset.matchId;
-            commentsSection.style.display = 'block';
-            button.innerHTML = '💬 إخفاء التعليقات';
-            await fetchAndRenderMatchComments(matchId, listElement);
-        } else {
-            commentsSection.style.display = 'none';
-            button.innerHTML = '💬 التعليقات';
-        }
+    async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const i = b.closest('.match-card').dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+    
+    // ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
+    async function fetchAndRenderMatchComments(matchId, listElement) {
+        listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
+        try {
+            const { data, error } = await supabaseClient.from('comments').select('id, author, comment_text, created_at, user_id').eq('match_id', matchId).order('created_at', { ascending: true });
+            if (error) throw error;
+            listElement.innerHTML = '';
+            if (data.length === 0) {
+                listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
+            } else {
+                data.forEach(comment => addCommentToDOM(listElement, comment, 'comments'));
+            }
+        } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
     }
     
-    // --- Ticker, Date Grouping and Rendering Logic ---
-    document.getElementById('predictions-ticker-content').innerHTML = tickerMessages.map(m => `<span class="ticker-item">${m}</span>`).join('');
+    // ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
+    function addCommentToDOM(listElement, commentData, tableName) {
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'comment';
+        commentDiv.dataset.commentId = commentData.id;
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'comment-avatar';
+        avatarDiv.innerHTML = '<i class="fa-solid fa-user"></i>';
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'comment-body';
+
+        const authorSpan = document.createElement('span');
+        authorSpan.className = 'comment-author';
+        authorSpan.textContent = commentData.author;
+
+        const textP = document.createElement('p');
+        textP.className = 'comment-text';
+        textP.textContent = commentData.comment_text;
+
+        bodyDiv.append(authorSpan, textP);
+        commentDiv.append(avatarDiv, bodyDiv);
+
+        if (currentUser && currentUser.id === commentData.user_id) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-comment-btn'; // استخدم هذا الكلاس في CSS لوضعه في المكان الصحيح
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+            deleteBtn.dataset.commentId = commentData.id;
+            deleteBtn.dataset.tableName = tableName;
+            commentDiv.appendChild(deleteBtn);
+        }
+
+        listElement.appendChild(commentDiv);
+        listElement.scrollTop = listElement.scrollHeight;
+    }
+
+    populateTicker();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const matchesByDay = matchesData
-        .filter(m => new Date(m.datetime) >= today)
-        .reduce((acc, m) => {
-            const day = new Date(m.datetime).toLocaleDateString('fr-CA');
-            if (!acc[day]) acc[day] = [];
-            acc[day].push(m);
-            return acc;
-        }, {});
-
-    if (Object.keys(matchesByDay).length === 0) {
-        daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة.</p>`;
-    } else {
-        const sortedDays = Object.keys(matchesByDay).sort();
-        const numMap = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' };
-        
-        sortedDays.forEach((day, index) => {
-            const dateObj = new Date(day + 'T00:00:00Z');
-            const tabText = dateObj.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => numMap[c]);
-            const tabEl = document.createElement('div');
-            tabEl.className = `date-tab ${index === 0 ? 'active' : ''}`;
-            tabEl.textContent = tabText;
-            tabEl.dataset.tabId = day;
-            dateTabsContainer.appendChild(tabEl);
-
-            const dayContentEl = document.createElement('div');
-            dayContentEl.className = `day-content ${index === 0 ? 'active' : ''}`;
-            dayContentEl.id = `day-${day}`;
-            daysContentContainer.appendChild(dayContentEl);
-
-            const statusOrder = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 };
-            const sortedMatches = matchesByDay[day].sort((a, b) => {
-                const statusA = getMatchStatus(a.datetime).state;
-                const statusB = getMatchStatus(b.datetime).state;
-                if (statusOrder[statusA] !== statusOrder[statusB]) return statusOrder[statusA] - statusOrder[statusB];
-                return new Date(a.datetime) - new Date(b.datetime);
-            });
-            renderMatchesForDay(dayContentEl, sortedMatches);
-        });
-    }
-    
+    const upcomingMatchesData = matchesData.filter(m => new Date(new Date(m.datetime).toLocaleDateString('fr-CA')) >= today);
+    const matchesByDay = upcomingMatchesData.reduce((acc, m) => { const d = new Date(m.datetime).toLocaleDateString('fr-CA'); if (!acc[d]) acc[d] = []; acc[d].push(m); return acc; }, {});
+    if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; } else { const s = Object.keys(matchesByDay).sort(); const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; s.forEach((d, i) => { const a = new Date(d + 'T00:00:00Z'); const t = a.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const b = document.createElement('div'); b.className = `date-tab ${i === 0 ? 'active' : ''}`; b.textContent = t; b.dataset.tabId = d; dateTabsContainer.appendChild(b); const e = document.createElement('div'); e.className = `day-content ${i === 0 ? 'active' : ''}`; e.id = `day-${d}`; daysContentContainer.appendChild(e); const o = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const r = matchesByDay[d].sort((x, y) => { const sA = getMatchStatus(x.datetime).state; const sB = getMatchStatus(y.datetime).state; if (o[sA] !== o[sB]) return o[sA] - o[sB]; return new Date(x.datetime) - new Date(y.datetime); }); renderMatchesForDay(e, r); }); }
     attachTabEventListeners();
     attachMatchEventListeners();
     loadUserPredictions();
 }
 
-function getMatchStatus(datetime) {
-    const matchTime = new Date(datetime);
-    const now = new Date();
-    const diffMinutes = (matchTime.getTime() - now.getTime()) / 60000;
-    if (diffMinutes < -125) return { state: 'ended' };
-    if (diffMinutes <= 0) return { state: 'live' };
-    if (diffMinutes <= 5) return { state: 'soon' };
-    return { state: 'scheduled' };
-}
-
+function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
 // ==========================================================
 // SECTION 2: NEWS PAGE LOGIC
@@ -461,126 +356,41 @@ function initializeNewsPage() {
     }
 
     function renderArticleCards(articles) {
-        articlesGrid.innerHTML = '';
-        if (!articles || articles.length === 0) {
-            articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
-            return;
-        }
+        articlesGrid.innerHTML = ''; if (!articles || articles.length === 0) { articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>'; return; }
         articles.forEach(article => {
-            const card = document.createElement('div');
-            card.className = 'article-card';
-            card.innerHTML = `<img src="${article.image_url}" alt="${article.title}"><div class="article-title"><h3>${article.title}</h3></div>`;
+            const card = document.createElement('div'); card.className = 'article-card';
+            card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
             card.addEventListener('click', () => renderArticleDetail(article.id));
             articlesGrid.appendChild(card);
         });
     }
 
     function renderArticleDetail(articleId) {
-        const article = articlesCache.find(a => a.id === articleId);
-        if (!article) return;
+        const article = articlesCache.find(a => a.id === articleId); if (!article) return;
         document.getElementById('article-id-hidden-input').value = article.id;
-        articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}"><div>${article.content}</div>`;
+        articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
         navigateToSubPage('article');
         fetchAndRenderNewsComments(article.id);
     }
 
     function navigateToSubPage(pageName) {
         currentNewsSubPage = pageName;
-        if (pageName === 'article') {
-            newsHomePage.style.transform = 'translateX(-100%)';
-            newsArticlePage.style.transform = 'translateX(0)';
-            newsArticlePage.scrollTop = 0;
-        } else {
-            newsHomePage.style.transform = 'translateX(0)';
-            newsArticlePage.style.transform = 'translateX(100%)';
-        }
+        if (pageName === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; newsArticlePage.scrollTop = 0; }
+        else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; }
     }
 
     async function start() {
         const fetchedArticles = await fetchArticlesFromDB();
-        if (fetchedArticles) {
-            articlesCache = fetchedArticles;
-            renderArticleCards(articlesCache);
-        }
+        if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
     }
 
     commentForm.addEventListener('submit', handleNewsCommentSubmit);
-    
-    // Back button handling
-    document.addEventListener('backbutton', (e) => {
-        e.preventDefault();
-        if (document.getElementById('news-page').classList.contains('hidden')) return;
-        if (currentNewsSubPage === 'article') {
-            navigateToSubPage('home');
-        } else {
-            if (new Date().getTime() - firstBackPressTime < 2000) {
-                if (navigator.app && navigator.app.exitApp) navigator.app.exitApp();
-            } else {
-                firstBackPressTime = new Date().getTime();
-                exitToast.classList.add('show');
-                setTimeout(() => { exitToast.classList.remove('show'); }, 2000);
-            }
-        }
-    }, false);
-
-    // Swipe gesture for back navigation
-    let touchStartX = 0;
-    newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-    newsArticlePage.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        if (touchEndX > touchStartX && (touchEndX - touchStartX > 50)) {
-            if (currentNewsSubPage === 'article') navigateToSubPage('home');
-        }
-    }, { passive: true });
-
+    document.addEventListener('backbutton', (e) => { e.preventDefault(); if (document.getElementById('news-page').classList.contains('hidden')) return; if (currentNewsSubPage === 'article') { navigateToSubPage('home'); } else { if (new Date().getTime() - firstBackPressTime < 2000) { if (navigator.app && navigator.app.exitApp) navigator.app.exitApp(); } else { firstBackPressTime = new Date().getTime(); exitToast.classList.add('show'); setTimeout(() => { exitToast.classList.remove('show'); }, 2000); } } }, false);
+    let touchStartX = 0; newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true }); newsArticlePage.addEventListener('touchend', e => { const touchEndX = e.changedTouches[0].screenX; if (touchEndX > touchStartX && (touchEndX - touchStartX > 50)) { if (currentNewsSubPage === 'article') navigateToSubPage('home'); } }, { passive: true });
     start();
 }
 
-async function handleNewsCommentSubmit(event) {
-    event.preventDefault();
-    const submitBtn = document.getElementById('submit-comment-btn');
-    if (!currentUser) { alert('يجب تسجيل الدخول أولاً للتعليق.'); document.getElementById('user-icon-btn').click(); return; }
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
-    const articleId = document.getElementById('article-id-hidden-input').value;
-    const commentText = document.getElementById('comment-text').value.trim();
-    if (!commentText) {
-        alert('لا يمكن إرسال تعليق فارغ.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'إرسال التعليق';
-        return;
-    }
-    try {
-        const { error } = await supabaseClient.from('news_comments').insert([{ article_id: parseInt(articleId), user_id: currentUser.id, author: currentUser.user_metadata.username || currentUser.email, comment_text: commentText }]);
-        if (error) throw error;
-        document.getElementById('comment-text').value = '';
-    } catch (error) {
-        console.error('Error submitting news comment:', error);
-        alert(`حدث خطأ أثناء إرسال تعليقك: ${error.message}`);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'إرسال التعليق';
-    }
-}
-
-
-// ==========================================================
-// SECTION 3: REALTIME & GLOBAL COMMENTS
-// ==========================================================
-async function fetchAndRenderMatchComments(matchId, listElement) {
-    listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
-    try {
-        const { data, error } = await supabaseClient.from('comments').select('id, author, comment_text, created_at, user_id').eq('match_id', matchId).order('created_at', { ascending: true });
-        if (error) throw error;
-        listElement.innerHTML = '';
-        if (data.length === 0) {
-            listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
-        } else {
-            data.forEach(comment => addCommentToDOM(listElement, comment, 'comments'));
-        }
-    } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
-}
-
+// ✨ تعديل: أصبحت هذه الدالة أكثر أماناً وتضيف أزرار الحذف
 async function fetchAndRenderNewsComments(articleId) {
     const commentsListDiv = document.getElementById('comments-list');
     if (!commentsListDiv) return;
@@ -592,7 +402,39 @@ async function fetchAndRenderNewsComments(articleId) {
         if (data.length === 0) {
             commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
         } else {
-            data.forEach(comment => addNewsCommentToDOM(commentsListDiv, comment));
+            data.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment-item';
+                commentEl.dataset.commentId = comment.id;
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'comment-header';
+                const authorSpan = document.createElement('span');
+                authorSpan.className = 'comment-author';
+                authorSpan.textContent = comment.author;
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'comment-date';
+                dateSpan.style.fontSize = '0.8rem';
+                dateSpan.textContent = new Date(comment.created_at).toLocaleDateString('ar-EG');
+                headerDiv.append(authorSpan, dateSpan);
+
+                const bodyP = document.createElement('p');
+                bodyP.className = 'comment-body';
+                bodyP.textContent = comment.comment_text;
+
+                commentEl.append(headerDiv, bodyP);
+
+                if (currentUser && currentUser.id === comment.user_id) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'delete-comment-btn';
+                    deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                    deleteBtn.dataset.commentId = comment.id;
+                    deleteBtn.dataset.tableName = 'news_comments';
+                    commentEl.appendChild(deleteBtn);
+                }
+
+                commentsListDiv.appendChild(commentEl);
+            });
         }
     } catch (err) {
         console.error('Error fetching news comments:', err);
@@ -600,57 +442,25 @@ async function fetchAndRenderNewsComments(articleId) {
     }
 }
 
-function addCommentToDOM(listElement, commentData, tableName) {
-    const commentDiv = document.createElement('div');
-    commentDiv.className = 'comment';
-    commentDiv.dataset.commentId = commentData.id;
-
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'comment-avatar';
-    avatarDiv.innerHTML = '<i class="fa-solid fa-user"></i>';
-
-    const bodyDiv = document.createElement('div');
-    bodyDiv.className = 'comment-body';
-    bodyDiv.innerHTML = `<span class="comment-author">${commentData.author}</span><p class="comment-text">${commentData.comment_text}</p>`;
-    
-    commentDiv.append(avatarDiv, bodyDiv);
-
-    if (currentUser && currentUser.id === commentData.user_id) {
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-comment-btn';
-        deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-        deleteBtn.dataset.commentId = commentData.id;
-        deleteBtn.dataset.tableName = tableName;
-        commentDiv.appendChild(deleteBtn);
-    }
-    listElement.appendChild(commentDiv);
-    listElement.scrollTop = listElement.scrollHeight;
+async function handleNewsCommentSubmit(event) {
+    event.preventDefault();
+    const submitBtn = document.getElementById('submit-comment-btn');
+    if (!currentUser) { alert('يجب تسجيل الدخول أولاً للتعليق.'); document.getElementById('user-icon-btn').click(); return; }
+    submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
+    const articleId = document.getElementById('article-id-hidden-input').value;
+    const commentText = document.getElementById('comment-text').value.trim();
+    if (!commentText) { alert('لا يمكن إرسال تعليق فارغ.'); submitBtn.disabled = false; submitBtn.textContent = 'إرسال التعليق'; return; }
+    try {
+        const { data, error } = await supabaseClient.from('news_comments').insert([{ article_id: parseInt(articleId), user_id: currentUser.id, author: currentUser.user_metadata.username || currentUser.email, comment_text: commentText }]);
+        if (error) throw error;
+        document.getElementById('comment-text').value = '';
+    } catch (error) { console.error('Error submitting news comment:', error); alert(`حدث خطأ أثناء إرسال تعليقك: ${error.message}`); }
+    finally { submitBtn.disabled = false; submitBtn.textContent = 'إرسال التعليق'; }
 }
 
-function addNewsCommentToDOM(listElement, comment) {
-    const commentEl = document.createElement('div');
-    commentEl.className = 'comment-item';
-    commentEl.dataset.commentId = comment.id;
-
-    commentEl.innerHTML = `
-        <div class="comment-header">
-            <span class="comment-author">${comment.author}</span>
-            <span class="comment-date" style="font-size: 0.8rem;">${new Date(comment.created_at).toLocaleDateString('ar-EG')}</span>
-        </div>
-        <p class="comment-body">${comment.comment_text}</p>
-    `;
-
-    if (currentUser && currentUser.id === comment.user_id) {
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-comment-btn';
-        deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-        deleteBtn.dataset.commentId = comment.id;
-        deleteBtn.dataset.tableName = 'news_comments';
-        commentEl.appendChild(deleteBtn);
-    }
-    listElement.appendChild(commentEl);
-}
-
+// ==========================================================
+// SECTION 3: REALTIME FUNCTIONALITY
+// ==========================================================
 function showNotification(message) {
     const toast = document.getElementById('notification-toast');
     if (!toast) return;
@@ -661,50 +471,66 @@ function showNotification(message) {
 
 function initializeRealtimeListeners() {
     const handleRealtimeChange = (payload) => {
-        if (payload.table === 'matches' || payload.table === 'articles') {
+        // تحديثات القوائم الرئيسية
+        if ((payload.table === 'matches' || payload.table === 'articles') && payload.eventType !== 'DELETE') {
             const pageName = payload.table === 'matches' ? 'المباريات' : 'الأخبار';
             showNotification(`📢 تم تحديث قائمة ${pageName}!`);
-            if (payload.table === 'matches') initializePredictionsPage();
-            else initializeNewsPage();
-        } else if (payload.table === 'comments') {
-            const listElement = document.querySelector(`.match-card[data-match-id='${payload.new?.match_id}'] .comment-list`);
-            if (listElement) fetchAndRenderMatchComments(payload.new.match_id, listElement);
-        } else if (payload.table === 'news_comments') {
+            if (payload.table === 'matches') initializePredictionsPage(); else initializeNewsPage();
+            return;
+        }
+
+        // تحديثات تعليقات المباريات
+        if (payload.table === 'comments') {
+            const matchCard = document.querySelector(`.match-card[data-match-id='${payload.new?.match_id || payload.old?.id}']`);
+            if (matchCard && matchCard.querySelector('.comments-section').style.display === 'block') {
+                const listElement = matchCard.querySelector('.comment-list');
+                // ✨ تحسين: إعادة رسم التعليقات للتعامل مع الإضافة والحذف
+                fetchAndRenderMatchComments(payload.new?.match_id || payload.old?.id, listElement);
+            }
+            return;
+        }
+
+        // تحديثات تعليقات الأخبار
+        if (payload.table === 'news_comments') {
             const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
-            if (articleIdOnPage && parseInt(articleIdOnPage) === payload.new?.article_id) {
+            if (articleIdOnPage && parseInt(articleIdOnPage) === (payload.new?.article_id || payload.old?.article_id)) {
                 if (payload.eventType === 'INSERT') showNotification('💬 تم إضافة تعليق جديد!');
+                // ✨ تحسين: إعادة رسم التعليقات للتعامل مع الإضافة والحذف
                 fetchAndRenderNewsComments(articleIdOnPage);
             }
+            return;
         }
     };
 
-    supabaseClient.channel('public-dynamic-content')
-        .on('postgres_changes', { event: '*', schema: 'public' }, handleRealtimeChange)
-        .subscribe((status, err) => {
-            if (status === 'SUBSCRIBED') console.log('✅ Realtime channel subscribed!');
-            if (err) console.error('Realtime subscription error:', err);
-        });
+    supabaseClient.channel('public-dynamic-content').on('postgres_changes', { event: '*', schema: 'public' }, handleRealtimeChange).subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') console.log('✅ Realtime channel subscribed successfully!');
+        if (err) console.error('Realtime subscription error:', err);
+    });
 }
 
 
 // ==========================================================
-// SECTION 4: GLOBAL EVENT LISTENERS
+// SECTION 4: GLOBAL EVENT LISTENERS ✨ (قسم جديد)
 // ==========================================================
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
+        // التعامل مع حذف التعليقات
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
             const commentId = deleteBtn.dataset.commentId;
             const tableName = deleteBtn.dataset.tableName;
 
-            if (confirm('هل أنت متأكد من أنك تريد حذف هذا التعليق؟')) {
+            const isConfirmed = confirm('هل أنت متأكد من أنك تريد حذف هذا التعليق؟');
+            if (isConfirmed) {
                 try {
                     const { error } = await supabaseClient.from(tableName).delete().eq('id', commentId);
                     if (error) throw error;
                     
+                    // الحذف من الواجهة فوراً
                     const commentElement = deleteBtn.closest('.comment, .comment-item');
-                    if (commentElement) commentElement.remove();
+                    if(commentElement) commentElement.remove();
+
                     showNotification('تم حذف التعليق بنجاح.');
                 } catch (error) {
                     console.error('Error deleting comment:', error);
@@ -714,17 +540,19 @@ function initializeGlobalEventListeners() {
         }
     });
 }
+// ===================================
+//      PROFILE PAGE LOGIC
+// ===================================
 
-
-// ==========================================================
-// SECTION 5: PROFILE PAGE LOGIC (Final Version)
-// ==========================================================
+// Global variables for profile elements
 let profilePage;
 let openProfileBtn;
 let closeProfileBtn;
 let saveUsernameBtn;
 let profileCommentsList;
 
+// This function should be called ONCE when the app starts.
+// For example, inside the main DOMContentLoaded event listener.
 function initializeProfilePageListeners() {
     profilePage = document.getElementById('profile-page');
     openProfileBtn = document.getElementById('open-profile-btn');
@@ -732,116 +560,139 @@ function initializeProfilePageListeners() {
     saveUsernameBtn = document.getElementById('save-username-btn');
     profileCommentsList = document.getElementById('profile-comments-list');
 
-    if (openProfileBtn) openProfileBtn.addEventListener('click', openProfilePage);
-    if (closeProfileBtn) closeProfileBtn.addEventListener('click', closeProfilePage);
-    if (saveUsernameBtn) saveUsernameBtn.addEventListener('click', handleUpdateUsername);
-    if (profileCommentsList) profileCommentsList.addEventListener('click', handleDeleteComment);
+    if (openProfileBtn) {
+        openProfileBtn.addEventListener('click', openProfilePage);
+    }
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', closeProfilePage);
+    }
+    if (saveUsernameBtn) {
+        saveUsernameBtn.addEventListener('click', handleUpdateUsername);
+    }
+    if (profileCommentsList) {
+        profileCommentsList.addEventListener('click', handleDeleteComment);
+    }
 }
 
 function openProfilePage() {
-    if (!currentUser) return;
+    if (!currentUser) return; // Safety check
+    
     const authModal = document.getElementById('auth-modal');
-    if (authModal) authModal.classList.remove('show');
+    authModal.classList.remove('show'); // Close auth modal if open
 
-    if (profilePage) {
-        profilePage.classList.remove('hidden');
-        setTimeout(() => { profilePage.style.transform = 'translateX(0)'; }, 10);
-        loadProfileData();
-    }
+    profilePage.classList.remove('hidden');
+    setTimeout(() => {
+        profilePage.style.transform = 'translateX(0)';
+    }, 10);
+
+    // Load user data into the profile page
+    loadProfileData();
 }
 
 function closeProfilePage() {
-    if (profilePage) {
-        profilePage.style.transform = 'translateX(100%)';
-        setTimeout(() => { profilePage.classList.add('hidden'); }, 300);
-    }
+    profilePage.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+        profilePage.classList.add('hidden');
+    }, 300);
 }
 
 async function loadProfileData() {
     if (!currentUser) return;
+
     const usernameInput = document.getElementById('profile-username-input');
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     const commentsListDiv = document.getElementById('profile-comments-list');
 
-    if (usernameInput) usernameInput.value = currentUser.user_metadata.username || '';
-    if (predictionsListDiv) predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
-    if (commentsListDiv) commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
+    // Reset view
+    usernameInput.value = currentUser.user_metadata.username || '';
+    predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
+    commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
 
+    // Fetch and render data in parallel
     fetchAndRenderProfilePredictions();
     fetchAndRenderProfileComments();
 }
 
 async function fetchAndRenderProfilePredictions() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
-    if (!predictionsListDiv) return;
-
     const { data, error } = await supabaseClient
         .from('predictions')
-        .select(`predicted_winner, predicted_scorer, matches ( team1_name, team2_name )`)
+        .select(`
+            predicted_winner,
+            predicted_scorer,
+            matches ( team1_name, team2_name )
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
     if (error) {
-        predictionsListDiv.innerHTML = `<p class="text-red-500">فشل تحميل التوقعات. خطأ: ${error.message}</p>`;
+        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
         return;
     }
+
     if (data.length === 0) {
         predictionsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي توقعات بعد.</p>';
         return;
     }
+
     predictionsListDiv.innerHTML = data.map(p => {
-        if (!p.matches) return ''; // Skip if match was deleted
+        const team1 = p.matches.team1_name;
+        const team2 = p.matches.team2_name;
+        const winner = p.predicted_winner;
+        const scorer = p.predicted_scorer;
         return `
         <div class="profile-prediction-item">
-            <div class="match-info">${p.matches.team1_name} ضد ${p.matches.team2_name}</div>
+            <div class="match-info">${team1} ضد ${team2}</div>
             <div class="prediction-info">
-                توقعت فوز: <strong>${p.predicted_winner}</strong>
-                ${p.predicted_scorer ? ` | ومسجل الهدف الأول: <strong>${p.predicted_scorer}</strong>` : ''}
+                توقعت فوز: <strong>${winner}</strong>
+                ${scorer ? ` | ومسجل الهدف الأول: <strong>${scorer}</strong>` : ''}
             </div>
-        </div>`;
-    }).join('');
+        </div>
+    `}).join('');
 }
 
 async function fetchAndRenderProfileComments() {
     const commentsListDiv = document.getElementById('profile-comments-list');
-    if (!commentsListDiv) return;
 
-    try {
-        const [matchComments, newsComments] = await Promise.all([
-            supabaseClient.from('comments').select('id, comment_text, created_at, matches(team1_name, team2_name)').eq('user_id', currentUser.id),
-            supabaseClient.from('news_comments').select('id, comment_text, created_at, articles(title)').eq('user_id', currentUser.id)
-        ]);
+    const [matchComments, newsComments] = await Promise.all([
+        supabaseClient.from('comments').select('id, comment_text, created_at, matches(team1_name, team2_name)').eq('user_id', currentUser.id),
+        supabaseClient.from('news_comments').select('id, comment_text, created_at, articles(title)').eq('user_id', currentUser.id)
+    ]);
 
-        if (matchComments.error) throw matchComments.error;
-        if (newsComments.error) throw newsComments.error;
-        
-        const allComments = [
-            ...matchComments.data.map(c => ({...c, type: 'match', table: 'comments'})),
-            ...newsComments.data.map(c => ({...c, type: 'news', table: 'news_comments'}))
-        ];
-        allComments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        if (allComments.length === 0) {
-            commentsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي تعليقات بعد.</p>';
-            return;
-        }
-        commentsListDiv.innerHTML = allComments.map(c => {
-            let context = "سياق غير معروف";
-            if (c.type === 'match' && c.matches) context = `مباراة ${c.matches.team1_name} ضد ${c.matches.team2_name}`;
-            else if (c.type === 'news' && c.articles) context = `مقال "${c.articles.title}"`;
-            
-            return `
-            <div class="profile-comment-item" id="profile-comment-${c.id}-${c.table}">
-                <div class="comment-content">
-                    <span class="comment-text">${c.comment_text}</span>
-                    <span class="comment-meta">عن: ${context}</span>
-                </div>
-                <button class="delete-comment-btn-profile" data-comment-id="${c.id}" data-table-name="${c.table}">حذف</button>
-            </div>`;
-        }).join('');
-    } catch (error) {
-        commentsListDiv.innerHTML = `<p class="text-red-500">فشل تحميل التعليقات. خطأ: ${error.message}</p>`;
+    if (matchComments.error || newsComments.error) {
+        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        return;
     }
+    
+    const allComments = [
+        ...matchComments.data.map(c => ({...c, type: 'match', table: 'comments'})),
+        ...newsComments.data.map(c => ({...c, type: 'news', table: 'news_comments'}))
+    ];
+
+    allComments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (allComments.length === 0) {
+        commentsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي تعليقات بعد.</p>';
+        return;
+    }
+
+    commentsListDiv.innerHTML = allComments.map(c => {
+        const commentText = c.comment_text;
+        const context = c.type === 'match' 
+            ? `مباراة ${c.matches.team1_name} ضد ${c.matches.team2_name}`
+            : (c.articles ? `مقال "${c.articles.title}"` : 'مقال محذوف');
+
+        return `
+        <div class="profile-comment-item" id="profile-comment-${c.id}-${c.table}">
+            <div class="comment-content">
+                <span class="comment-text">${commentText}</span>
+                <span class="comment-meta">
+                    عن: ${context}
+                </span>
+            </div>
+            <button class="delete-comment-btn-profile" data-comment-id="${c.id}" data-table="${c.table}">حذف</button>
+        </div>
+    `}).join('');
 }
 
 async function handleUpdateUsername(e) {
@@ -855,12 +706,15 @@ async function handleUpdateUsername(e) {
         statusP.style.color = 'var(--danger-color)';
         return;
     }
+
     btn.disabled = true;
     btn.textContent = '...';
     statusP.textContent = 'جاري الحفظ...';
     statusP.style.color = 'var(--secondary-text-color)';
 
-    const { error } = await supabaseClient.auth.updateUser({ data: { username: newUsername } });
+    const { data, error } = await supabaseClient.auth.updateUser({
+        data: { username: newUsername }
+    });
 
     if (error) {
         statusP.textContent = `خطأ: ${error.message}`;
@@ -870,30 +724,39 @@ async function handleUpdateUsername(e) {
         statusP.style.color = 'var(--success-color)';
         currentUser.user_metadata.username = newUsername; // Update local state
     }
+
     btn.disabled = false;
     btn.textContent = 'حفظ';
 }
 
 async function handleDeleteComment(e) {
-    const deleteBtn = e.target.closest('.delete-comment-btn-profile');
-    if (!deleteBtn) return;
+    if (!e.target.classList.contains('delete-comment-btn-profile')) return;
 
-    const commentId = deleteBtn.dataset.commentId;
-    const tableName = deleteBtn.dataset.tableName;
+    const btn = e.target;
+    const commentId = btn.dataset.commentId;
+    const tableName = btn.dataset.table;
 
-    if (!confirm('هل أنت متأكد من حذف هذا التعليق نهائياً؟')) return;
+    if (!confirm('هل أنت متأكد من حذف هذا التعليق نهائياً؟')) {
+        return;
+    }
 
-    deleteBtn.disabled = true;
-    deleteBtn.textContent = '...';
+    btn.disabled = true;
+    btn.textContent = '...';
 
-    const { error } = await supabaseClient.from(tableName).delete().eq('id', commentId);
+    const { error } = await supabaseClient
+        .from(tableName)
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', currentUser.id); // Security check
 
     if (error) {
         alert(`فشل حذف التعليق: ${error.message}`);
-        deleteBtn.disabled = false;
-        deleteBtn.textContent = 'حذف';
+        btn.disabled = false;
+        btn.textContent = 'حذف';
     } else {
         const commentElement = document.getElementById(`profile-comment-${commentId}-${tableName}`);
-        if (commentElement) commentElement.remove();
+        if (commentElement) {
+            commentElement.remove();
+        }
     }
 }
