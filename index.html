@@ -20,7 +20,7 @@
         tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
     </script>
     
-    <!-- CSS Styles (No changes from original) -->
+    <!-- CSS Styles -->
     <style>
         :root{--bg-color:#0d1117;--surface-color:#161b22;--primary-text-color:#c9d1d9;--secondary-text-color:#8b949e;--accent-color:#2f81f7;--border-color:#30363d;--success-color:#238636;--danger-color:#da3633;--warning-color:#f7b731;--channel-color:#facc15}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Tajawal',sans-serif;background-color:var(--bg-color);color:var(--primary-text-color);line-height:1.6;overflow-x:hidden}.page-container.hidden{display:none}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);justify-content:center;align-items:center}.modal.show{display:flex}.modal-content{background-color:var(--surface-color);padding:25px;border-radius:12px;width:90%;max-width:450px;position:relative;border-top:4px solid var(--accent-color)}.modal-content h2{font-size:1.4rem;margin-bottom:20px;text-align:center}.modal .form-control input{width:100%;padding:12px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px;font-size:1rem}.modal .form-control{margin-bottom:15px}.modal .form-control label{display:block;margin-bottom:8px;font-size:0.9rem;color:var(--secondary-text-color)}.modal button.submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:700}.close-button{position:absolute;top:15px;right:15px;color:var(--secondary-text-color);font-size:24px;cursor:pointer}#predictions-page .container{max-width:800px;margin:0 auto;padding:15px}#predictions-page header h1,#news-page header h1{text-align:center;font-size:1.8rem;margin-bottom:15px;font-weight:700;padding:15px 0}#predictions-page .floating-icon-container{position:fixed;bottom:20px;left:20px;display:flex;align-items:center;gap:8px;z-index:1001}#predictions-page .user-icon-button{background-color:var(--accent-color);color:white;width:45px;height:45px;border-radius:50%;border:none;font-size:1.2rem;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3)}#predictions-page .news-ticker{background-color:var(--surface-color);border-radius:8px;padding:10px 15px;margin-bottom:25px;display:flex;align-items:center;overflow:hidden;border:1px solid var(--border-color)}#predictions-page .ticker-icon{color:var(--accent-color);font-size:1.2rem;margin-left:15px}#predictions-page .ticker-content{white-space:nowrap;animation:ticker-scroll-rtl 25s linear infinite}@keyframes ticker-scroll-rtl{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}#predictions-page .ticker-item{display:inline-block;margin-right:50px;font-size:.9rem;color:var(--secondary-text-color)}.date-tabs-container{display:flex;width:100%;border-radius:8px;overflow:hidden;background-color:var(--surface-color);margin-bottom:20px;border:1px solid var(--border-color)}.date-tab{flex-grow:1;text-align:center;padding:12px 10px;cursor:pointer;color:var(--secondary-text-color);border-bottom:4px solid transparent;transition:all .2s;font-weight:700;font-size:1.1rem}.date-tab.active{color:var(--primary-text-color);background-color:rgba(47,129,247,.15);border-bottom-color:var(--accent-color)}.day-content{display:none}.day-content.active{display:block;animation:fadeIn .5s}@keyframes fadeIn{from{opacity:0}to{opacity:1}}#predictions-page .match-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;margin-bottom:15px}#predictions-page .match-header{padding:10px 15px;display:flex;justify-content:space-between;align-items:center;background-color:rgba(47,129,247,.1)}#predictions-page .match-league{font-weight:700;color:var(--accent-color)}#predictions-page .match-date-time{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .match-body{padding:20px}#predictions-page .teams-row{display:flex;justify-content:space-around;align-items:center;margin-bottom:20px}#predictions-page .team{text-align:center;width:120px}#predictions-page .team img{width:50px;height:50px;object-fit:contain;margin-bottom:10px}#predictions-page .team-name{font-weight:700;font-size:1rem}#predictions-page .match-status-container{text-align:center}#predictions-page .match-time{font-size:1.2rem;font-weight:700;direction:ltr}#predictions-page .match-status{font-size:1rem;font-weight:700;padding:4px 8px;border-radius:6px}#predictions-page .match-status.soon{color:white;background-color:var(--success-color)}#predictions-page .match-status.live{color:white;background-color:var(--warning-color);animation:pulse 1.5s infinite}@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,183,49,.7)}70%{box-shadow:0 0 0 10px rgba(247,183,49,0)}100%{box-shadow:0 0 0 0 rgba(247,183,49,0)}}#predictions-page .match-status.ended{color:white;background-color:var(--danger-color)}#predictions-page .prediction-form,#predictions-page .comment-form{background-color:var(--bg-color);padding:15px;border-radius:8px;border:1px solid var(--border-color)}#predictions-page .prediction-form.disabled{opacity:.6;pointer-events:none}#predictions-page .form-group{margin-bottom:15px}#predictions-page .form-group legend{font-size:1rem;font-weight:500;color:var(--secondary-text-color);margin-bottom:10px;display:flex;align-items:center;gap:8px}#predictions-page .channel-info span{color:var(--channel-color);font-weight:700}#predictions-page .prediction-options{display:flex;gap:10px}#predictions-page .prediction-options input[type=radio]{display:none}#predictions-page .prediction-options label{flex-grow:1;padding:10px;border-radius:6px;border:1px solid var(--border-color);text-align:center;cursor:pointer;transition:all .2s}#predictions-page .prediction-options input[type=radio]:checked+label{background-color:var(--success-color);border-color:var(--success-color);color:#fff;font-weight:700}#predictions-page .scorer-input{width:100%;padding:10px;background-color:var(--border-color);color:var(--primary-text-color);border:1px solid var(--border-color);border-radius:6px}#predictions-page .submit-btn{width:100%;padding:12px;background-color:var(--accent-color);color:white;border:none;border-radius:8px;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;justify-content:center;align-items:center;gap:8px}#predictions-page .submit-btn:disabled{background-color:var(--success-color);opacity:.8;cursor:not-allowed}#predictions-page .match-footer{padding:0 20px 20px}#predictions-page .toggle-comments-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border-color);color:var(--secondary-text-color);cursor:pointer;border-radius:8px;margin-top:15px}#predictions-page .comments-section{display:none;margin-top:15px}#predictions-page .comment-list{margin-bottom:15px;max-height:200px;overflow-y:auto}#predictions-page .comment{display:flex;gap:10px;margin-bottom:15px}#predictions-page .comment-avatar{width:35px;height:35px;border-radius:50%;background-color:var(--border-color);display:flex;justify-content:center;align-items:center}#predictions-page .comment-body{flex:1}#predictions-page .comment-author{font-weight:700}#predictions-page .comment-text{font-size:.9rem;color:var(--secondary-text-color)}#predictions-page .comment-form textarea{width:100%;min-height:60px;padding:10px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:6px;resize:vertical;margin-bottom:10px}#predictions-page .comment-form button{padding:8px 15px;background-color:var(--accent-color);color:white;border:none;border-radius:6px;cursor:pointer}#predictions-page .fa-spin{animation:spin 1s linear infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}#news-page .page{position:absolute;top:0;left:0;width:100%;height:100%;padding:15px;padding-top:0;overflow-y:auto;background-color:var(--bg-color);transition:transform .35s ease-in-out;display:flex;flex-direction:column}#news-page #home-page{transform:translateX(0);z-index:10}#news-page #article-page{transform:translateX(100%);z-index:20;touch-action:pan-y}#news-page #article-content{padding-top:15px;padding-bottom:10px}#news-page #article-header{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:10px}#news-page #article-header h1{font-size:1.8rem;flex-grow:1;line-height:1.4}#news-page #article-content img{width:100%;max-height:400px;object-fit:cover;border-radius:8px;margin-bottom:20px}#news-page #article-content p{font-size:1.1rem;line-height:1.8;margin-bottom:15px;color:var(--secondary-text-color)}#news-page .news-comments-section{padding:20px 0;margin-top:25px;border-top:1px solid var(--border-color)}#news-page .news-comments-section h2{font-size:1.5rem;margin-bottom:20px}#news-page .comment-item{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:8px;padding:15px;margin-bottom:10px;position:relative}#news-page .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:var(--secondary-text-color);font-size:.9rem;flex-wrap:wrap}#news-page .comment-author{font-weight:700}#news-page .comment-body{font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word}#news-page #news-comment-form input,#news-page #news-comment-form textarea{width:100%;padding:12px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;color:var(--primary-text-color);margin-bottom:10px;font-size:1rem}#news-page #news-comment-form button{width:100%;background-color:var(--accent-color);color:white;border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:8px;font-size:1rem;transition:background-color .2s}#news-page #news-comment-form button:disabled{background-color:var(--secondary-text-color);cursor:not-allowed}#news-page #articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px}#news-page .article-card{background-color:var(--surface-color);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;position:relative}#news-page .article-card img{width:100%;height:180px;object-fit:cover}#news-page .article-card .article-title{padding:15px;font-size:1.1rem;font-weight:700;flex-grow:1}
     </style>
@@ -47,7 +47,7 @@
         </div>
     </div>
     
-    <!-- News Page (Restored) -->
+    <!-- News Page -->
     <div id="news-page" class="page-container hidden">
         <div id="home-page" class="page">
             <header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header>
@@ -74,14 +74,12 @@
     <div class="modal" id="user-choice-modal">
         <div class="modal-content">
             <span class="close-button" id="close-choice-modal-btn">×</span>
-            
             <div id="choice-view">
                 <h2 class="font-bold">للمشاركة والتفاعل</h2>
                 <p class="text-gray-400 mb-6 text-center">اختر طريقة المشاركة</p>
                 <button id="show-login-view-btn" class="w-full mb-3 p-3 bg-blue-600 text-white rounded-lg font-bold">تسجيل الدخول / إنشاء حساب</button>
                 <button id="show-guest-view-btn" class="w-full p-3 bg-gray-600 text-white rounded-lg font-bold">المتابعة كضيف</button>
             </div>
-
             <div id="auth-view" style="display: none;">
                 <button id="back-to-choice-btn" class="mb-4 text-blue-400">← الرجوع للاختيار</button>
                 <div id="login-view-inner">
@@ -105,7 +103,6 @@
                 </div>
                 <div id="auth-status-inner" class="text-center mt-3 h-5"></div>
             </div>
-            
             <div id="guest-view" style="display: none;">
                 <h2 class="font-bold">المتابعة كضيف</h2>
                 <form id="guest-form">
@@ -128,7 +125,6 @@ const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co'; // *** استب
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk'; // *** استبدل هذا بالمفتاح الخاص بك ***
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// *** MODIFIED: Locale for Latin numbers (1234) ***
 const locale = 'ar-EG-u-nu-latn'; 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -155,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize all app functionalities
     initializePredictionsPage();
-    initializeNewsPage(); // *** NEW: Initialize the news page functionality ***
+    initializeNewsPage();
     setupAuthAndGuestListeners();
 });
 
@@ -246,16 +242,27 @@ function attachTabEventListeners() {
 }
 
 function attachMatchEventListeners() {
-    document.getElementById('days-content-container')?.addEventListener('submit', (e) => {
+    const container = document.getElementById('days-content-container');
+    if (!container) return;
+
+    container.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (e.target.matches('form[name="prediction-form"]')) {
+        if (e.target.matches('form[name="prediction-form"]') || e.target.matches('form[name="match-comment-form"]')) {
             handleFormSubmit(e.target);
+        }
+    });
+
+    container.addEventListener('click', (e) => {
+        // Find the closest button if an icon inside it was clicked
+        const button = e.target.closest('.toggle-comments-btn');
+        if (button) {
+            handleToggleComments(button);
         }
     });
 }
 
 // ======================================================================
-// SECTION 2: NEWS PAGE LOGIC (RESTORED & INTEGRATED)
+// SECTION 2: NEWS PAGE LOGIC
 // ======================================================================
 let articlesCache = [];
 let currentArticleId = null;
@@ -440,6 +447,23 @@ function createMatchCardHTML(match) {
                 <div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div>
                 <div class="form-group"><button type="submit" class="submit-btn">${isEnded ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div>
             </form>
+            
+            <!-- ====== START: MODIFIED CODE - Comments Section ====== -->
+            <div class="match-footer">
+                <button class="toggle-comments-btn">
+                    <i class="fa-solid fa-comments mr-2"></i> عرض التعليقات
+                </button>
+                <div class="comments-section">
+                    <div class="comment-list p-2">
+                        <!-- Comments will be loaded here by JavaScript -->
+                    </div>
+                    <form class="comment-form" name="match-comment-form">
+                        <textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea>
+                        <button type="submit">إرسال</button>
+                    </form>
+                </div>
+            </div>
+            <!-- ====== END: MODIFIED CODE ====== -->
         </div>
     </div>`;
 }
@@ -581,17 +605,16 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 async function handleFormSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
-    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-    submitBtn.disabled = true;
 
     const userInfo = await getUserInfo();
     if (!userInfo) {
         document.getElementById('user-choice-modal').classList.add('show');
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
         return;
     }
-
+    
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+    submitBtn.disabled = true;
+    
     if (form.name === 'prediction-form') {
         const matchId = form.closest('.match-card').dataset.matchId;
         const winnerRadio = form.querySelector('input[name="winner"]:checked');
@@ -624,6 +647,94 @@ async function handleFormSubmit(form) {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
+    } else if (form.name === 'match-comment-form') {
+        // This is now handled by its own function
+        await handleMatchCommentSubmit(form);
+    }
+}
+
+// ======================================================================
+// SECTION 6: MATCH COMMENTS LOGIC (NEW SECTION)
+// ======================================================================
+async function fetchAndRenderMatchComments(matchId, listElement) {
+    listElement.innerHTML = '<p class="text-center text-xs p-2">جاري تحميل التعليقات...</p>';
+    try {
+        const { data, error } = await supabaseClient
+            .from('match_comments')
+            .select('*')
+            .eq('match_id', matchId)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (data.length === 0) {
+            listElement.innerHTML = '<p class="text-center text-xs text-gray-500 p-2">لا توجد تعليقات بعد. كن أول من يعلق!</p>';
+        } else {
+            listElement.innerHTML = data.map(comment => `
+                <div class="comment">
+                    <div class="comment-avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="comment-body">
+                        <span class="comment-author">${comment.author}</span>
+                        <p class="comment-text">${comment.comment_text.replace(/\n/g, '<br>')}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        console.error('Error fetching match comments:', err);
+        listElement.innerHTML = '<p class="text-center text-red-500 text-xs p-2">فشل تحميل التعليقات.</p>';
+    }
+}
+
+function handleToggleComments(button) {
+    const commentsSection = button.nextElementSibling;
+    const isVisible = commentsSection.style.display === 'block';
+
+    if (!isVisible) {
+        const matchId = button.closest('.match-card').dataset.matchId;
+        const commentList = commentsSection.querySelector('.comment-list');
+        fetchAndRenderMatchComments(matchId, commentList);
+    }
+
+    commentsSection.style.display = isVisible ? 'none' : 'block';
+    button.innerHTML = isVisible 
+        ? '<i class="fa-solid fa-comments mr-2"></i> عرض التعليقات' 
+        : '<i class="fa-solid fa-eye-slash mr-2"></i> إخفاء التعليقات';
+}
+
+async function handleMatchCommentSubmit(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const textarea = form.querySelector('textarea');
+    const commentText = textarea.value.trim();
+    const matchId = form.closest('.match-card').dataset.matchId;
+
+    if (!commentText) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إرسال';
+        return;
+    }
+
+    const userInfo = await getUserInfo(); // Already checked in parent function, but good for safety
+    if (!userInfo) {
+        document.getElementById('user-choice-modal').classList.add('show');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إرسال';
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient.from('match_comments').insert([
+            { match_id: matchId, user_id: userInfo.id, author: userInfo.username, comment_text: commentText }
+        ]);
+        if (error) throw error;
+        textarea.value = '';
+        fetchAndRenderMatchComments(matchId, form.closest('.comments-section').querySelector('.comment-list'));
+    } catch (error) {
+        alert('حدث خطأ أثناء إرسال تعليقك.');
+        console.error('Match comment submission error:', error);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'إرسال';
     }
 }
 
