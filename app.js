@@ -577,98 +577,19 @@ function initializeProfilePageListeners() {
 
 
 
-// استبدل الدالة الحالية بهذه الدالة التشخيصية
-async function openProfilePage() {
-    // إغلاق نافذة المصادقة
-    const authModal = document.getElementById('auth-modal');
-    if (authModal) authModal.classList.remove('show');
-
-    // الوصول إلى صفحة الملف الشخصي ومسح محتواها القديم
-    const profilePage = document.getElementById('profile-page');
-    const profileMainContent = profilePage.querySelector('main');
-    profileMainContent.innerHTML = ''; // مسح المحتوى الحالي
-
-    // دالة مساعدة لعرض رسائل التشخيص على الشاشة
-    function logToScreen(message, isError = false) {
-        const p = document.createElement('p');
-        p.textContent = message;
-        p.style.padding = '8px';
-        p.style.margin = '5px';
-        p.style.borderRadius = '5px';
-        p.style.fontFamily = 'monospace';
-        p.style.direction = 'ltr'; // For consistent display
-        if (isError) {
-            p.style.backgroundColor = '#da3633'; // Danger color
-            p.style.color = 'white';
-        } else {
-            p.style.backgroundColor = '#161b22'; // Surface color
-            p.style.color = '#c9d1d9';
-        }
-        profileMainContent.appendChild(p);
-    }
-
-    logToScreen("--- START DIAGNOSTICS ---");
-
-    // 1. التحقق من وجود المستخدم
-    if (!currentUser) {
-        logToScreen("ERROR: currentUser is NULL. Cannot proceed.", true);
-        profilePage.classList.remove('hidden');
-        profilePage.style.transform = 'translateX(0)';
-        return;
-    }
-    logToScreen(`SUCCESS: User is logged in. Email: ${currentUser.email}`);
-    logToScreen(`User ID: ${currentUser.id}`);
-
-    // إظهار صفحة التشخيص
-    profilePage.classList.remove('hidden');
-    profilePage.style.transform = 'translateX(0)';
-
-    // 2. محاولة جلب التوقعات
-    logToScreen("\n--- Fetching Predictions ---");
-    try {
-        const { data, error, status } = await supabaseClient
-            .from('predictions')
-            .select(`
-                predicted_winner,
-                matches ( team1_name, team2_name )
-            `)
-            .eq('user_id', currentUser.id)
-            .limit(3); // نجلب 3 فقط للتشخيص
-
-        if (error) {
-            logToScreen(`ERROR fetching predictions: ${error.message}`, true);
-        } else {
-            logToScreen(`SUCCESS: Fetched ${data.length} prediction(s).`);
-            if (data.length > 0) {
-                logToScreen(`First prediction: ${JSON.stringify(data[0])}`);
-            }
-        }
-    } catch (e) {
-        logToScreen(`FATAL EXCEPTION while fetching predictions: ${e.message}`, true);
-    }
+function openProfilePage() {
+    if (!currentUser) return; // Safety check
     
-    // 3. محاولة جلب التعليقات
-    logToScreen("\n--- Fetching Comments ---");
-    try {
-        const { data, error } = await supabaseClient
-            .from('comments') // تعليقات المباريات
-            .select('id, comment_text')
-            .eq('user_id', currentUser.id)
-            .limit(3);
+    const authModal = document.getElementById('auth-modal');
+    authModal.classList.remove('show'); // Close auth modal if open
 
-        if (error) {
-            logToScreen(`ERROR fetching match comments: ${error.message}`, true);
-        } else {
-            logToScreen(`SUCCESS: Fetched ${data.length} match comment(s).`);
-             if (data.length > 0) {
-                logToScreen(`First comment: ${JSON.stringify(data[0])}`);
-            }
-        }
-    } catch (e) {
-        logToScreen(`FATAL EXCEPTION while fetching comments: ${e.message}`, true);
-    }
+    profilePage.classList.remove('hidden');
+    setTimeout(() => {
+        profilePage.style.transform = 'translateX(0)';
+    }, 10);
 
-    logToScreen("\n--- DIAGNOSTICS COMPLETE ---");
+    // Load user data into the profile page
+    loadProfileData();
 }
 
 function closeProfilePage() {
