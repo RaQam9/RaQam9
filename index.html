@@ -431,7 +431,38 @@
         
         async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
         async function fetchAndRenderMatchComments(matchId, listElement) { listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; try { let { data: o, error: e } = await supabaseClient.from('comments').select('author, comment_text, created_at').eq('match_id', matchId).order('created_at', { ascending: true }); if (e) throw e; listElement.innerHTML = ''; if (o.length === 0) { listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(listElement, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } }
-        function addCommentToDOM(l, d) { const c = document.createElement('div'); c.className = 'comment'; c.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-user"></i></div><div class="comment-body"><span class="comment-author">${d.author}</span><p class="comment-text">${d.text}</p></div>`; l.appendChild(c); l.scrollTop = l.scrollHeight; }
+        function addCommentToDOM(listElement, commentData) {
+    // إنشاء العناصر الأساسية
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'comment';
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'comment-avatar';
+    avatarDiv.innerHTML = '<i class="fa-solid fa-user"></i>'; // هذا آمن لأنه نص ثابت
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'comment-body';
+
+    // إنشاء عناصر المحتوى واستخدام textContent الآمن
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'comment-author';
+    authorSpan.textContent = commentData.author; // <-- استخدام textContent الآمن
+
+    const textP = document.createElement('p');
+    textP.className = 'comment-text';
+    textP.textContent = commentData.text; // <-- استخدام textContent الآمن
+
+    // تجميع العناصر معًا
+    bodyDiv.appendChild(authorSpan);
+    bodyDiv.appendChild(textP);
+    commentDiv.appendChild(avatarDiv);
+    commentDiv.appendChild(bodyDiv);
+
+    // إضافة التعليق النهائي إلى القائمة
+    listElement.appendChild(commentDiv);
+    listElement.scrollTop = listElement.scrollHeight;
+}
+
         
         populateTicker();
         const today = new Date();
