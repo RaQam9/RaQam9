@@ -144,6 +144,7 @@
         initializeAuth();
         initializePredictionsPage();
         initializeNewsPage();
+        initializeRealtimeListeners(); // <-- تم إضافة هذه الدالة
     });
 
     // ==========================================================
@@ -390,7 +391,7 @@
                     predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
                 };
                 try {
-                    const { error } = await supabaseClient.from('predictions').insert([predictionData]);
+                    const { error } = await supabaseClient.from('predictions').upsert(predictionData, { onConflict: 'user_id, match_id' });
                     if (error) throw error;
                     submitBtn.innerHTML = `تم الإرسال ✅`;
                     [...form.elements].forEach(el => el.disabled = true);
@@ -416,9 +417,7 @@
                         comment_text: commentText 
                     }]);
                     if (error) throw error;
-                    const commentList = form.closest('.comments-section').querySelector('.comment-list');
-                    if (commentList.querySelector('p')) { commentList.innerHTML = ''; }
-                    addCommentToDOM(commentList, { author: username, text: commentText });
+                    // The realtime listener will handle updating the DOM
                     form.querySelector('textarea').value = '';
                 } catch (error) { 
                     console.error('Error submitting comment:', error); 
@@ -430,7 +429,8 @@
             }
         }
         
-        async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; l.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; try { let { data: o, error: e } = await supabaseClient.from('comments').select('author, comment_text, created_at').eq('match_id', i).order('created_at', { ascending: true }); if (e) throw e; l.innerHTML = ''; if (o.length === 0) { l.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(l, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); l.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+        async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const m = b.closest('.match-card'); const i = m.dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+        async function fetchAndRenderMatchComments(matchId, listElement) { listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>'; try { let { data: o, error: e } = await supabaseClient.from('comments').select('author, comment_text, created_at').eq('match_id', matchId).order('created_at', { ascending: true }); if (e) throw e; listElement.innerHTML = ''; if (o.length === 0) { listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>'; } else { o.forEach(t => { addCommentToDOM(listElement, { author: t.author, text: t.comment_text }); }); } } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; } }
         function addCommentToDOM(l, d) { const c = document.createElement('div'); c.className = 'comment'; c.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-user"></i></div><div class="comment-body"><span class="comment-author">${d.author}</span><p class="comment-text">${d.text}</p></div>`; l.appendChild(c); l.scrollTop = l.scrollHeight; }
         
         populateTicker();
@@ -630,7 +630,7 @@
                 comment_text: commentText 
             }]);
             if (error) throw error;
-            fetchAndRenderNewsComments(articleId);
+            // The realtime listener will handle the update
             document.getElementById('comment-text').value = ''; 
         } catch (error) {
             console.error('Error submitting news comment:', error);
@@ -639,6 +639,86 @@
             submitBtn.disabled = false;
             submitBtn.textContent = originalBtnText;
         }
+    }
+
+    // ==========================================================
+    // SECTION 3: REALTIME FUNCTIONALITY (NEW)
+    // ==========================================================
+    function showNotification(message) {
+        const toast = document.getElementById('notification-toast');
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function initializeRealtimeListeners() {
+        console.log("🚀 Initializing Realtime Listeners...");
+
+        const handleRealtimeChange = (payload) => {
+            console.log("Realtime change received:", payload);
+            
+            // Handle updates for major lists (matches and articles)
+            if (payload.table === 'matches' || payload.table === 'articles') {
+                const pageName = payload.table === 'matches' ? 'المباريات' : 'الأخبار';
+                showNotification(`📢 تم تحديث قائمة ${pageName}!`);
+                
+                // Re-initialize the relevant page to get all new data
+                if (payload.table === 'matches') {
+                    initializePredictionsPage();
+                } else {
+                    initializeNewsPage();
+                }
+                return;
+            }
+
+            // Handle updates for match comments
+            if (payload.table === 'comments') {
+                const newComment = payload.new;
+                const matchCard = document.querySelector(`.match-card[data-match-id='${newComment.match_id}']`);
+                
+                // Only update if the comments section for this specific match is open
+                if (matchCard) {
+                    const commentsSection = matchCard.querySelector('.comments-section');
+                    if (commentsSection && commentsSection.style.display === 'block') {
+                         console.log(`New comment for match ${newComment.match_id}. Refreshing its comments.`);
+                         const commentList = commentsSection.querySelector('.comment-list');
+                         fetchAndRenderMatchComments(newComment.match_id, commentList);
+                    }
+                }
+                return;
+            }
+
+            // Handle updates for news comments
+            if (payload.table === 'news_comments') {
+                const newComment = payload.new;
+                const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
+
+                // Only update if the user is currently viewing the article that received a new comment
+                if (articleIdOnPage && parseInt(articleIdOnPage) === newComment.article_id) {
+                    console.log(`New comment for article ${newComment.article_id}. Refreshing its comments.`);
+                    showNotification('💬 تم إضافة تعليق جديد!');
+                    fetchAndRenderNewsComments(newComment.article_id);
+                }
+                return;
+            }
+        };
+
+        const channel = supabaseClient
+            .channel('public-dynamic-content')
+            .on(
+                'postgres_changes', 
+                { event: '*', schema: 'public' }, 
+                handleRealtimeChange
+            )
+            .subscribe((status, err) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Realtime channel subscribed successfully!');
+                }
+                if (err) {
+                    console.error('Realtime subscription error:', err);
+                }
+            });
     }
 </script>
 </body>
