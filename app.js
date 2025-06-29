@@ -539,3 +539,227 @@ function initializeGlobalEventListeners() {
         }
     });
 }
+// ===================================
+//      PROFILE PAGE LOGIC
+// ===================================
+
+// Global variables for profile elements
+let profilePage;
+let openProfileBtn;
+let closeProfileBtn;
+let saveUsernameBtn;
+let profileCommentsList;
+
+// This function should be called ONCE when the app starts.
+// For example, inside the main DOMContentLoaded event listener.
+function initializeProfilePageListeners() {
+    profilePage = document.getElementById('profile-page');
+    openProfileBtn = document.getElementById('open-profile-btn');
+    closeProfileBtn = document.getElementById('close-profile-btn');
+    saveUsernameBtn = document.getElementById('save-username-btn');
+    profileCommentsList = document.getElementById('profile-comments-list');
+
+    if (openProfileBtn) {
+        openProfileBtn.addEventListener('click', openProfilePage);
+    }
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', closeProfilePage);
+    }
+    if (saveUsernameBtn) {
+        saveUsernameBtn.addEventListener('click', handleUpdateUsername);
+    }
+    if (profileCommentsList) {
+        profileCommentsList.addEventListener('click', handleDeleteComment);
+    }
+}
+
+// Call the function to set up listeners when the document is ready
+document.addEventListener('DOMContentLoaded', initializeProfilePageListeners);
+
+
+function openProfilePage() {
+    if (!currentUser) return; // Safety check
+    
+    const authModal = document.getElementById('auth-modal');
+    authModal.classList.remove('show'); // Close auth modal if open
+
+    profilePage.classList.remove('hidden');
+    setTimeout(() => {
+        profilePage.style.transform = 'translateX(0)';
+    }, 10);
+
+    // Load user data into the profile page
+    loadProfileData();
+}
+
+function closeProfilePage() {
+    profilePage.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+        profilePage.classList.add('hidden');
+    }, 300);
+}
+
+async function loadProfileData() {
+    if (!currentUser) return;
+
+    const usernameInput = document.getElementById('profile-username-input');
+    const predictionsListDiv = document.getElementById('profile-predictions-list');
+    const commentsListDiv = document.getElementById('profile-comments-list');
+
+    // Reset view
+    usernameInput.value = currentUser.user_metadata.username || '';
+    predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
+    commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
+
+    // Fetch and render data in parallel
+    fetchAndRenderProfilePredictions();
+    fetchAndRenderProfileComments();
+}
+
+async function fetchAndRenderProfilePredictions() {
+    const predictionsListDiv = document.getElementById('profile-predictions-list');
+    const { data, error } = await supabaseClient
+        .from('predictions')
+        .select(`
+            predicted_winner,
+            predicted_scorer,
+            matches ( team1_name, team2_name )
+        `)
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        return;
+    }
+
+    if (data.length === 0) {
+        predictionsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي توقعات بعد.</p>';
+        return;
+    }
+
+    predictionsListDiv.innerHTML = data.map(p => {
+        const team1 = p.matches.team1_name;
+        const team2 = p.matches.team2_name;
+        const winner = p.predicted_winner;
+        const scorer = p.predicted_scorer;
+        return `
+        <div class="profile-prediction-item">
+            <div class="match-info">${team1} ضد ${team2}</div>
+            <div class="prediction-info">
+                توقعت فوز: <strong>${winner}</strong>
+                ${scorer ? ` | ومسجل الهدف الأول: <strong>${scorer}</strong>` : ''}
+            </div>
+        </div>
+    `}).join('');
+}
+
+async function fetchAndRenderProfileComments() {
+    const commentsListDiv = document.getElementById('profile-comments-list');
+
+    const [matchComments, newsComments] = await Promise.all([
+        supabaseClient.from('comments').select('id, comment_text, created_at, matches(team1_name, team2_name)').eq('user_id', currentUser.id),
+        supabaseClient.from('news_comments').select('id, comment_text, created_at, articles(title)').eq('user_id', currentUser.id)
+    ]);
+
+    if (matchComments.error || newsComments.error) {
+        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        return;
+    }
+    
+    const allComments = [
+        ...matchComments.data.map(c => ({...c, type: 'match', table: 'comments'})),
+        ...newsComments.data.map(c => ({...c, type: 'news', table: 'news_comments'}))
+    ];
+
+    allComments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (allComments.length === 0) {
+        commentsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي تعليقات بعد.</p>';
+        return;
+    }
+
+    commentsListDiv.innerHTML = allComments.map(c => {
+        const commentText = c.comment_text;
+        const context = c.type === 'match' 
+            ? `مباراة ${c.matches.team1_name} ضد ${c.matches.team2_name}`
+            : (c.articles ? `مقال "${c.articles.title}"` : 'مقال محذوف');
+
+        return `
+        <div class="profile-comment-item" id="profile-comment-${c.id}-${c.table}">
+            <div class="comment-content">
+                <span class="comment-text">${commentText}</span>
+                <span class="comment-meta">
+                    عن: ${context}
+                </span>
+            </div>
+            <button class="delete-comment-btn-profile" data-comment-id="${c.id}" data-table="${c.table}">حذف</button>
+        </div>
+    `}).join('');
+}
+
+async function handleUpdateUsername(e) {
+    const btn = e.target;
+    const usernameInput = document.getElementById('profile-username-input');
+    const statusP = document.getElementById('username-status');
+    const newUsername = usernameInput.value.trim();
+
+    if (newUsername.length < 3) {
+        statusP.textContent = 'يجب أن يكون الاسم 3 أحرف على الأقل.';
+        statusP.style.color = 'var(--danger-color)';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '...';
+    statusP.textContent = 'جاري الحفظ...';
+    statusP.style.color = 'var(--secondary-text-color)';
+
+    const { data, error } = await supabaseClient.auth.updateUser({
+        data: { username: newUsername }
+    });
+
+    if (error) {
+        statusP.textContent = `خطأ: ${error.message}`;
+        statusP.style.color = 'var(--danger-color)';
+    } else {
+        statusP.textContent = 'تم حفظ الاسم بنجاح!';
+        statusP.style.color = 'var(--success-color)';
+        currentUser.user_metadata.username = newUsername; // Update local state
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'حفظ';
+}
+
+async function handleDeleteComment(e) {
+    if (!e.target.classList.contains('delete-comment-btn-profile')) return;
+
+    const btn = e.target;
+    const commentId = btn.dataset.commentId;
+    const tableName = btn.dataset.table;
+
+    if (!confirm('هل أنت متأكد من حذف هذا التعليق نهائياً؟')) {
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const { error } = await supabaseClient
+        .from(tableName)
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', currentUser.id); // Security check
+
+    if (error) {
+        alert(`فشل حذف التعليق: ${error.message}`);
+        btn.disabled = false;
+        btn.textContent = 'حذف';
+    } else {
+        const commentElement = document.getElementById(`profile-comment-${commentId}-${tableName}`);
+        if (commentElement) {
+            commentElement.remove();
+        }
+    }
+}
