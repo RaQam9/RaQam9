@@ -615,12 +615,36 @@
             if (data.length === 0) {
                 commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
             } else {
-                data.forEach(comment => {
-                    const commentEl = document.createElement('div');
-                    commentEl.className = 'comment-item';
-                    commentEl.innerHTML = `<div class="comment-header"><span class="comment-author">${comment.author}</span><span class="comment-date" style="font-size: 0.8rem;">${new Date(comment.created_at).toLocaleDateString('ar-EG')}</span></div><p class="comment-body">${comment.comment_text}</p>`;
-                    commentsListDiv.appendChild(commentEl);
-                });
+data.forEach(comment => {
+    const commentEl = document.createElement('div');
+    commentEl.className = 'comment-item';
+
+    // Header
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'comment-header';
+
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'comment-author';
+    authorSpan.textContent = comment.author; // <-- استخدام textContent الآمن
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'comment-date';
+    dateSpan.style.fontSize = '0.8rem';
+    dateSpan.textContent = new Date(comment.created_at).toLocaleDateString('ar-EG');
+
+    headerDiv.appendChild(authorSpan);
+    headerDiv.appendChild(dateSpan);
+
+    // Body
+    const bodyP = document.createElement('p');
+    bodyP.className = 'comment-body';
+    bodyP.textContent = comment.comment_text; // <-- استخدام textContent الآمن
+    
+    // تجميع العناصر
+    commentEl.appendChild(headerDiv);
+    commentEl.appendChild(bodyP);
+    commentsListDiv.appendChild(commentEl);
+});
             }
         } catch (err) {
             console.error('Error fetching news comments:', err);
