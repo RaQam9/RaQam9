@@ -335,7 +335,7 @@ async function fetchAndRenderNewsComments(articleId) {
     const commentsList = document.getElementById('news-comments-list');
     commentsList.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
     try {
-        const { data, error } = await supabaseClient.from('comments').select('*').eq('article_id', articleId).order('created_at', { ascending: true });
+        const { data, error } = await supabaseClient.from('news_comments').select('*').eq('article_id', articleId).order('created_at', { ascending: true });
         if (error) throw error;
         if (data.length === 0) {
             commentsList.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
