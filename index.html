@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchPage(pageToShow) {
         const isPredictions = pageToShow === 'predictions';
+        
+        // Toggle visibility and button styles
         predictionsPage.classList.toggle('hidden', !isPredictions);
         newsPage.classList.toggle('hidden', isPredictions);
         predictionsBtn.classList.toggle('bg-blue-600', isPredictions);
@@ -144,31 +146,44 @@ document.addEventListener('DOMContentLoaded', () => {
         newsBtn.classList.toggle('bg-blue-600', !isPredictions);
         newsBtn.classList.toggle('text-white', !isPredictions);
         newsBtn.classList.toggle('text-gray-400', isPredictions);
+
+        // --- NEW LOGIC: Load content on demand ---
+        if (isPredictions && !predictionsPage.hasAttribute('data-loaded')) {
+            initializePredictionsPage();
+            predictionsPage.setAttribute('data-loaded', 'true');
+        } else if (!isPredictions && !newsPage.hasAttribute('data-loaded')) {
+            initializeNewsPage();
+            newsPage.setAttribute('data-loaded', 'true');
+        }
     }
 
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // Initialize all app functionalities
-    initializePredictionsPage();
-    initializeNewsPage();
+    // Initialize auth listeners
     setupAuthAndGuestListeners();
+
+    // Trigger initial page load for the default view
+    switchPage('predictions');
 });
 
 // ======================================================================
 // SECTION 1: PREDICTIONS PAGE LOGIC
 // ======================================================================
 async function initializePredictionsPage() {
-    // The updateUserStatus and data fetching will be handled by the onAuthStateChange event
+    const container = document.getElementById('matches-container');
+    container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
+    
     try {
-        const container = document.getElementById('matches-container');
-        container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
         let { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
+        
         if (error) throw error;
+        
         if (!data || data.length === 0) {
             container.innerHTML = '<p class="text-center text-gray-400 mt-8">لا توجد مباريات متاحة حالياً.</p>';
             return;
         }
+        
         const formattedMatches = data.map(match => ({
             id: match.id,
             team1: { name: match.team1_name, logo: match.team1_logo },
@@ -177,12 +192,13 @@ async function initializePredictionsPage() {
             datetime: match.datetime,
             channels: match.channels || []
         }));
+        
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
         await updateUserStatus(); // Initial status check
     } catch (error) {
         console.error("Error initializing predictions page:", error);
-        document.getElementById('matches-container').innerHTML = `<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى التأكد من سياسات الأمان (RLS).</p>`;
+        container.innerHTML = `<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى.</p>`;
     }
 }
 
@@ -263,7 +279,7 @@ function attachMatchEventListeners() {
 }
 
 // ======================================================================
-// SECTION 2: NEWS PAGE LOGIC (No changes needed here)
+// SECTION 2: NEWS PAGE LOGIC
 // ======================================================================
 let articlesCache = [];
 let currentArticleId = null;
@@ -271,17 +287,20 @@ let currentArticleId = null;
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
     articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+    
     try {
         const { data, error } = await supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         articlesCache = data;
         renderArticleCards(articlesCache);
+        
+        // Attach listeners only after a successful load
+        document.getElementById('back-to-news-list').addEventListener('click', () => navigateToNewsSubPage('home'));
+        document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
     } catch (error) {
         console.error("Error fetching news:", error);
         articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
     }
-    document.getElementById('back-to-news-list').addEventListener('click', () => navigateToNewsSubPage('home'));
-    document.getElementById('news-comment-form').addEventListener('submit', handleNewsCommentSubmit);
 }
 
 function renderArticleCards(articles) {
@@ -385,7 +404,6 @@ async function handleNewsCommentSubmit(event) {
 // ======================================================================
 // SECTION 3: HELPER FUNCTIONS (RENDERING, SORTING, ETC.)
 // ======================================================================
-
 function getMatchStatus(datetime) {
     const diffMinutes = (new Date(datetime).getTime() - new Date().getTime()) / 60000;
     if (diffMinutes < -125) return 'ended';
@@ -463,9 +481,8 @@ function populateTicker() {
 }
 
 // ======================================================================
-// SECTION 4: AUTH & GUEST USER MANAGEMENT (MODIFIED SECTION)
+// SECTION 4: AUTH & GUEST USER MANAGEMENT
 // ======================================================================
-
 function setupAuthAndGuestListeners() {
     const userIconBtn = document.getElementById('user-icon-btn');
     const modal = document.getElementById('user-choice-modal');
@@ -540,7 +557,6 @@ function setupAuthAndGuestListeners() {
     });
 }
 
-/** [NEW] Resets all prediction forms to their initial state. */
 function resetAllPredictionForms() {
     document.querySelectorAll('.match-card').forEach(card => {
         const form = card.querySelector('.prediction-form');
@@ -555,7 +571,6 @@ function resetAllPredictionForms() {
     });
 }
 
-/** [NEW] Clears only prediction data from localStorage. */
 function clearLocalPredictions() {
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -567,7 +582,6 @@ function clearLocalPredictions() {
     keysToRemove.forEach(key => localStorage.removeItem(key));
 }
 
-/** [NEW] Handles the complete logout process for both users and guests. */
 async function handleLogout() {
     await supabaseClient.auth.signOut();
     localStorage.removeItem('guestInfo');
@@ -576,7 +590,6 @@ async function handleLogout() {
     // The onAuthStateChange listener will handle the rest.
 }
 
-/** [NEW] Fetches predictions for a logged-in user and applies them to the UI. */
 async function fetchAndApplyUserPredictions(userId) {
     if (!userId) return;
 
@@ -598,7 +611,6 @@ async function fetchAndApplyUserPredictions(userId) {
                     form.querySelector('.scorer-input').value = p.predicted_scorer || '';
                     [...form.elements].forEach(el => el.disabled = true);
                     form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅';
-                    // Save to localStorage for this session to handle page reloads smoothly
                     localStorage.setItem(`prediction-${p.match_id}`, JSON.stringify({ winner: p.predicted_winner, scorer: p.predicted_scorer }));
                 }
             }
@@ -617,7 +629,7 @@ async function updateUserStatus() {
     if (user) {
         userIcon.className = 'fa-solid fa-right-from-bracket';
         userIconBtn.title = `تسجيل الخروج (${user.user_metadata.username || user.email})`;
-        localStorage.removeItem('guestInfo'); // Ensure no guest info conflicts
+        localStorage.removeItem('guestInfo');
     } else if (guestInfo) {
         userIcon.className = 'fa-solid fa-user-pen';
         userIconBtn.title = `المشاركة كضيف (${guestInfo.username})`;
@@ -639,22 +651,17 @@ async function getUserInfo() {
     return null;
 }
 
-// [MODIFIED] This listener now orchestrates the data flow on login/logout
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    // Clean the UI first, regardless of the event
     resetAllPredictionForms();
     clearLocalPredictions();
 
-    if (event === 'SIGNED_IN' && session?.user) {
-        // User logged in: close modal, fetch their specific data
+    if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && session)) {
         document.getElementById('user-choice-modal').classList.remove('show');
         await fetchAndApplyUserPredictions(session.user.id);
     } 
-    // For SIGNED_OUT or INITIAL_SESSION with no user, the UI is already clean.
     
     updateUserStatus();
 });
-
 
 // ======================================================================
 // SECTION 5: FORM SUBMISSION HANDLER (FOR PREDICTIONS ONLY)
@@ -683,7 +690,7 @@ async function handleFormSubmit(form) {
     
     const predictionData = { 
         match_id: parseInt(matchId), 
-        user_id: userInfo.id, // Will be null for guests
+        user_id: userInfo.id, 
         username: userInfo.username,
         predicted_winner: winnerRadio.value, 
         predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() 
@@ -697,7 +704,6 @@ async function handleFormSubmit(form) {
         }
         submitBtn.innerHTML = `تم الإرسال ✅`;
         [...form.elements].forEach(el => el.disabled = true);
-        // Always save to localStorage for the current session's UI state
         localStorage.setItem(`prediction-${matchId}`, JSON.stringify({ winner: predictionData.predicted_winner, scorer: predictionData.predicted_scorer }));
     } catch (error) {
         alert(`حدث خطأ: ${error.message}`);
@@ -707,7 +713,7 @@ async function handleFormSubmit(form) {
 }
 
 // ======================================================================
-// SECTION 6: MATCH COMMENTS LOGIC (No changes needed here)
+// SECTION 6: MATCH COMMENTS LOGIC
 // ======================================================================
 async function fetchAndRenderMatchComments(matchId, listElement) {
     listElement.innerHTML = '<p class="text-center text-xs p-2">جاري تحميل التعليقات...</p>';
