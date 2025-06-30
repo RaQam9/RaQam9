@@ -526,9 +526,10 @@ function initializeGlobalEventListeners() {
         }
     });
 }
-// ===================================
-//      PROFILE PAGE LOGIC
-// ===================================
+
+// ==========================================================
+// SECTION 5: PROFILE PAGE LOGIC (CORRECTED)
+// ==========================================================
 
 let profilePage;
 let openProfileBtn;
@@ -557,30 +558,48 @@ function initializeProfilePageListeners() {
     }
 }
 
+// ============ CORRECTED FUNCTION ============
 function openProfilePage() {
     if (!currentUser || !profilePage) return;
 
+    // إخفاء نافذة تسجيل الدخول
     const authModal = document.getElementById('auth-modal');
     authModal.classList.remove('show');
 
+    // 1. أولاً، اجعل الصفحة جزءًا من التخطيط (layout) عن طريق إزالة `hidden`
+    //    هذا يجعلها `display: block` ولكنها لا تزال خارج الشاشة بسبب `translate-x-full`
     profilePage.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        profilePage.classList.remove('translate-x-full');
-        profilePage.classList.add('translate-x-0');
-    });
 
+    // 2. ثانياً، افرض على المتصفح إعادة حساب الأنماط (reflow).
+    //    هذا يضمن أن المتصفح قد طبق التغيير `display: block` قبل أن نبدأ الأنيميشن.
+    //    هذه الخطوة هي مفتاح حل المشكلة.
+    void profilePage.offsetWidth; 
+
+    // 3. ثالثاً، ابدأ الأنيميشن عن طريق تحريك الصفحة إلى داخل الشاشة.
+    profilePage.classList.remove('translate-x-full');
+    profilePage.classList.add('translate-x-0');
+
+    // تحميل بيانات الملف الشخصي
     loadProfileData();
 }
 
+// ============ IMPROVED FUNCTION ============
 function closeProfilePage() {
     if (!profilePage) return;
 
+    // دالة يتم استدعاؤها مرة واحدة فقط عند انتهاء الأنيميشن
+    const onTransitionEnd = () => {
+        profilePage.classList.add('hidden');
+        // إزالة المستمع (listener) لتجنب تشغيله مرة أخرى عن طريق الخطأ
+        profilePage.removeEventListener('transitionend', onTransitionEnd);
+    };
+
+    // إضافة المستمع الذي ينتظر انتهاء حركة الانزلاق
+    profilePage.addEventListener('transitionend', onTransitionEnd);
+
+    // بدء حركة الانزلاق للخارج
     profilePage.classList.add('translate-x-full');
     profilePage.classList.remove('translate-x-0');
-
-    setTimeout(() => {
-        profilePage.classList.add('hidden');
-    }, 300);
 }
 
 
@@ -591,9 +610,10 @@ async function loadProfileData() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     const commentsListDiv = document.getElementById('profile-comments-list');
 
-    usernameInput.value = currentUser.user_metadata.username || '';
-    predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
-    commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
+    // تأكد من وجود العناصر قبل استخدامها لتجنب الأخطاء
+    if (usernameInput) usernameInput.value = currentUser.user_metadata.username || '';
+    if (predictionsListDiv) predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
+    if (commentsListDiv) commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
 
     fetchAndRenderProfilePredictions();
     fetchAndRenderProfileComments();
@@ -601,6 +621,8 @@ async function loadProfileData() {
 
 async function fetchAndRenderProfilePredictions() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
+    if (!predictionsListDiv) return;
+
     const { data, error } = await supabaseClient
         .from('predictions')
         .select(`
@@ -623,6 +645,7 @@ async function fetchAndRenderProfilePredictions() {
     }
 
     predictionsListDiv.innerHTML = data.map(p => {
+        if (!p.matches) return ''; // تجنب الخطأ إذا كانت المباراة محذوفة
         const team1 = p.matches.team1_name;
         const team2 = p.matches.team2_name;
         const winner = p.predicted_winner;
@@ -640,6 +663,7 @@ async function fetchAndRenderProfilePredictions() {
 
 async function fetchAndRenderProfileComments() {
     const commentsListDiv = document.getElementById('profile-comments-list');
+    if (!commentsListDiv) return;
 
     const [matchComments, newsComments] = await Promise.all([
         supabaseClient.from('comments').select('id, comment_text, created_at, matches(team1_name, team2_name)').eq('user_id', currentUser.id),
@@ -667,7 +691,7 @@ async function fetchAndRenderProfileComments() {
     commentsListDiv.innerHTML = allComments.map(c => {
         const commentText = c.comment_text;
         const context = c.type === 'match' 
-            ? `مباراة ${c.matches.team1_name} ضد ${c.matches.team2_name}`
+            ? (c.matches ? `مباراة ${c.matches.team1_name} ضد ${c.matches.team2_name}` : 'مباراة محذوفة')
             : (c.articles ? `مقال "${c.articles.title}"` : 'مقال محذوف');
 
         return `
