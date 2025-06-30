@@ -60,3 +60,116 @@
     font-size: 0.8rem;
     flex-shrink: 0;
 }
+/* =================================== */
+/*      PROFILE PAGE STYLES (FINAL)    */
+/* =================================== */
+
+/* 1. The main container for the profile page */
+#profile-page {
+    /* Positioning to cover the whole screen */
+    position: fixed;
+    top: 0;
+    left: 0; /* يبدأ من اليسار */
+    width: 100%;
+    height: 100%;
+
+    /* Appearance */
+    background-color: var(--bg-color); /* نفس لون خلفية التطبيق */
+    color: var(--primary-text-color);
+    padding: 20px;
+    padding-top: 50px; /* مساحة للهيدر */
+    
+    /* Layering and scrolling */
+    z-index: 1000; /* يجب أن يكون فوق كل شيء آخر */
+    overflow-y: auto; /* للسماح بالتمرير إذا كان المحتوى طويلًا */
+
+    /* The Animation! */
+    /* We animate the 'transform' property */
+    transform: translateX(100%); /* يبدأ خارج الشاشة إلى اليمين */
+    transition: transform 0.35s ease-in-out; /* سرعة وشكل الأنيميشن */
+}
+
+/* 2. This class will be added by JavaScript to slide the page in */
+#profile-page.is-visible {
+    transform: translateX(0); /* يتحرك إلى مكانه الطبيعي داخل الشاشة */
+}
+
+/* 3. This keeps the page hidden correctly when not in use */
+#profile-page.hidden {
+    display: none;
+}
+
+/* Header styles inside the profile page */
+.profile-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-header h2 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+#close-profile-btn {
+    background: none;
+    border: none;
+    color: var(--primary-text-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Styling for sections within the profile page */
+.profile-section {
+    margin-bottom: 25px;
+}
+
+.profile-section h3 {
+    font-size: 1.1rem;
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+#profile-username-input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--primary-text-color);
+    margin-bottom: 10px;
+}
+
+#save-username-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#username-status {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    min-height: 1.2em; /* To prevent layout shift */
+}
+
+#profile-predictions-list,
+#profile-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
