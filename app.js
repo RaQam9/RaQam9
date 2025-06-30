@@ -528,7 +528,7 @@ function initializeGlobalEventListeners() {
 }
 
 // ==========================================================
-// SECTION 5: PROFILE PAGE LOGIC (CORRECTED)
+// SECTION 5: PROFILE PAGE LOGIC (NEW CORRECTION)
 // ==========================================================
 
 let profilePage;
@@ -558,44 +558,45 @@ function initializeProfilePageListeners() {
     }
 }
 
-// ============ CORRECTED FUNCTION ============
+// =========== NEW CORRECTED FUNCTION (Using setTimeout) ===========
 function openProfilePage() {
     if (!currentUser || !profilePage) return;
 
-    // إخفاء نافذة تسجيل الدخول
+    // إخفاء نافذة تسجيل الدخول إذا كانت مفتوحة
     const authModal = document.getElementById('auth-modal');
     authModal.classList.remove('show');
 
-    // 1. أولاً، اجعل الصفحة جزءًا من التخطيط (layout) عن طريق إزالة `hidden`
-    //    هذا يجعلها `display: block` ولكنها لا تزال خارج الشاشة بسبب `translate-x-full`
+    // 1. تأكد من أن الصفحة ستكون في الطبقة العلوية (احتياطي)
+    profilePage.style.zIndex = '100'; 
+
+    // 2. اجعل الصفحة مرئية في DOM عن طريق إزالة `hidden`
     profilePage.classList.remove('hidden');
 
-    // 2. ثانياً، افرض على المتصفح إعادة حساب الأنماط (reflow).
-    //    هذا يضمن أن المتصفح قد طبق التغيير `display: block` قبل أن نبدأ الأنيميشن.
-    //    هذه الخطوة هي مفتاح حل المشكلة.
-    void profilePage.offsetWidth; 
-
-    // 3. ثالثاً، ابدأ الأنيميشن عن طريق تحريك الصفحة إلى داخل الشاشة.
-    profilePage.classList.remove('translate-x-full');
-    profilePage.classList.add('translate-x-0');
+    // 3. استخدم `setTimeout` مع تأخير بسيط جدًا.
+    //    هذا يضمن أن المتصفح قد قام بمعالجة `display: block`
+    //    قبل أن نحاول تطبيق الأنيميشن الخاص بالتحريك.
+    setTimeout(() => {
+        profilePage.classList.remove('translate-x-full');
+        profilePage.classList.add('translate-x-0');
+    }, 10); // تأخير 10 ميلي ثانية كافي جدًا
 
     // تحميل بيانات الملف الشخصي
     loadProfileData();
 }
 
-// ============ IMPROVED FUNCTION ============
+// =========== IMPROVED FUNCTION (Using transitionend) ===========
 function closeProfilePage() {
     if (!profilePage) return;
 
     // دالة يتم استدعاؤها مرة واحدة فقط عند انتهاء الأنيميشن
     const onTransitionEnd = () => {
         profilePage.classList.add('hidden');
-        // إزالة المستمع (listener) لتجنب تشغيله مرة أخرى عن طريق الخطأ
-        profilePage.removeEventListener('transitionend', onTransitionEnd);
+        profilePage.style.zIndex = ''; // إعادة تعيين الـ z-index لوضعه الطبيعي
+        profilePage.removeEventListener('transitionend', onTransitionEnd, { once: true });
     };
 
     // إضافة المستمع الذي ينتظر انتهاء حركة الانزلاق
-    profilePage.addEventListener('transitionend', onTransitionEnd);
+    profilePage.addEventListener('transitionend', onTransitionEnd, { once: true });
 
     // بدء حركة الانزلاق للخارج
     profilePage.classList.add('translate-x-full');
@@ -610,7 +611,6 @@ async function loadProfileData() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     const commentsListDiv = document.getElementById('profile-comments-list');
 
-    // تأكد من وجود العناصر قبل استخدامها لتجنب الأخطاء
     if (usernameInput) usernameInput.value = currentUser.user_metadata.username || '';
     if (predictionsListDiv) predictionsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التوقعات...</p>';
     if (commentsListDiv) commentsListDiv.innerHTML = '<p class="text-gray-400">جاري تحميل التعليقات...</p>';
@@ -635,7 +635,7 @@ async function fetchAndRenderProfilePredictions() {
 
     if (error) {
         console.error("Error fetching profile predictions:", error);
-        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات. تأكد من أن علاقات الجداول صحيحة.</p>';
+        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
         return;
     }
 
@@ -645,7 +645,7 @@ async function fetchAndRenderProfilePredictions() {
     }
 
     predictionsListDiv.innerHTML = data.map(p => {
-        if (!p.matches) return ''; // تجنب الخطأ إذا كانت المباراة محذوفة
+        if (!p.matches) return ''; 
         const team1 = p.matches.team1_name;
         const team2 = p.matches.team2_name;
         const winner = p.predicted_winner;
@@ -672,7 +672,7 @@ async function fetchAndRenderProfileComments() {
 
     if (matchComments.error || newsComments.error) {
         console.error("Error fetching profile comments:", matchComments.error || newsComments.error);
-        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات. تأكد من أن علاقات الجداول صحيحة.</p>';
+        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
         return;
     }
     
