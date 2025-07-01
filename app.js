@@ -671,3 +671,18 @@ async function handleDeleteComment(e) {
         document.getElementById(`profile-comment-${commentId}-${tableName}`)?.remove();
     }
 }
+// ==========================================================
+// SECTION 6: FORCE APP REFRESH ON FOCUS
+// ==========================================================
+// This code helps solve the caching issue in WebView-based apps like AppCreator24.
+// It forces a page reload when the user returns to the app.
+
+document.addEventListener('visibilitychange', function() {
+    // The 'document.hidden' property is true when the page is in the background.
+    // We only want to reload if the page becomes visible again (i.e., !document.hidden).
+    if (!document.hidden) {
+        console.log('App refocused, forcing a reload to get latest content.');
+        // The 'true' argument forces a reload from the server, ignoring the cache.
+        location.reload(true);
+    }
+});
