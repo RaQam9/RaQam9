@@ -237,3 +237,22 @@
     color: var(--primary-text-color);
     font-weight: 700;
 }
+
+/* Styling for replies */
+.replies-container, .news-replies-container {
+    margin-right: 30px; /* إزاحة الردود لليمين */
+    margin-top: 10px;
+    padding-right: 15px;
+    border-right: 2px solid var(--border-color);
+}
+
+.comment.admin-reply, .comment-item.admin-reply {
+    background-color: rgba(47, 129, 247, 0.1); /* لون أزرق خفيف لتمييز رد المدير */
+    border-color: var(--accent-color);
+}
+
+.comment.admin-reply .comment-author,
+.comment-item.admin-reply .comment-author {
+    color: var(--accent-color);
+    font-weight: bold;
+}
