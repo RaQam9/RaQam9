@@ -141,19 +141,17 @@
             loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جار الدخول...';
             loginError.classList.add('hidden');
 
-            const adminEmail = "fieldstories0@gmail.com"; // <-- Your admin email
+            const adminEmail = "fieldstories0@gmail.com";
             const enteredEmail = emailInput.value.trim();
 
-            // First check: Is the entered email the admin's email?
             if (enteredEmail.toLowerCase() !== adminEmail.toLowerCase()) {
                 loginError.textContent = 'الدخول مسموح للمدير فقط.';
                 loginError.classList.remove('hidden');
                 loginButton.disabled = false;
                 loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
-                return; // Stop the function here
+                return;
             }
 
-            // If email is correct, proceed to sign in
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: enteredEmail,
                 password: passwordInput.value,
@@ -173,15 +171,13 @@
                 loginButton.disabled = false;
                 loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
             } else {
-                // Second check (for extra security): Is the successfully signed-in user the admin?
                 if (data.user.email.toLowerCase() === adminEmail.toLowerCase()) {
                     loginScreen.style.display = 'none';
                     adminPanel.style.display = 'block';
                     initializePanels();
                     loadAllData();
                 } else {
-                    // This case is unlikely but handles potential issues.
-                    await supabaseClient.auth.signOut(); // Log out the user immediately
+                    await supabaseClient.auth.signOut();
                     loginError.textContent = 'خطأ في التحقق من الصلاحيات.';
                     loginError.classList.remove('hidden');
                     loginButton.disabled = false;
@@ -200,7 +196,7 @@
             tabContents[target.dataset.tab].classList.add('active');
         });
 
-        // ==================== DATA LOADING & RENDERING (WITH ORPHAN DATA FIX) ====================
+        // ==================== DATA LOADING & RENDERING ====================
         const loadAllData = () => { 
             loadData.matches(); 
             loadData.articles(); 
