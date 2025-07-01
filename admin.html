@@ -244,40 +244,45 @@
             }
         };
 
-        const renderData = {
-            match: (match) => { 
-                const matchDate = new Date(match.datetime);
-                const isFutureMatch = matchDate > new Date();
-                const dt = match.datetime.split('T');
-                const datePart = dt[0].split('-').reverse().join('/');
-                const timePart = dt.length > 1 ? dt[1].substring(0, 5) : '';
-                const formattedDate = `${datePart} - ${timePart}`;
+        // داخل <script> في ملف admin.html
 
-                return `<div class="item-card"><div class="item-card-header"><div class="flex-grow"><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div><span class="text-gray-400">ضد</span><div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div></div><p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p><p class="text-sm text-center text-gray-400" dir="ltr">${formattedDate}</p></div><input type="checkbox" class="match-checkbox w-5 h-5 flex-shrink-0" data-id="${match.id}"></div><div class="item-card-footer">${isFutureMatch ? `<button class="edit-btn" data-type="match" data-id="${match.id}"><i class="fas fa-edit"></i> تعديل</button>` : ''}<button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
-            },
-            article: (article) => { 
-                return `<div class="item-card"><div><img src="${article.image_url}" alt="${article.title}" class="w-full h-32 object-cover rounded-md mb-2"><h4 class="font-bold text-white mb-2">${article.title}</h4><p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p></div><div class="item-card-footer"><button class="edit-btn" data-type="article" data-id="${article.id}"><i class="fas fa-edit"></i> تعديل</button><button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
-            },
-            matchComment: (comment) => {
-                const matchInfo = comment.matches 
-                    ? `${comment.matches.team1_name} ضد ${comment.matches.team2_name}` 
-                    : 'مباراة محذوفة';
-                return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="match_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
-            },
-            articleComment: (comment) => {
-                const articleInfo = comment.articles 
-                    ? comment.articles.title 
-                    : 'مقال محذوف';
-                return `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${articleInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
-            },
-            prediction: (prediction) => {
-                const matchInfo = prediction.matches 
-                    ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` 
-                    : 'مباراة محذوفة';
-                const authorInfo = prediction.profiles?.username || prediction.username || prediction.user_email || 'مجهول';
-                return `<div class="item-card"><p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p><p class="text-sm text-gray-400 mt-2">بواسطة: ${authorInfo} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
-            }
-        };
+const renderData = {
+    match: (match) => { 
+        const matchDate = new Date(match.datetime);
+        // const isFutureMatch = matchDate > new Date(); // لم نعد بحاجة لهذه هنا
+        const dt = match.datetime.split('T');
+        const datePart = dt[0].split('-').reverse().join('/');
+        const timePart = dt.length > 1 ? dt[1].substring(0, 5) : '';
+        const formattedDate = `${datePart} - ${timePart}`;
+
+        // تم تعديل هذا الجزء ليظهر زر التعديل دائماً
+        return `<div class="item-card">
+                    <div class="item-card-header">
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-center mb-2">
+                                <div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div>
+                                <span class="text-gray-400">ضد</span>
+                                <div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div>
+                            </div>
+                            <p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p>
+                            <p class="text-sm text-center text-gray-400" dir="ltr">${formattedDate}</p>
+                        </div>
+                        <input type="checkbox" class="match-checkbox w-5 h-5 flex-shrink-0" data-id="${match.id}">
+                    </div>
+                    <div class="item-card-footer">
+                        <button class="edit-btn" data-type="match" data-id="${match.id}"><i class="fas fa-edit"></i> تعديل / إدخال نتيجة</button>
+                        <button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button>
+                    </div>
+                </div>`;
+    },
+    // ... باقي دوال renderData تبقى كما هي
+    article: (article) => { 
+        return `<div class="item-card"><div><img src="${article.image_url}" alt="${article.title}" class="w-full h-32 object-cover rounded-md mb-2"><h4 class="font-bold text-white mb-2">${article.title}</h4><p class="text-xs text-gray-400">تاريخ النشر: ${new Date(article.created_at).toLocaleDateString(LOCALE)}</p></div><div class="item-card-footer"><button class="edit-btn" data-type="article" data-id="${article.id}"><i class="fas fa-edit"></i> تعديل</button><button class="delete-btn" data-type="article" data-id="${article.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
+    },
+    matchComment: (comment) => `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مباراة: <span class="text-yellow-400">${comment.matches ? `${comment.matches.team1_name} ضد ${comment.matches.team2_name}` : 'مباراة محذوفة'}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="match_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`,
+    articleComment: (comment) => `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${comment.articles ? comment.articles.title : 'مقال محذوف'}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`,
+    prediction: (prediction) => `<div class="item-card"><p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p><p class="text-sm text-gray-400 mt-2">بواسطة: ${prediction.social_account || 'مجهول'} - على مباراة: <span class="text-yellow-400">${prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة'}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`
+};
 
         // ==================== ACTIONS HANDLING ====================
         const handleAddOrUpdate = async (e) => {
