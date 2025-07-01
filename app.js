@@ -566,17 +566,29 @@ async function loadProfileData() {
     fetchAndRenderProfileComments();
 }
 
+// داخل app.js
 async function fetchAndRenderProfilePredictions() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     if (!predictionsListDiv) return;
 
+    // لقد قمنا بتعديل الاستعلام ليجلب بيانات المباراة الفعلية
     const { data, error } = await supabaseClient
         .from('predictions')
-        .select(`predicted_winner, predicted_scorer, matches ( team1_name, team2_name )`)
+        .select(`
+            predicted_winner, 
+            predicted_scorer, 
+            matches ( 
+                team1_name, 
+                team2_name, 
+                actual_winner, 
+                actual_scorer 
+            )
+        `)
         .eq('user_id', currentUser.id)
         .order('created_at', { ascending: false });
 
     if (error) {
+        console.error("Error fetching profile predictions:", error);
         predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
         return;
     }
@@ -584,9 +596,38 @@ async function fetchAndRenderProfilePredictions() {
         predictionsListDiv.innerHTML = '<p class="text-gray-400">لم تقم بأي توقعات بعد.</p>';
         return;
     }
+    
     predictionsListDiv.innerHTML = data.map(p => {
-        if (!p.matches) return '';
-        return `<div class="profile-prediction-item"><div class="match-info">${p.matches.team1_name} ضد ${p.matches.team2_name}</div><div class="prediction-info">توقعت فوز: <strong>${p.predicted_winner}</strong>${p.predicted_scorer ? ` | ومسجل الهدف الأول: <strong>${p.predicted_scorer}</strong>` : ''}</div></div>`
+        if (!p.matches) return ''; // تخطي التوقعات لمباريات محذوفة
+
+        let resultClass = 'pending';
+        let resultIcon = '⏳';
+        let resultText = 'قيد الانتظار';
+
+        // تحقق فقط إذا كانت هناك نتيجة فعلية مسجلة
+        if (p.matches.actual_winner) {
+            if (p.predicted_winner === p.matches.actual_winner) {
+                resultClass = 'correct';
+                resultIcon = '✅';
+                resultText = 'توقع صحيح';
+            } else {
+                resultClass = 'incorrect';
+                resultIcon = '❌';
+                resultText = `توقع خاطئ (الفائز: ${p.matches.actual_winner})`;
+            }
+        }
+
+        return `
+            <div class="profile-prediction-item ${resultClass}">
+                <div class="prediction-match-info">
+                    <span>${p.matches.team1_name} ضد ${p.matches.team2_name}</span>
+                    <span class="prediction-status">${resultIcon} ${resultText}</span>
+                </div>
+                <div class="prediction-details">
+                    توقعت فوز: <strong>${p.predicted_winner}</strong>
+                    ${p.predicted_scorer ? ` | ومسجل الهدف الأول: <strong>${p.predicted_scorer}</strong>` : ''}
+                </div>
+            </div>`;
     }).join('');
 }
 
