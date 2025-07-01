@@ -173,3 +173,67 @@
     flex-direction: column;
     gap: 10px;
 }
+/* Styling for prediction items in profile (New Version) */
+.profile-prediction-item {
+    border-left-width: 5px;
+    border-left-style: solid;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.profile-prediction-item.pending {
+    border-left-color: var(--secondary-text-color);
+}
+.profile-prediction-item.correct {
+    border-left-color: var(--success-color);
+    background-color: rgba(35, 134, 54, 0.1);
+}
+.profile-prediction-item.incorrect {
+    border-left-color: var(--danger-color);
+    background-color: rgba(218, 54, 51, 0.1);
+}
+
+.prediction-match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: var(--primary-text-color);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.prediction-status {
+    font-size: 0.8rem;
+    font-weight: normal;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.profile-prediction-item.pending .prediction-status {
+    background-color: var(--border-color);
+    color: var(--secondary-text-color);
+}
+.profile-prediction-item.correct .prediction-status {
+    background-color: var(--success-color);
+    color: white;
+}
+.profile-prediction-item.incorrect .prediction-status {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.prediction-details {
+    color: var(--secondary-text-color);
+    font-size: 0.85rem;
+}
+
+.prediction-details strong {
+    color: var(--primary-text-color);
+    font-weight: 700;
+}
