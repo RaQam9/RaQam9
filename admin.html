@@ -429,28 +429,45 @@
             button.innerHTML = '<i class="fas fa-trash-alt"></i> حذف المحدد';
         };
         
-        const openEditModal = async (type, id) => {
-            let formHtml = '';
-            let title = '';
-            let tableName = type === 'match' ? 'matches' : 'articles';
-            
-            const { data, error } = await supabaseClient.from(tableName).select('*').eq('id', id).single();
-            if (error) { alert(`خطأ: ${error.message}`); return; }
+        // داخل <script> في ملف admin.html
 
-            if (type === 'match') {
-                title = `تعديل مباراة`;
-                const channelsText = (data.channels || []).join(', ');
-                formHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name}" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo}" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name}" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo}" required></div></div><div><label>الدوري:</label><input type="text" name="league" value="${data.league}" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime.slice(0, 16)}" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels" value="${channelsText}"></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
-            } else if (type === 'article') {
-                title = `تعديل مقال`;
-                formHtml = `<div><label>عنوان المقال:</label><input type="text" name="title" value="${data.title}" required></div><div><label>رابط الصورة:</label><input type="url" name="image_url" value="${data.image_url}" required></div><div><label>المحتوى (HTML):</label><textarea name="content" class="h-48 font-mono text-left" dir="ltr" required>${data.content}</textarea></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
-            }
-            modalTitle.textContent = title;
-            editForm.innerHTML = formHtml;
-            editForm.dataset.type = type;
-            editForm.dataset.id = id;
-            editModal.classList.remove('hidden');
-        };
+const openEditModal = async (type, id) => {
+    let formHtml = '';
+    let title = '';
+    let tableName = type === 'match' ? 'matches' : 'articles';
+    
+    const { data, error } = await supabaseClient.from(tableName).select('*').eq('id', id).single();
+    if (error) { alert(`خطأ: ${error.message}`); return; }
+
+    if (type === 'match') {
+        const matchDate = new Date(data.datetime);
+        const isFutureMatch = matchDate > new Date();
+        
+        if (isFutureMatch) {
+            // المباراة لم تبدأ بعد: عرض حقول التعديل العادية
+            title = `تعديل مباراة قادمة`;
+            const channelsText = (data.channels || []).join(', ');
+            formHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name}" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo}" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name}" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo}" required></div></div><div><label>الدوري:</label><input type="text" name="league" value="${data.league}" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime.slice(0, 16)}" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels" value="${channelsText}"></div><button type="submit" class="w-full mt-4 bg-blue-600"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
+        } else {
+            // المباراة انتهت: عرض حقول إدخال النتيجة
+            title = `إدخال نتيجة مباراة منتهية`;
+            formHtml = `<div class="space-y-4">
+                            <div><label>الفائز الفعلي (اكتب "تعادل" في حالة التعادل):</label><input type="text" name="actual_winner" value="${data.actual_winner || ''}" placeholder="اسم الفريق الفائز أو 'تعادل'"></div>
+                            <div><label>صاحب الهدف الأول الفعلي (اختياري):</label><input type="text" name="actual_scorer" value="${data.actual_scorer || ''}" placeholder="اسم اللاعب"></div>
+                            <p class="text-xs text-yellow-400">ملاحظة: تعديلك هنا سيؤثر على نتائج توقعات المستخدمين.</p>
+                            <button type="submit" class="w-full mt-4 bg-green-600"><i class="fas fa-check-circle"></i> تحديث النتيجة</button>
+                        </div>`;
+        }
+    } else if (type === 'article') {
+        title = `تعديل مقال`;
+        formHtml = `<div><label>عنوان المقال:</label><input type="text" name="title" value="${data.title}" required></div><div><label>رابط الصورة:</label><input type="url" name="image_url" value="${data.image_url}" required></div><div><label>المحتوى (HTML):</label><textarea name="content" class="h-48 font-mono text-left" dir="ltr" required>${data.content}</textarea></div><button type="submit" class="w-full mt-4"><i class="fas fa-save"></i> حفظ التعديلات</button>`;
+    }
+    modalTitle.textContent = title;
+    editForm.innerHTML = formHtml;
+    editForm.dataset.type = type;
+    editForm.dataset.id = id;
+    editModal.classList.remove('hidden');
+};
 
         const handleUpdateInModal = async (e) => {
             e.preventDefault();
