@@ -502,38 +502,73 @@ const openEditModal = async (type, id) => {
     editModal.classList.remove('hidden');
 };
 
-        const handleUpdateInModal = async (e) => {
-            e.preventDefault();
-            const button = e.target.querySelector('button[type="submit"]');
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        // داخل <script> في ملف admin.html
 
-            const { type, id } = e.target.dataset;
-            const formData = new FormData(e.target);
-            const updatedData = Object.fromEntries(formData.entries());
-            const tableName = type === 'match' ? 'matches' : 'articles';
+const handleUpdateInModal = async (e) => {
+    e.preventDefault();
+    const button = e.target.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            if (type === 'match' && typeof updatedData.channels === 'string') {
-                if (updatedData.channels.trim() === '') {
-                    updatedData.channels = [];
-                } else {
-                    updatedData.channels = updatedData.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
-                }
-            }
-            
-            const { error } = await supabaseClient.from(tableName).update(updatedData).eq('id', id);
+    const { type, id } = e.target.dataset;
 
-            if (error) {
-                alert(`فشل التحديث: ${error.message}`);
-                button.disabled = false;
-                button.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
-            } else {
-                alert('تم التحديث بنجاح!');
-                editModal.classList.add('hidden');
-                if (type === 'match') loadData.matches();
-                else if (type === 'article') loadData.articles();
-            }
+    // معالجة إرسال الرد
+    if (type.startsWith('reply_')) {
+        const commentTable = type.includes('match') ? 'comments' : 'news_comments';
+        const refreshFunc = type.includes('match') ? loadData.matchComments : loadData.articleComments;
+        const parentCommentId = e.target.dataset.parentCommentId;
+        const commentContext = JSON.parse(e.target.dataset.commentContext);
+        const replyText = e.target.querySelector('textarea[name="reply_text"]').value;
+        const adminUser = await supabaseClient.auth.getUser();
+
+        const replyData = {
+            comment_text: replyText,
+            author: 'المدير', // أو أي اسم تريده للمدير
+            user_id: adminUser.data.user.id,
+            parent_comment_id: parentCommentId,
+            ...commentContext // يضيف match_id أو article_id
         };
+
+        const { error } = await supabaseClient.from(commentTable).insert([replyData]);
+
+        if (error) {
+            alert(`فشل إرسال الرد: ${error.message}`);
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال الرد';
+        } else {
+            alert('تم إرسال الرد بنجاح!');
+            editModal.classList.add('hidden');
+            refreshFunc(); // إعادة تحميل التعليقات لإظهار الرد
+        }
+        return; // إنهاء الدالة هنا
+    }
+    
+    // الكود السابق لتحديث المباريات والمقالات
+    const formData = new FormData(e.target);
+    const updatedData = Object.fromEntries(formData.entries());
+    const tableName = type === 'match' ? 'matches' : 'articles';
+
+    if (type === 'match' && typeof updatedData.channels === 'string') {
+        if (updatedData.channels.trim() === '') {
+            updatedData.channels = [];
+        } else {
+            updatedData.channels = updatedData.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
+        }
+    }
+    
+    const { error } = await supabaseClient.from(tableName).update(updatedData).eq('id', id);
+
+    if (error) {
+        alert(`فشل التحديث: ${error.message}`);
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+    } else {
+        alert('تم التحديث بنجاح!');
+        editModal.classList.add('hidden');
+        if (type === 'match') loadData.matches();
+        else if (type === 'article') loadData.articles();
+    }
+};
 
         const updateDeleteButtonState = () => {
             const deleteBtn = document.getElementById('delete-selected-matches-btn');
