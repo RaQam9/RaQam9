@@ -135,23 +135,25 @@
             document.getElementById('bulk-add-articles-form')?.addEventListener('submit', handleBulkAddArticles);
         }
 
-        // ==================== AUTH & TABS ====================
+        // ==================== AUTH & TABS (WITH ADMIN PROTECTION) ====================
         const login = async () => {
             loginButton.disabled = true;
             loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جار الدخول...';
             loginError.classList.add('hidden');
 
-            const adminEmail = "fieldstories0@gmail.com"; // <--  Your admin email
+            const adminEmail = "fieldstories0@gmail.com"; // <-- Your admin email
             const enteredEmail = emailInput.value.trim();
 
+            // First check: Is the entered email the admin's email?
             if (enteredEmail.toLowerCase() !== adminEmail.toLowerCase()) {
                 loginError.textContent = 'الدخول مسموح للمدير فقط.';
                 loginError.classList.remove('hidden');
                 loginButton.disabled = false;
                 loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
-                return;
+                return; // Stop the function here
             }
 
+            // If email is correct, proceed to sign in
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: enteredEmail,
                 password: passwordInput.value,
@@ -171,13 +173,15 @@
                 loginButton.disabled = false;
                 loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
             } else {
+                // Second check (for extra security): Is the successfully signed-in user the admin?
                 if (data.user.email.toLowerCase() === adminEmail.toLowerCase()) {
                     loginScreen.style.display = 'none';
                     adminPanel.style.display = 'block';
                     initializePanels();
                     loadAllData();
                 } else {
-                    await supabaseClient.auth.signOut();
+                    // This case is unlikely but handles potential issues.
+                    await supabaseClient.auth.signOut(); // Log out the user immediately
                     loginError.textContent = 'خطأ في التحقق من الصلاحيات.';
                     loginError.classList.remove('hidden');
                     loginButton.disabled = false;
@@ -196,7 +200,7 @@
             tabContents[target.dataset.tab].classList.add('active');
         });
 
-        // ==================== DATA LOADING & RENDERING ====================
+        // ==================== DATA LOADING & RENDERING (WITH ORPHAN DATA FIX) ====================
         const loadAllData = () => { 
             loadData.matches(); 
             loadData.articles(); 
@@ -238,7 +242,7 @@
             predictions: async () => {
                 const grid = document.getElementById('predictions-management-grid'); if(!grid) return;
                 grid.innerHTML = '<div class="loader"></div>';
-                const { data, error } = await supabaseClient.from('predictions').select('*, matches(team1_name, team2_name)').order('created_at', { ascending: false });
+                const { data, error } = await supabaseClient.from('predictions').select('*, matches(team1_name, team2_name), profiles(username)').order('created_at', { ascending: false });
                 if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
                 grid.innerHTML = data.length === 0 ? '<p>لا توجد توقعات.</p>' : data.map(renderData.prediction).join('');
             }
@@ -274,7 +278,7 @@
                 const matchInfo = prediction.matches 
                     ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` 
                     : 'مباراة محذوفة';
-                const authorInfo = prediction.username || prediction.user_email || prediction.social_account || 'مجهول';
+                const authorInfo = prediction.profiles?.username || prediction.username || prediction.user_email || 'مجهول';
                 return `<div class="item-card"><p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p><p class="text-sm text-gray-400 mt-2">بواسطة: ${authorInfo} - على مباراة: <span class="text-yellow-400">${matchInfo}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`;
             }
         };
