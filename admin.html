@@ -141,8 +141,19 @@
             loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جار الدخول...';
             loginError.classList.add('hidden');
 
+            const adminEmail = "fieldstories0@gmail.com"; // <--  Your admin email
+            const enteredEmail = emailInput.value.trim();
+
+            if (enteredEmail.toLowerCase() !== adminEmail.toLowerCase()) {
+                loginError.textContent = 'الدخول مسموح للمدير فقط.';
+                loginError.classList.remove('hidden');
+                loginButton.disabled = false;
+                loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
+                return;
+            }
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: emailInput.value.trim(),
+                email: enteredEmail,
                 password: passwordInput.value,
             });
 
@@ -151,7 +162,7 @@
                 if (error.message.includes('Invalid login credentials')) {
                     errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
                 } else if (error.message.includes('Email not confirmed')) {
-                    errorMessage = 'الحساب غير مؤكد. يرجى مراجعة بريدك الإلكتروني أو إعدادات Supabase.';
+                    errorMessage = 'الحساب غير مؤكد. يرجى مراجعة بريدك الإلكتروني.';
                 } else {
                     errorMessage = `حدث خطأ: ${error.message}`;
                 }
@@ -160,10 +171,18 @@
                 loginButton.disabled = false;
                 loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
             } else {
-                loginScreen.style.display = 'none';
-                adminPanel.style.display = 'block';
-                initializePanels();
-                loadAllData();
+                if (data.user.email.toLowerCase() === adminEmail.toLowerCase()) {
+                    loginScreen.style.display = 'none';
+                    adminPanel.style.display = 'block';
+                    initializePanels();
+                    loadAllData();
+                } else {
+                    await supabaseClient.auth.signOut();
+                    loginError.textContent = 'خطأ في التحقق من الصلاحيات.';
+                    loginError.classList.remove('hidden');
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> دخول';
+                }
             }
         };
         loginButton.addEventListener('click', login);
