@@ -230,7 +230,7 @@ function initializeAppWithData(matchesData) {
     const dateTabsContainer = document.getElementById('date-tabs');
     const daysContentContainer = document.getElementById('days-content-container');
 
-    function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.dataset.datetime = t.datetime; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn" ${!r ? '' : 'disabled'}>💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
+    function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.dataset.datetime = t.datetime; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn">💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
     function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
     function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
     async function handleFormSubmit(form) {
@@ -262,36 +262,78 @@ function initializeAppWithData(matchesData) {
         }
     }
     async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const i = b.closest('.match-card').dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
+    
+    // ==========================================================
+    // START: MODIFIED FUNCTIONS FOR REPLIES
+    // ==========================================================
+
     async function fetchAndRenderMatchComments(matchId, listElement) {
         listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
         try {
-            const { data, error } = await supabaseClient.from('comments').select('id, author, comment_text, created_at, user_id').eq('match_id', matchId).order('created_at', { ascending: true });
+            const { data, error } = await supabaseClient
+                .from('comments')
+                .select('id, author, comment_text, created_at, user_id, parent_comment_id')
+                .eq('match_id', matchId)
+                .order('created_at', { ascending: true });
+            
             if (error) throw error;
+            
             listElement.innerHTML = '';
-            if (data.length === 0) {
+            
+            const commentsById = {};
+            const rootComments = [];
+            
+            data.forEach(comment => {
+                commentsById[comment.id] = { ...comment, replies: [] };
+            });
+    
+            data.forEach(comment => {
+                if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) {
+                    commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
+                } else {
+                    rootComments.push(commentsById[comment.id]);
+                }
+            });
+    
+            if (rootComments.length === 0) {
                 listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
             } else {
-                data.forEach(comment => addCommentToDOM(listElement, comment, 'comments'));
+                rootComments.forEach(comment => {
+                    addCommentToDOM(listElement, comment, 'comments');
+                });
             }
-        } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
+        } catch (e) { 
+            console.error("Error fetching comments:", e); 
+            listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; 
+        }
     }
+    
     function addCommentToDOM(listElement, commentData, tableName) {
         const commentDiv = document.createElement('div');
         commentDiv.className = 'comment';
+        if (commentData.author === 'المدير') {
+            commentDiv.classList.add('admin-reply');
+        }
         commentDiv.dataset.commentId = commentData.id;
+    
         const avatarDiv = document.createElement('div');
         avatarDiv.className = 'comment-avatar';
-        avatarDiv.innerHTML = '<i class="fa-solid fa-user"></i>';
+        avatarDiv.innerHTML = `<i class="fa-solid fa-${commentData.author === 'المدير' ? 'user-shield' : 'user'}"></i>`;
+    
         const bodyDiv = document.createElement('div');
         bodyDiv.className = 'comment-body';
+        
         const authorSpan = document.createElement('span');
         authorSpan.className = 'comment-author';
         authorSpan.textContent = commentData.author;
+        
         const textP = document.createElement('p');
         textP.className = 'comment-text';
         textP.textContent = commentData.comment_text;
+        
         bodyDiv.append(authorSpan, textP);
         commentDiv.append(avatarDiv, bodyDiv);
+    
         if (currentUser && currentUser.id === commentData.user_id) {
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-comment-btn';
@@ -300,9 +342,23 @@ function initializeAppWithData(matchesData) {
             deleteBtn.dataset.tableName = tableName;
             commentDiv.appendChild(deleteBtn);
         }
+        
         listElement.appendChild(commentDiv);
-        listElement.scrollTop = listElement.scrollHeight;
+    
+        // Display replies recursively
+        if (commentData.replies && commentData.replies.length > 0) {
+            const repliesContainer = document.createElement('div');
+            repliesContainer.className = 'replies-container';
+            commentData.replies.forEach(reply => {
+                addCommentToDOM(repliesContainer, reply, tableName);
+            });
+            listElement.appendChild(repliesContainer);
+        }
     }
+
+    // ==========================================================
+    // END: MODIFIED FUNCTIONS FOR REPLIES
+    // ==========================================================
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -371,39 +427,35 @@ async function fetchAndRenderNewsComments(articleId) {
     if (!commentsListDiv) return;
     commentsListDiv.innerHTML = '<p class="text-center text-gray-400 my-2">جاري تحميل التعليقات...</p>';
     try {
-        const { data, error } = await supabaseClient.from('news_comments').select('id, author, comment_text, created_at, user_id').eq('article_id', articleId).order('created_at', { ascending: true });
+        const { data, error } = await supabaseClient
+            .from('news_comments')
+            .select('id, author, comment_text, created_at, user_id, parent_comment_id')
+            .eq('article_id', articleId)
+            .order('created_at', { ascending: true });
+            
         if (error) throw error;
         commentsListDiv.innerHTML = '';
-        if (data.length === 0) {
+        
+        const commentsById = {};
+        const rootComments = [];
+        
+        data.forEach(comment => {
+            commentsById[comment.id] = { ...comment, replies: [] };
+        });
+
+        data.forEach(comment => {
+            if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) {
+                commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
+            } else {
+                rootComments.push(commentsById[comment.id]);
+            }
+        });
+
+        if (rootComments.length === 0) {
             commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
         } else {
-            data.forEach(comment => {
-                const commentEl = document.createElement('div');
-                commentEl.className = 'comment-item';
-                commentEl.dataset.commentId = comment.id;
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'comment-header';
-                const authorSpan = document.createElement('span');
-                authorSpan.className = 'comment-author';
-                authorSpan.textContent = comment.author;
-                const dateSpan = document.createElement('span');
-                dateSpan.className = 'comment-date';
-                dateSpan.style.fontSize = '0.8rem';
-                dateSpan.textContent = new Date(comment.created_at).toLocaleDateString('ar-EG');
-                headerDiv.append(authorSpan, dateSpan);
-                const bodyP = document.createElement('p');
-                bodyP.className = 'comment-body';
-                bodyP.textContent = comment.comment_text;
-                commentEl.append(headerDiv, bodyP);
-                if (currentUser && currentUser.id === comment.user_id) {
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'delete-comment-btn';
-                    deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-                    deleteBtn.dataset.commentId = comment.id;
-                    deleteBtn.dataset.tableName = 'news_comments';
-                    commentEl.appendChild(deleteBtn);
-                }
-                commentsListDiv.appendChild(commentEl);
+            rootComments.forEach(commentData => {
+                addNewsCommentToDOM(commentsListDiv, commentData);
             });
         }
     } catch (err) {
@@ -411,6 +463,61 @@ async function fetchAndRenderNewsComments(articleId) {
         commentsListDiv.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>';
     }
 }
+
+function addNewsCommentToDOM(container, commentData) {
+    const commentEl = document.createElement('div');
+    commentEl.className = 'comment-item';
+    if (commentData.author === 'المدير') {
+        commentEl.classList.add('admin-reply');
+    }
+    commentEl.dataset.commentId = commentData.id;
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'comment-header';
+    
+    const authorSpan = document.createElement('span');
+    authorSpan.className = 'comment-author';
+    if (commentData.parent_comment_id) {
+         authorSpan.innerHTML = `<i class="fa-solid fa-reply fa-flip-horizontal" style="margin-left: 5px;"></i> ${commentData.author}`;
+    } else {
+         authorSpan.textContent = commentData.author;
+    }
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'comment-date';
+    dateSpan.style.fontSize = '0.8rem';
+    dateSpan.textContent = new Date(commentData.created_at).toLocaleDateString('ar-EG');
+    
+    headerDiv.append(authorSpan, dateSpan);
+    
+    const bodyP = document.createElement('p');
+    bodyP.className = 'comment-body';
+    bodyP.textContent = commentData.comment_text;
+    
+    commentEl.append(headerDiv, bodyP);
+    
+    if (currentUser && currentUser.id === commentData.user_id) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-comment-btn';
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+        deleteBtn.dataset.commentId = commentData.id;
+        deleteBtn.dataset.tableName = 'news_comments';
+        commentEl.appendChild(deleteBtn);
+    }
+    
+    container.appendChild(commentEl);
+
+    // Display replies
+    if (commentData.replies && commentData.replies.length > 0) {
+        const repliesContainer = document.createElement('div');
+        repliesContainer.className = 'news-replies-container';
+        commentData.replies.forEach(reply => {
+            addNewsCommentToDOM(repliesContainer, reply);
+        });
+        container.appendChild(repliesContainer);
+    }
+}
+
 
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
@@ -451,7 +558,7 @@ function initializeRealtimeListeners() {
             const matchCard = document.querySelector(`.match-card[data-match-id='${payload.new?.match_id || payload.old?.id}']`);
             if (matchCard && matchCard.querySelector('.comments-section').style.display === 'block') {
                 const listElement = matchCard.querySelector('.comment-list');
-                fetchAndRenderMatchComments(payload.new?.match_id || payload.old?.id, listElement);
+                fetchAndRenderMatchComments(payload.new?.match_id, listElement);
             }
             return;
         }
@@ -486,7 +593,13 @@ function initializeGlobalEventListeners() {
                     const { error } = await supabaseClient.from(tableName).delete().eq('id', commentId);
                     if (error) throw error;
                     const commentElement = deleteBtn.closest('.comment, .comment-item');
-                    if(commentElement) commentElement.remove();
+                    if(commentElement) {
+                        const repliesContainer = commentElement.nextElementSibling;
+                        if (repliesContainer && (repliesContainer.classList.contains('replies-container') || repliesContainer.classList.contains('news-replies-container'))) {
+                            repliesContainer.remove();
+                        }
+                        commentElement.remove();
+                    }
                     showNotification('تم حذف التعليق بنجاح.');
                 } catch (error) {
                     console.error('Error deleting comment:', error);
@@ -566,12 +679,10 @@ async function loadProfileData() {
     fetchAndRenderProfileComments();
 }
 
-// داخل app.js
 async function fetchAndRenderProfilePredictions() {
     const predictionsListDiv = document.getElementById('profile-predictions-list');
     if (!predictionsListDiv) return;
 
-    // لقد قمنا بتعديل الاستعلام ليجلب بيانات المباراة الفعلية
     const { data, error } = await supabaseClient
         .from('predictions')
         .select(`
@@ -598,13 +709,12 @@ async function fetchAndRenderProfilePredictions() {
     }
     
     predictionsListDiv.innerHTML = data.map(p => {
-        if (!p.matches) return ''; // تخطي التوقعات لمباريات محذوفة
+        if (!p.matches) return ''; 
 
         let resultClass = 'pending';
         let resultIcon = '⏳';
         let resultText = 'قيد الانتظار';
 
-        // تحقق فقط إذا كانت هناك نتيجة فعلية مسجلة
         if (p.matches.actual_winner) {
             if (p.predicted_winner === p.matches.actual_winner) {
                 resultClass = 'correct';
@@ -630,6 +740,7 @@ async function fetchAndRenderProfilePredictions() {
             </div>`;
     }).join('');
 }
+
 
 async function fetchAndRenderProfileComments() {
     const commentsListDiv = document.getElementById('profile-comments-list');
@@ -712,18 +823,3 @@ async function handleDeleteComment(e) {
         document.getElementById(`profile-comment-${commentId}-${tableName}`)?.remove();
     }
 }
-// ==========================================================
-// SECTION 6: FORCE APP REFRESH ON FOCUS
-// ==========================================================
-// This code helps solve the caching issue in WebView-based apps like AppCreator24.
-// It forces a page reload when the user returns to the app.
-
-document.addEventListener('visibilitychange', function() {
-    // The 'document.hidden' property is true when the page is in the background.
-    // We only want to reload if the page becomes visible again (i.e., !document.hidden).
-    if (!document.hidden) {
-        console.log('App refocused, forcing a reload to get latest content.');
-        // The 'true' argument forces a reload from the server, ignoring the cache.
-        location.reload(true);
-    }
-});
