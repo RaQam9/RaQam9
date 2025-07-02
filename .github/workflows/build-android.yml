@@ -1,0 +1,57 @@
+.# اسم سير العمل الذي سيظهر في تبويب Actions
+name: Build Capacitor Android App
+
+# متى يتم تشغيل هذا السير؟
+on:
+  # في كل مرة يتم فيها عمل push إلى الفرع الرئيسي (main)
+  push:
+    branches: [ "main" ]
+  # يسمح بتشغيله يدويًا من تبويب Actions أيضًا
+  workflow_dispatch:
+
+# المهام التي سيتم تنفيذها
+jobs:
+  build:
+    # نوع البيئة التي سيتم العمل عليها (بيئة لينكس قياسية)
+    runs-on: ubuntu-latest
+
+    steps:
+      # الخطوة 1: نسخ كود المستودع إلى البيئة
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # الخطوة 2: إعداد بيئة Java (مطلوبة لأندرويد)
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # الخطوة 3: إعداد بيئة Node.js (لتشغيل أوامر npm و npx)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # الخطوة 4: تثبيت الحزم وتهيئة Capacitor
+      - name: Install Dependencies and Init Capacitor
+        run: |
+          npm install
+          npm install -g @capacitor/cli
+          npx cap init RaQam com.raqam.app --web-dir "public"
+          npx cap add android
+          npx cap sync
+
+      # الخطوة 5: بناء ملف APK
+      - name: Build Android APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      # الخطوة 6: رفع ملف APK كمنتج (artifact) للتنزيل
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RaQam-App-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
