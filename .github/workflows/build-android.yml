@@ -1,4 +1,4 @@
-.# اسم سير العمل الذي سيظهر في تبويب Actions
+# اسم سير العمل الذي سيظهر في تبويب Actions
 name: Build Capacitor Android App
 
 # متى يتم تشغيل هذا السير؟
@@ -37,8 +37,7 @@ jobs:
       # الخطوة 4: تثبيت الحزم وتهيئة Capacitor
       - name: Install Dependencies and Init Capacitor
         run: |
-          npm install
-          npm install -g @capacitor/cli
+          npm ci
           npx cap init RaQam com.raqam.app --web-dir "public"
           npx cap add android
           npx cap sync
@@ -48,7 +47,7 @@ jobs:
         run: |
           cd android
           ./gradlew assembleDebug
-
+          
       # الخطوة 6: رفع ملف APK كمنتج (artifact) للتنزيل
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
