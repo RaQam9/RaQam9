@@ -22,13 +22,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm' # يمكننا إعادة هذا الآن
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Build and Sync Capacitor Project
+      # -- هذا هو التعديل المهم --
+      - name: Add Android Platform
+        run: npx cap add android
+
+      - name: Sync Capacitor Project
         run: npx cap sync android
+      # -- نهاية التعديل --
 
       - name: Build Android APK
         run: |
