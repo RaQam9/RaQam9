@@ -37,7 +37,8 @@ jobs:
       # الخطوة 4: تثبيت الحزم وتهيئة Capacitor
       - name: Install Dependencies and Init Capacitor
         run: |
-          npm ci
+          npm install # <-- تم التغيير هنا لضمان المرونة
+          npm install -g @capacitor/cli
           npx cap init RaQam com.raqam.app --web-dir "public"
           npx cap add android
           npx cap sync
@@ -47,7 +48,7 @@ jobs:
         run: |
           cd android
           ./gradlew assembleDebug
-          
+
       # الخطوة 6: رفع ملف APK كمنتج (artifact) للتنزيل
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
