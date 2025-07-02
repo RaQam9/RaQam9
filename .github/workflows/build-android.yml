@@ -27,13 +27,16 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # -- هذا هو التعديل المهم --
+      # --- الخطوة الجديدة المضافة ---
+      - name: Initialize Capacitor
+        run: npx cap init "RaQam App" "com.raqam.app" --web-dir "public"
+
+      # --- باقي الخطوات كما هي ---
       - name: Add Android Platform
         run: npx cap add android
 
       - name: Sync Capacitor Project
         run: npx cap sync android
-      # -- نهاية التعديل --
 
       - name: Build Android APK
         run: |
