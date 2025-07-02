@@ -27,17 +27,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # الخطوة 3: إعداد بيئة Node.js (لتشغيل أوامر npm و npx)
+      # الخطوة 3: إعداد بيئة Node.js (بدون cache)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       # الخطوة 4: تثبيت الحزم وتهيئة Capacitor
       - name: Install Dependencies and Init Capacitor
         run: |
-          npm install # <-- تم التغيير هنا لضمان المرونة
+          npm install
           npm install -g @capacitor/cli
           npx cap init RaQam com.raqam.app --web-dir "public"
           npx cap add android
