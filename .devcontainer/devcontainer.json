@@ -1,18 +1,19 @@
 {
-  "name": "Capacitor Codespace",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17",
-      "installMaven": "false",
-      "installGradle": "false"
-    }
-  },
-  "forwardPorts": [3000],
-  "postCreateCommand": "npm install",
-
-  // --- الإضافة الجديدة هنا ---
-  "remoteEnv": {
-    "JAVA_HOME": "/usr/lib/jvm/msdk-17"
-  }
+    "name": "Capacitor Codespace",
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+        "ghcr.io/devcontainers/features/java:1": {
+            "version": "17",
+            "installMaven": "false",
+            "installGradle": "true"
+        }
+    },
+    "postCreateCommand": "npm install",
+    "remoteEnv": {
+        "JAVA_HOME": "/usr/lib/jvm/msdk-17"
+    },
+    "forwardPorts": [
+        8100,
+        5173
+    ]
 }
