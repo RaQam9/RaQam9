@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
     initializePullToRefresh(); 
+    initializeBackButtonHandling(); 
 });
 
 // ==========================================================
@@ -415,7 +416,7 @@ function initializeNewsPage() {
     const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
     let articlesCache = [];
-    let currentNewsSubPage = 'home';
+    // let currentNewsSubPage = 'home'; // تم نقل هذا المتغير ليصبح عاماً (window.currentNewsSubPage) ليعمل مع زر الرجوع
 
     async function fetchArticlesFromDB() {
         articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
@@ -439,11 +440,31 @@ function initializeNewsPage() {
         navigateToSubPage('article');
         fetchAndRenderNewsComments(article.id);
     }
-    function navigateToSubPage(pageName) {
-        currentNewsSubPage = pageName;
-        if (pageName === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; newsArticlePage.scrollTop = 0; }
-        else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; }
-    }
+    
+    // ✅ تم تعديل هذا الجزء بالكامل
+    // =======================================================
+    let touchStartX = 0; 
+
+    // عند بدء اللمس، سجل مكان بداية الإصبع
+    newsArticlePage.addEventListener('touchstart', e => { 
+        touchStartX = e.changedTouches[0].screenX; 
+    }, { passive: true }); 
+    
+    // عند رفع الإصبع، تحقق من المسافة
+    newsArticlePage.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+
+        // Math.abs() تتجاهل الاتجاه وتحسب المسافة فقط
+        // إذا كانت المسافة أكبر من 50 بكسل، نفذ الرجوع
+        if (Math.abs(touchEndX - touchStartX) > 50) { 
+            // تأكد أننا في صفحة المقال قبل الرجوع
+            if (window.currentNewsSubPage === 'article') {
+                navigateToSubPage('home');
+            }
+        }
+    }, { passive: true });
+    // =======================================================
+
     async function start() {
         const fetchedArticles = await fetchArticlesFromDB();
         if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
@@ -451,7 +472,7 @@ function initializeNewsPage() {
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
-    let touchStartX = 0; newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true }); newsArticlePage.addEventListener('touchend', e => { const touchEndX = e.changedTouches[0].screenX; if (touchEndX > touchStartX && (touchEndX - touchStartX > 50)) { if (currentNewsSubPage === 'article') navigateToSubPage('home'); } }, { passive: true });
+
     start();
 }
 
@@ -873,6 +894,56 @@ function initializePullToRefresh() {
             // إذا لم يتم سحب المسافة الكافية، أعد إخفاء المؤشر
             ptrIndicator.style.opacity = '0';
             ptrIndicator.style.transform = 'translateY(-50px)';
+        }
+    });
+}
+// ✅ أضف هذه الدالة الجديدة بالكامل في ملف app.js
+
+function initializeBackButtonHandling() {
+    // التأكد من أننا نعمل داخل تطبيق Capacitor
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+        return;
+    }
+
+    const { App } = Capacitor.Plugins;
+    const exitToast = document.getElementById('exit-toast');
+    let backPress_count = 0;
+
+    App.addListener('backButton', (event) => {
+        const profilePage = document.getElementById('profile-page');
+        const authModal = document.getElementById('auth-modal');
+        const articlePage = document.getElementById('article-page');
+        
+        // 1. إذا كانت صفحة الملف الشخصي مفتوحة، أغلقها
+        if (profilePage && !profilePage.classList.contains('hidden') && profilePage.classList.contains('is-visible')) {
+            closeProfilePage();
+            return;
+        }
+
+        // 2. إذا كانت نافذة تسجيل الدخول مفتوحة، أغلقها
+        if (authModal && authModal.classList.contains('show')) {
+            document.getElementById('close-auth-modal-btn').click();
+            return;
+        }
+
+        // 3. إذا كنا في صفحة مقال، ارجع إلى قائمة الأخبار
+        const isArticleVisible = articlePage.style.transform === 'translateX(0px)';
+        if (isArticleVisible) {
+            navigateToSubPage('home'); // افترض أن هذه الدالة موجودة من الكود السابق
+            return;
+        }
+
+        // 4. إذا كنا في صفحة رئيسية، اطلب الضغط مرة أخرى للخروج
+        backPress_count++;
+        if (backPress_count === 1) {
+            exitToast.classList.add('show');
+            // إعادة تعيين العداد بعد ثانيتين
+            setTimeout(() => {
+                exitToast.classList.remove('show');
+                backPress_count = 0;
+            }, 2000);
+        } else if (backPress_count > 1) {
+            App.exitApp(); // أغلق التطبيق
         }
     });
 }
