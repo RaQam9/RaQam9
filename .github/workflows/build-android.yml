@@ -30,7 +30,11 @@ jobs:
       # الخطوة 4: تثبيت اعتماديات Capacitor من ملف package.json
       - name: Install Dependencies
         run: npm install
-
+  - name: Generate App Icons and Splash Screen
+    run: |
+      npm install -g @capacitor/assets
+      # أمر توليد الأيقونات وشاشات البداية
+      capacitor-assets generate --icon-path icon.png --splash-path splash.png --android
       # الخطوة 5: حذف منصة أندرويد القديمة (إن وجدت) وإضافتها من جديد
       - name: Clean and Re-add Android Platform
         run: |
