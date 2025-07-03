@@ -1,0 +1,57 @@
+name: Build Android APK
+
+# هذا يسمح لك بتشغيل العملية يدويًا من تبويب Actions
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # سيتم البناء على بيئة لينكس افتراضية
+    runs-on: ubuntu-latest
+
+    steps:
+      # الخطوة 1: سحب نسخة من الكود الخاص بك
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # الخطوة 2: إعداد بيئة Java بإصدار 17 (لحل مشكلة التوافق)
+      - name: Setup Java (JDK 17)
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # الخطوة 3: إعداد بيئة Node.js لتشغيل أوامر npm و npx
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # الخطوة 4: تثبيت اعتماديات Capacitor من ملف package.json
+      - name: Install Dependencies
+        run: npm install
+
+      # الخطوة 5: إضافة منصة الأندرويد ومزامنة ملفات الويب
+      - name: Add Android platform and Sync
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      # الخطوة 6: إنشاء ملف local.properties لتحديد مسار الـ SDK
+      - name: Create local.properties
+        run: echo 'sdk.dir=/usr/lib/android-sdk' > android/local.properties
+
+      # الخطوة 7: إعطاء صلاحية التنفيذ لملف البناء
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+        
+      # الخطوة 8: بناء ملف APK للتجربة (Debug)
+      - name: Build Debug APK
+        run: cd android && ./gradlew assembleDebug
+
+      # الخطوة 9: رفع ملف الـ APK الناتج لكي تتمكن من تحميله
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
