@@ -9,5 +9,10 @@
     }
   },
   "forwardPorts": [3000],
-  "postCreateCommand": "npm install"
+  "postCreateCommand": "npm install",
+
+  // --- الإضافة الجديدة هنا ---
+  "remoteEnv": {
+    "JAVA_HOME": "/usr/lib/jvm/msdk-17"
+  }
 }
