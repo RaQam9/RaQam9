@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
+    initializePullToRefresh(); 
 });
 
 // ==========================================================
@@ -799,3 +800,79 @@ window.addEventListener('load', () => {
         loader.style.display = 'none';
     }
 });
+// ✅ أضف هذه الدالة الجديدة بالكامل في ملف app.js
+
+function initializePullToRefresh() {
+    const ptrIndicator = document.getElementById('pull-to-refresh-indicator');
+    const predictionsPage = document.getElementById('predictions-page');
+    const newsHomePage = document.getElementById('home-page');
+    const PULL_THRESHOLD = 85; // المسافة بالبيكسل المطلوبة لتفعيل التحديث
+
+    let touchStartY = 0;
+    let isDragging = false;
+
+    document.body.addEventListener('touchstart', (e) => {
+        // ابدأ فقط إذا كان المستخدم في أعلى الصفحة
+        if (window.scrollY === 0) {
+            touchStartY = e.touches[0].clientY;
+            isDragging = true;
+            ptrIndicator.style.transition = 'none'; // أزل الانتقال أثناء السحب
+        }
+    }, { passive: true });
+
+    document.body.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+
+        const pullDistance = e.touches[0].clientY - touchStartY;
+        
+        // تعامل فقط مع السحب للأسفل من أعلى نقطة
+        if (pullDistance > 0 && window.scrollY === 0) {
+            e.preventDefault(); // لمنع السلوك الافتراضي للمتصفح
+            const pullRatio = Math.min(pullDistance / PULL_THRESHOLD, 1);
+            ptrIndicator.style.opacity = pullRatio;
+            ptrIndicator.style.transform = `translateY(${pullDistance * 0.4}px) scale(${0.8 + 0.2 * pullRatio})`;
+            const arrow = ptrIndicator.querySelector('.ptr-arrow');
+            if (arrow) {
+                arrow.style.transform = `rotate(${pullDistance * 2}deg)`;
+            }
+        } else {
+            isDragging = false; // توقف عن السحب إذا لم يكن في الأعلى
+        }
+    }, { passive: false }); // يجب أن تكون false ليعمل preventDefault
+
+    document.body.addEventListener('touchend', async (e) => {
+        if (!isDragging) return;
+
+        isDragging = false;
+        ptrIndicator.style.transition = 'transform 0.3s, opacity 0.3s'; // أعد الانتقال الناعم
+        const pullDistance = e.changedTouches[0].clientY - touchStartY;
+
+        // إذا تم سحب المسافة المطلوبة
+        if (pullDistance > PULL_THRESHOLD) {
+            ptrIndicator.classList.add('refreshing');
+            
+            try {
+                const isPredictionsVisible = !predictionsPage.classList.contains('hidden');
+                // تحقق من أننا في الصفحة الرئيسية للأخبار وليس في صفحة مقال
+                const isNewsHomeVisible = !document.getElementById('news-page').classList.contains('hidden') && (newsHomePage.style.transform === 'translateX(0px)' || newsHomePage.style.transform === '');
+
+                if (isPredictionsVisible) {
+                    await initializePredictionsPage();
+                } else if (isNewsHomeVisible) {
+                    await initializeNewsPage();
+                }
+            } catch (error) {
+                console.error("Pull to refresh failed:", error);
+            } finally {
+                // إخفاء المؤشر بعد انتهاء التحديث
+                setTimeout(() => {
+                    ptrIndicator.classList.remove('refreshing');
+                }, 500); // انتظر قليلاً قبل الإخفاء
+            }
+        } else {
+            // إذا لم يتم سحب المسافة الكافية، أعد إخفاء المؤشر
+            ptrIndicator.style.opacity = '0';
+            ptrIndicator.style.transform = 'translateY(-50px)';
+        }
+    });
+}
