@@ -31,25 +31,29 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # الخطوة 5: إضافة منصة الأندرويد ومزامنة ملفات الويب
-      - name: Add Android platform and Sync
+      # الخطوة 5: حذف منصة أندرويد القديمة (إن وجدت) وإضافتها من جديد
+      - name: Clean and Re-add Android Platform
         run: |
+          rm -rf android
           npx cap add android
-          npx cap sync android
 
-      # الخطوة 6: إنشاء ملف local.properties لتحديد مسار الـ SDK
+      # الخطوة 6: مزامنة ملفات الويب مع منصة الأندرويد الجديدة
+      - name: Sync Web Assets
+        run: npx cap sync android
+
+      # الخطوة 7: إنشاء ملف local.properties لتحديد مسار الـ SDK
       - name: Create local.properties
         run: echo 'sdk.dir=/usr/lib/android-sdk' > android/local.properties
 
-      # الخطوة 7: إعطاء صلاحية التنفيذ لملف البناء
+      # الخطوة 8: إعطاء صلاحية التنفيذ لملف البناء
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
         
-      # الخطوة 8: بناء ملف APK للتجربة (Debug)
+      # الخطوة 9: بناء ملف APK للتجربة (Debug)
       - name: Build Debug APK
         run: cd android && ./gradlew assembleDebug
 
-      # الخطوة 9: رفع ملف الـ APK الناتج لكي تتمكن من تحميله
+      # الخطوة 10: رفع ملف الـ APK الناتج لكي تتمكن من تحميله
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
