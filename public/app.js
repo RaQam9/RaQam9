@@ -7,13 +7,16 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_EMAIL = "your-email@example.com";
 const HOST_EMAIL = "host@example.com";
 
-// هذا هو "الجسر" الذي يربط كود الويب الخاص بنا بميزات الهاتف
-const { Capacitor } = window;
-const { PushNotifications } = Capacitor.Plugins;
-
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if Capacitor is available
+    if (window.Capacitor) {
+        console.log("Capacitor is available.");
+    } else {
+        console.log("Capacitor is not available. Running in web mode.");
+    }
+
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
@@ -53,11 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
 // ==========================================================
 const registerPushNotifications = async () => {
-  // التحقق من أننا نعمل على جهاز حقيقي وليس في متصفح الويب
-  if (!Capacitor.isNativePlatform()) {
-    console.log("Push notifications are not available in the web browser.");
+  // Check if Capacitor and its plugins are available
+  if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+    console.log("Push notifications not available on this platform.");
     return;
   }
+  
+  const { PushNotifications } = window.Capacitor.Plugins;
 
   try {
     let permStatus = await PushNotifications.checkPermissions();
@@ -786,3 +791,11 @@ async function handleDeleteComment(e) {
         document.getElementById(`profile-comment-${commentId}-${tableName}`)?.remove();
     }
 }
+
+// Hide loader after everything is loaded
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+});
