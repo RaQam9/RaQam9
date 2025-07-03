@@ -1,4 +1,3 @@
-import { PushNotifications } from '@capacitor/push-notifications';
 // ==========================================================
 // SECTION 0: GLOBAL SETUP (Supabase, Constants & Page Switching)
 // ==========================================================
@@ -7,6 +6,9 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ADMIN_EMAIL = "your-email@example.com";
 const HOST_EMAIL = "host@example.com";
+
+// استيراد أدوات Capacitor
+const { PushNotifications } = Capacitor.Plugins;
 
 let currentUser = null;
 
@@ -47,9 +49,63 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================================
-// SECTION 0.5: AUTHENTICATION LOGIC
+// SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
 // ==========================================================
+// دالة جديدة لتسجيل الإشعارات
+const registerPushNotifications = async () => {
+  try {
+    let permStatus = await PushNotifications.checkPermissions();
+
+    if (permStatus.receive === 'prompt') {
+      permStatus = await PushNotifications.requestPermissions();
+    }
+
+    if (permStatus.receive !== 'granted') {
+      console.warn('User denied permissions for push notifications!');
+      return;
+    }
+
+    // Register with Apple / Google to receive push via APNS/FCM
+    await PushNotifications.register();
+
+    // On success, we should be able to receive notifications
+    PushNotifications.addListener('registration', async (token) => {
+      console.info('Push registration success, token: ' + token.value);
+      
+      // الآن، نحفظ التوكن في قاعدة بيانات Supabase
+      if (currentUser) {
+        // نستخدم upsert لتجنب تكرار نفس التوكن
+        const { error } = await supabaseClient
+          .from('fcm_tokens')
+          .upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
+        
+        if (error) {
+          console.error('Error saving FCM token:', error);
+        } else {
+          console.log('FCM token saved successfully!');
+        }
+      }
+    });
+
+    // On error, log to console
+    PushNotifications.addListener('registrationError', (err) => {
+      console.error('Error on registration: ' + JSON.stringify(err));
+    });
+
+    // Show us the notification payload if the app is open on our device
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        // يمكنك هنا عرض تنبيه أو رسالة داخل التطبيق
+        alert('Push received: ' + JSON.stringify(notification));
+    });
+
+  } catch(e) {
+    console.error("Error in registerPushNotifications:", e);
+  }
+};
+
+
 function initializeAuth() {
+    // ... الكود السابق لدالة initializeAuth يبقى كما هو ...
     const authModal = document.getElementById('auth-modal');
     const userIconBtn = document.getElementById('user-icon-btn');
     const closeModalBtn = document.getElementById('close-auth-modal-btn');
@@ -77,7 +133,8 @@ function initializeAuth() {
 
     userIconBtn.addEventListener('click', () => {
         if (currentUser) {
-            document.getElementById('user-email-display').textContent = `أنت مسجل الدخول بـ: ${currentUser.email}`;
+            const username = currentUser.user_metadata.username || currentUser.email;
+            document.getElementById('user-email-display').textContent = `أهلاً بك، ${username}!`;
             showView(loggedinView);
         } else {
             showView(loginView);
@@ -147,18 +204,22 @@ function initializeAuth() {
             userIcon.innerHTML = `<i class="fa-solid fa-user-check"></i>`;
             loadUserPredictions();
             refreshVisibleComments();
+            // --- استدعاء دالة تسجيل الإشعارات هنا ---
+            registerPushNotifications(); 
         } else if (event === 'SIGNED_OUT') {
             currentUser = null;
             userIcon.classList.remove('logged-in');
             userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`;
             resetUIOnLogout();
             refreshVisibleComments();
-            registerPushNotifications(); 
-    } else if (event === 'SIGNED_OUT') {
-        currentUser = null;
         }
     });
 }
+
+
+// ======================================================================
+// باقي الملف يبقى كما هو تمامًا بدون تغيير
+// ======================================================================
 
 function refreshVisibleComments() {
     document.querySelectorAll('.comments-section').forEach(section => {
@@ -212,9 +273,7 @@ function resetUIOnLogout() {
     });
 }
 
-// ======================================================================
 // SECTION 1: PREDICTIONS PAGE LOGIC
-// ======================================================================
 async function initializePredictionsPage() {
     try {
         const container = document.getElementById('matches-container');
@@ -267,10 +326,6 @@ function initializeAppWithData(matchesData) {
     }
     async function handleToggleComments(b) { const s = b.nextElementSibling; const h = s.style.display === 'none' || !s.style.display; const l = s.querySelector('.comment-list'); const i = b.closest('.match-card').dataset.matchId; if (h) { s.style.display = 'block'; b.innerHTML = '💬 إخفاء التعليقات'; await fetchAndRenderMatchComments(i, l); } else { s.style.display = 'none'; b.innerHTML = '💬 التعليقات'; } }
     
-    // ==========================================================
-    // START: MODIFIED FUNCTIONS FOR REPLIES
-    // ==========================================================
-
     async function fetchAndRenderMatchComments(matchId, listElement) {
         listElement.innerHTML = '<p class="text-center text-gray-500 my-2">جاري تحميل التعليقات...</p>';
         try {
@@ -349,7 +404,6 @@ function initializeAppWithData(matchesData) {
         
         listElement.appendChild(commentDiv);
     
-        // Display replies recursively
         if (commentData.replies && commentData.replies.length > 0) {
             const repliesContainer = document.createElement('div');
             repliesContainer.className = 'replies-container';
@@ -359,10 +413,6 @@ function initializeAppWithData(matchesData) {
             listElement.appendChild(repliesContainer);
         }
     }
-
-    // ==========================================================
-    // END: MODIFIED FUNCTIONS FOR REPLIES
-    // ==========================================================
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -376,9 +426,7 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-// ==========================================================
 // SECTION 2: NEWS PAGE LOGIC
-// ==========================================================
 function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
     const articleContent = document.getElementById('article-content');
@@ -511,7 +559,6 @@ function addNewsCommentToDOM(container, commentData) {
     
     container.appendChild(commentEl);
 
-    // Display replies
     if (commentData.replies && commentData.replies.length > 0) {
         const repliesContainer = document.createElement('div');
         repliesContainer.className = 'news-replies-container';
@@ -539,9 +586,7 @@ async function handleNewsCommentSubmit(event) {
     finally { submitBtn.disabled = false; submitBtn.textContent = 'إرسال التعليق'; }
 }
 
-// ==========================================================
 // SECTION 3: REALTIME FUNCTIONALITY
-// ==========================================================
 function showNotification(message) {
     const toast = document.getElementById('notification-toast');
     if (!toast) return;
@@ -581,9 +626,7 @@ function initializeRealtimeListeners() {
     });
 }
 
-// ==========================================================
 // SECTION 4: GLOBAL EVENT LISTENERS
-// ==========================================================
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
         const deleteBtn = e.target.closest('.delete-comment-btn');
@@ -614,9 +657,7 @@ function initializeGlobalEventListeners() {
     });
 }
 
-// ==========================================================
-// SECTION 5: PROFILE PAGE LOGIC (FINAL SOLUTION)
-// ==========================================================
+// SECTION 5: PROFILE PAGE LOGIC
 let profilePage;
 let closeProfileBtn;
 let saveUsernameBtn;
@@ -624,7 +665,6 @@ let profileCommentsList;
 
 function initializeProfilePageListeners() {
     profilePage = document.getElementById('profile-page');
-    // Note: openProfileBtn is handled inside initializeAuth now
     closeProfileBtn = document.getElementById('close-profile-btn');
     saveUsernameBtn = document.getElementById('save-username-btn');
     profileCommentsList = document.getElementById('profile-comments-list');
@@ -636,30 +676,23 @@ function initializeProfilePageListeners() {
 
 function openProfilePage() {
     if (!currentUser || !profilePage) return;
-
     const authModal = document.getElementById('auth-modal');
     authModal.classList.remove('show');
-
     profilePage.classList.remove('hidden');
-
     setTimeout(() => {
         profilePage.classList.add('is-visible');
     }, 10);
-
     loadProfileData();
 }
 
 function closeProfilePage() {
     if (!profilePage) return;
-
     const onTransitionEnd = () => {
         profilePage.classList.add('hidden');
         profilePage.removeEventListener('transitionend', onTransitionEnd);
     };
-
     profilePage.addEventListener('transitionend', onTransitionEnd, { once: true });
     profilePage.classList.remove('is-visible');
-
     setTimeout(() => {
         if (!profilePage.classList.contains('hidden')) {
             onTransitionEnd();
@@ -827,46 +860,3 @@ async function handleDeleteComment(e) {
         document.getElementById(`profile-comment-${commentId}-${tableName}`)?.remove();
     }
 }
-
-
-window.addEventListener('load', () => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'none';
-    }
-});
-// دالة جديدة لتسجيل الإشعارات
-const registerPushNotifications = async () => {
-  let permStatus = await PushNotifications.checkPermissions();
-
-  if (permStatus.receive === 'prompt') {
-    permStatus = await PushNotifications.requestPermissions();
-  }
-
-  if (permStatus.receive !== 'granted') {
-    console.log('User denied permissions!');
-    return;
-  }
-
-  await PushNotifications.register();
-
-  PushNotifications.addListener('registration', async (token) => {
-    console.log('Push registration success, token: ' + token.value);
-    // الآن، نحفظ التوكن في قاعدة بيانات Supabase
-    if (currentUser) {
-      const { error } = await supabaseClient
-        .from('fcm_tokens')
-        .upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
-      
-      if (error) {
-        console.error('Error saving FCM token:', error);
-      } else {
-        console.log('FCM token saved successfully!');
-      }
-    }
-  });
-
-  PushNotifications.addListener('registrationError', (err) => {
-    console.error('Error on registration: ' + JSON.stringify(err));
-  });
-};
