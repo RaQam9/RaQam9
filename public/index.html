@@ -5,31 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>المركز الرياضي</title>
     
-    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Fonts and Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS (if you use it) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
     </script>
-
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-05JCQWTWHK');
-    </script>
     
-    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -54,53 +41,18 @@
         </div>
     </nav>
 
-    <!-- Predictions Page -->
+    <!-- Predictions Page (Visible by default) -->
     <div id="predictions-page" class="page-container">
         <div class="container mx-auto px-4">
             <header><h1 class="text-2xl font-bold my-4 text-center"><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
-            <main id="matches-container"><!-- Content is loaded by JavaScript --></main>
+            <main id="matches-container"></main>
         </div>
         <div class="floating-icon-container" id="floating-icon-container">
             <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button>
         </div>
-        
-        <!-- MODAL FOR AUTHENTICATION -->
-        <div class="modal" id="auth-modal">
-            <div class="modal-content">
-                <span class="close-button" id="close-auth-modal-btn">×</span>
-                <div id="login-view">
-                    <h2>تسجيل الدخول</h2>
-                    <form id="login-form">
-                        <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
-                        <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
-                        <button type="submit">دخول</button>
-                    </form>
-                    <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
-                </div>
-                <div id="signup-view" style="display: none;">
-                    <h2>إنشاء حساب جديد</h2>
-                    <form id="signup-form">
-                        <div class="form-control"><label for="signup-username">اسم المستخدم (سيظهر في التعليقات)</label><input type="text" id="signup-username" required></div>
-                        <div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div>
-                        <div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div>
-                        <button type="submit">إنشاء حساب</button>
-                    </form>
-                    <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
-                </div>
-                <div id="loggedin-view" style="display: none;">
-                    <h2>أهلاً بك!</h2>
-                    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
-                    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
-                        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
-                    </button>
-                    <button id="logout-btn">تسجيل الخروج</button>
-                </div>
-                <div id="auth-message"></div>
-            </div>
-        </div>
     </div>
     
-    <!-- News Page -->
+    <!-- News Page (Hidden by default) -->
     <div id="news-page" class="page-container hidden relative overflow-hidden h-full">
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
         <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
@@ -111,8 +63,41 @@
                 <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
             </form>
         </div></div>
-        <div id="notification-toast"></div>
-        <div id="exit-toast">انقر مرة أخرى للخروج</div>
+    </div>
+
+    <!-- MODAL FOR AUTHENTICATION -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-auth-modal-btn">×</span>
+            <div id="login-view">
+                <h2>تسجيل الدخول</h2>
+                <form id="login-form">
+                    <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
+                    <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
+                    <button type="submit">دخول</button>
+                </form>
+                <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
+            </div>
+            <div id="signup-view" style="display: none;">
+                <h2>إنشاء حساب جديد</h2>
+                <form id="signup-form">
+                    <div class="form-control"><label for="signup-username">اسم المستخدم</label><input type="text" id="signup-username" required></div>
+                    <div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div>
+                    <div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div>
+                    <button type="submit">إنشاء حساب</button>
+                </form>
+                <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
+            </div>
+            <div id="loggedin-view" style="display: none;">
+                <h2>أهلاً بك!</h2>
+                <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
+                <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
+                    <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
+                </button>
+                <button id="logout-btn">تسجيل الخروج</button>
+            </div>
+            <div id="auth-message"></div>
+        </div>
     </div>
   
     <!-- Profile Page -->
@@ -140,6 +125,10 @@
             </section>
         </main>
     </div>
+
+    <!-- Toasts -->
+    <div id="notification-toast"></div>
+    <div id="exit-toast">انقر مرة أخرى للخروج</div>
 
     <script src="capacitor.js"></script>
     <script src="app.js"></script>
