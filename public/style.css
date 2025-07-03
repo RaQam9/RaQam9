@@ -256,3 +256,39 @@
     color: var(--accent-color);
     font-weight: bold;
 }
+
+/* في نهاية ملف style.css */
+
+/* --- ✅ أنماط السحب للتحديث --- */
+.pull-to-refresh-indicator {
+    position: fixed; /* يبقى ثابتاً في الأعلى */
+    top: 60px; /* المسافة من الأعلى لتكون تحت شريط التنقل */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--secondary-text-color);
+    font-size: 1.2rem;
+    z-index: 50; /* تأكد من ظهوره فوق المحتوى */
+    height: 50px;
+    opacity: 0; /* ابدأ شفافاً */
+    transform: translateY(-50px); /* ابدأ مخفياً للأعلى */
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.pull-to-refresh-indicator .ptr-spinner {
+    display: none;
+}
+
+/* حالة التحديث */
+.pull-to-refresh-indicator.refreshing {
+    opacity: 1;
+    transform: translateY(0);
+}
+.pull-to-refresh-indicator.refreshing .ptr-spinner {
+    display: block;
+}
+.pull-to-refresh-indicator.refreshing .ptr-arrow {
+    display: none;
+}
