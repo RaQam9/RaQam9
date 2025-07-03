@@ -1,4 +1,4 @@
-name: Build Android APK (Final Version)
+name: Build Stable Android APK
 
 on:
   workflow_dispatch:
@@ -8,57 +8,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. سحب الكود وملفات الصور وملف google-services.json
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. إعداد Java 17
       - name: Setup Java (JDK 17)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. إعداد Node.js 18
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
+          # تفعيل التخزين المؤقت لـ npm لتسريع العمليات
+          cache: 'npm'
 
-      # 4. تثبيت الاعتماديات
-      - name: Install Dependencies
+      - name: Install All Dependencies
         run: npm install
 
-      # 5. توليد الأيقونات وشاشة البداية أولاً
-      - name: Generate App Icons and Splash Screen
-        run: |
-          npm install -g @capacitor/assets
-          capacitor-assets generate --android
-
-      # 6. إضافة منصة أندرويد (سيقوم بإنشاء مجلد android نظيف)
+      # في الإصدار القديم، نحتاج لإنشاء مجلد android أولاً
       - name: Add Android Platform
         run: npx cap add android
 
-      # 7. نسخ ملف إعدادات Firebase إلى المكان الصحيح
+      # ثم نولد الأصول
+      - name: Generate App Icons and Splash Screen
+        run: npx capacitor-assets generate --android
+
+      # ثم ننسخ ملف إعدادات Firebase
       - name: Copy google-services.json
-        run: |
-          if [ -f "google-services.json" ]; then
-            cp google-services.json android/app/
-          else
-            echo "google-services.json not found, skipping."
-          fi
+        run: cp google-services.json android/app/
       
-      # 8. إعطاء صلاحية التنفيذ لملف البناء
+      # أخيرًا، نقوم بمزامنة كل شيء
+      - name: Sync Project
+        run: npx cap sync android
+        
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
         
-      # 9. بناء ملف APK للتجربة
       - name: Build Debug APK
         run: cd android && ./gradlew assembleDebug
 
-      # 10. رفع الـ APK النهائي
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: final-app-build
+          name: stable-app-build
           path: android/app/build/outputs/apk/debug/app-debug.apk
