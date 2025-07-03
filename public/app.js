@@ -831,4 +831,38 @@ window.addEventListener('load', () => {
         loader.style.display = 'none';
     }
 });
+// دالة جديدة لتسجيل الإشعارات
+const registerPushNotifications = async () => {
+  let permStatus = await PushNotifications.checkPermissions();
 
+  if (permStatus.receive === 'prompt') {
+    permStatus = await PushNotifications.requestPermissions();
+  }
+
+  if (permStatus.receive !== 'granted') {
+    console.log('User denied permissions!');
+    return;
+  }
+
+  await PushNotifications.register();
+
+  PushNotifications.addListener('registration', async (token) => {
+    console.log('Push registration success, token: ' + token.value);
+    // الآن، نحفظ التوكن في قاعدة بيانات Supabase
+    if (currentUser) {
+      const { error } = await supabaseClient
+        .from('fcm_tokens')
+        .upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
+      
+      if (error) {
+        console.error('Error saving FCM token:', error);
+      } else {
+        console.log('FCM token saved successfully!');
+      }
+    }
+  });
+
+  PushNotifications.addListener('registrationError', (err) => {
+    console.error('Error on registration: ' + JSON.stringify(err));
+  });
+};
