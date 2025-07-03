@@ -823,3 +823,12 @@ async function handleDeleteComment(e) {
         document.getElementById(`profile-comment-${commentId}-${tableName}`)?.remove();
     }
 }
+
+
+window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+});
+
