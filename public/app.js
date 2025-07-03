@@ -1,3 +1,4 @@
+import { PushNotifications } from '@capacitor/push-notifications';
 // ==========================================================
 // SECTION 0: GLOBAL SETUP (Supabase, Constants & Page Switching)
 // ==========================================================
