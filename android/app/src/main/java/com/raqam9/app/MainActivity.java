@@ -1,19 +1,18 @@
-// استبدل هذا السطر بالـ appId الخاص بك
+// تأكد من أن هذا السطر يطابق الـ appId الخاص بك
 package com.raqam9.app; 
 
 import com.getcapacitor.BridgeActivity;
 import android.os.Bundle;
 
-// استيراد الإضافات التي نستخدمها
-import com.getcapacitor.plugin.PushNotifications;
+// تم تصحيح مسار الاستيراد هنا
+import com.capacitorjs.plugins.pushnotifications.PushNotifications;
 
 public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    // هنا نقوم بتهيئة الإضافات
-    // هذا يخبر الأندرويد بأن يكون مستعدًا لاستقبال أوامر الإشعارات
+    // تهيئة الإضافة
     registerPlugin(PushNotifications.class);
   }
 }
