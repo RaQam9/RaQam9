@@ -1,4 +1,4 @@
-name: Build Android APK with Icon and Splash
+name: Build Android APK with all features
 
 on:
   workflow_dispatch:
@@ -25,21 +25,10 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Generate App Icons and Splash Screen
-        run: |
-          npm install -g @capacitor/assets
-          capacitor-assets generate --android
-
-      - name: Clean and Re-add Android Platform
-        run: |
-          rm -rf android
-          npx cap add android
-
-      - name: Sync Web Assets
+      # لن نقوم بحذف مجلد android بعد الآن
+      # سنقوم فقط بتشغيل sync لتحديثه
+      - name: Sync Web Assets and Plugins
         run: npx cap sync android
-
-      - name: Create local.properties
-        run: echo 'sdk.dir=/usr/lib/android-sdk' > android/local.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
@@ -50,5 +39,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-with-icon-and-splash
+          name: final-app
           path: android/app/build/outputs/apk/debug/app-debug.apk
