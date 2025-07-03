@@ -10,19 +10,10 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 window.currentNewsSubPage = 'home';
 let newsArticlesCache = []; 
-
-// ✅ متغير لتتبع ما إذا تم تحميل الأخبار مرة واحدة على الأقل
 let hasNewsLoaded = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if Capacitor is available
-    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-        console.log("Capacitor is available.");
-    } else {
-        console.log("Capacitor is not available. Running in web mode.");
-    }
-
-    // --- Page Switching Logic (تم تعديله) ---
+    // --- Page Switching Logic (Logic Corrected) ---
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
@@ -43,20 +34,21 @@ document.addEventListener('DOMContentLoaded', () => {
         newsBtn.classList.toggle('text-white', !isPredictions);
         newsBtn.classList.toggle('text-gray-400', isPredictions);
 
-        // ✅ أهم تعديل: جلب الأخبار فقط عند الضغط على الزر لأول مرة
+        // ✅ The Correct Fix: Load news only when the tab is clicked for the first time
         if (pageToShow === 'news' && !hasNewsLoaded) {
-            initializeNewsPage(); // استدعاء دالة جلب الأخبار
-            hasNewsLoaded = true; // ضع علامة أنه تم التحميل
+            initializeNewsPage();
+            hasNewsLoaded = true;
         }
     }
 
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // --- Initialize All App Modules (تم تعديله) ---
+    // --- Initialize All App Modules ---
     initializeAuth();
-    initializePredictionsPage(); // تحميل التوقعات فقط عند البداية
-    // ❌ لا تقم بتحميل الأخبار هنا
+    initializePredictionsPage(); // Predictions load on start
+    // News will be loaded on demand (when clicked)
+    initializeNewsPageListeners(); // Attaches listeners for swipe/comments
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
@@ -66,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ==========================================================
-// ✅ SECTION: NEWS PAGE (الكود كما هو، لكن طريقة استدعائه هي التي تغيرت)
+// SECTION: NEWS PAGE (Data Fetching & Rendering)
 // ==========================================================
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
@@ -107,7 +99,8 @@ function renderArticleDetail(articleId) {
     navigateToSubPage('article');
     fetchAndRenderNewsComments(article.id);
 }
-document.addEventListener('DOMContentLoaded', () => {
+// This function only attaches event listeners
+function initializeNewsPageListeners() {
     const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
     let touchStartX = 0;
@@ -121,76 +114,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: true });
     }
     if (commentForm) { commentForm.addEventListener('submit', handleNewsCommentSubmit); }
-});
+}
+
 
 // ==========================================================
-// باقي الدوال تبقى كما هي بدون تغيير
+// ALL OTHER FUNCTIONS (No changes needed in the rest)
 // ==========================================================
-function navigateToSubPage(pageName) {
-    const newsHomePage = document.getElementById('home-page');
-    const newsArticlePage = document.getElementById('article-page');
-    window.currentNewsSubPage = pageName;
-    newsHomePage.style.transform = pageName === 'article' ? 'translateX(-100%)' : 'translateX(0)';
-    newsArticlePage.style.transform = pageName === 'article' ? 'translateX(0)' : 'translateX(100%)';
-    if (pageName === 'article') newsArticlePage.scrollTop = 0;
-}
-function initializeBackButtonHandling() {
-    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
-    const { App } = Capacitor.Plugins;
-    const exitToast = document.getElementById('exit-toast');
-    let backPress_count = 0;
-    App.addListener('backButton', () => {
-        const profilePage = document.getElementById('profile-page');
-        const authModal = document.getElementById('auth-modal');
-        if (profilePage && profilePage.classList.contains('is-visible')) { closeProfilePage(); return; }
-        if (authModal && authModal.classList.contains('show')) { document.getElementById('close-auth-modal-btn').click(); return; }
-        if (window.currentNewsSubPage === 'article') { navigateToSubPage('home'); return; }
-        backPress_count++;
-        if (backPress_count === 1) {
-            exitToast.classList.add('show');
-            setTimeout(() => { exitToast.classList.remove('show'); backPress_count = 0; }, 2000);
-        } else if (backPress_count > 1) { App.exitApp(); }
-    });
-}
-function initializePullToRefresh() {
-    const ptrIndicator = document.getElementById('pull-to-refresh-indicator');
-    const PULL_THRESHOLD = 85; 
-    let touchStartY = 0;
-    let isDragging = false;
-    document.body.addEventListener('touchstart', (e) => { if (window.scrollY === 0) { touchStartY = e.touches[0].clientY; isDragging = true; } }, { passive: true });
-    document.body.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const pullDistance = e.touches[0].clientY - touchStartY;
-        if (pullDistance > 0 && window.scrollY === 0) {
-            e.preventDefault(); 
-            const pullRatio = Math.min(pullDistance / PULL_THRESHOLD, 1);
-            ptrIndicator.style.transition = 'none';
-            ptrIndicator.style.opacity = pullRatio;
-            ptrIndicator.style.transform = `translateY(${pullDistance * 0.4}px) scale(${0.8 + 0.2 * pullRatio})`;
-        } else { isDragging = false; }
-    }, { passive: false });
-    document.body.addEventListener('touchend', async (e) => {
-        if (!isDragging) return;
-        isDragging = false;
-        const pullDistance = e.changedTouches[0].clientY - touchStartY;
-        ptrIndicator.style.transition = 'transform 0.3s, opacity 0.3s';
-        const resetIndicator = () => { ptrIndicator.classList.remove('refreshing'); ptrIndicator.style.opacity = '0'; ptrIndicator.style.transform = 'translateY(-50px)'; };
-        if (pullDistance > PULL_THRESHOLD) {
-            ptrIndicator.classList.add('refreshing');
-            try {
-                if (!document.getElementById('predictions-page').classList.contains('hidden')) {
-                    await initializePredictionsPage();
-                } else if (window.currentNewsSubPage === 'home') {
-                    await initializeNewsPage();
-                }
-            } catch (error) { console.error("Pull to refresh failed:", error); } 
-            finally { setTimeout(resetIndicator, 300); }
-        } else { resetIndicator(); }
-    });
-}
-const registerPushNotifications = async () => { if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return; const { PushNotifications } = window.Capacitor.Plugins; try { let permStatus = await PushNotifications.checkPermissions(); if (permStatus.receive === 'prompt') permStatus = await PushNotifications.requestPermissions(); if (permStatus.receive !== 'granted') return; await PushNotifications.register(); PushNotifications.addListener('registration', async (token) => { if (currentUser) { await supabaseClient.from('fcm_tokens').upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' }); } }); PushNotifications.addListener('pushNotificationReceived', (n) => alert('إشعار جديد: ' + (n.title || '') + "\n" + (n.body || ''))); } catch(e) { console.error("Error in registerPushNotifications:", e); } };
+function navigateToSubPage(pageName) { const newsHomePage = document.getElementById('home-page'); const newsArticlePage = document.getElementById('article-page'); window.currentNewsSubPage = pageName; newsHomePage.style.transform = pageName === 'article' ? 'translateX(-100%)' : 'translateX(0)'; newsArticlePage.style.transform = pageName === 'article' ? 'translateX(0)' : 'translateX(100%)'; if (pageName === 'article') newsArticlePage.scrollTop = 0; }
+function initializeBackButtonHandling() { if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return; const { App } = Capacitor.Plugins; const exitToast = document.getElementById('exit-toast'); let backPress_count = 0; App.addListener('backButton', () => { const profilePage = document.getElementById('profile-page'); const authModal = document.getElementById('auth-modal'); if (profilePage && profilePage.classList.contains('is-visible')) { closeProfilePage(); return; } if (authModal && authModal.classList.contains('show')) { document.getElementById('close-auth-modal-btn').click(); return; } if (window.currentNewsSubPage === 'article') { navigateToSubPage('home'); return; } backPress_count++; if (backPress_count === 1) { exitToast.classList.add('show'); setTimeout(() => { exitToast.classList.remove('show'); backPress_count = 0; }, 2000); } else if (backPress_count > 1) { App.exitApp(); } }); }
+function initializePullToRefresh() { const ptrIndicator = document.getElementById('pull-to-refresh-indicator'); const PULL_THRESHOLD = 85; let touchStartY = 0; let isDragging = false; document.body.addEventListener('touchstart', (e) => { if (window.scrollY === 0) { touchStartY = e.touches[0].clientY; isDragging = true; } }, { passive: true }); document.body.addEventListener('touchmove', (e) => { if (!isDragging) return; const pullDistance = e.touches[0].clientY - touchStartY; if (pullDistance > 0 && window.scrollY === 0) { e.preventDefault(); const pullRatio = Math.min(pullDistance / PULL_THRESHOLD, 1); ptrIndicator.style.transition = 'none'; ptrIndicator.style.opacity = pullRatio; ptrIndicator.style.transform = `translateY(${pullDistance * 0.4}px) scale(${0.8 + 0.2 * pullRatio})`; } else { isDragging = false; } }, { passive: false }); document.body.addEventListener('touchend', async (e) => { if (!isDragging) return; isDragging = false; const pullDistance = e.changedTouches[0].clientY - touchStartY; ptrIndicator.style.transition = 'transform 0.3s, opacity 0.3s'; const resetIndicator = () => { ptrIndicator.classList.remove('refreshing'); ptrIndicator.style.opacity = '0'; ptrIndicator.style.transform = 'translateY(-50px)'; }; if (pullDistance > PULL_THRESHOLD) { ptrIndicator.classList.add('refreshing'); try { if (!document.getElementById('predictions-page').classList.contains('hidden')) { await initializePredictionsPage(); } else if (window.currentNewsSubPage === 'home') { await initializeNewsPage(); } } catch (error) { console.error("Pull to refresh failed:", error); } finally { setTimeout(resetIndicator, 300); } } else { resetIndicator(); } }); }
+const registerPushNotifications = async () => { if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return; const { PushNotifications } = window.Capacitor.Plugins; try { let permStatus = await PushNotifications.checkPermissions(); if (permStatus.receive === 'prompt') permStatus = await PushNotifications.requestPermissions(); if (permStatus.receive !== 'granted') return; await PushNotifications.register(); PushNotifications.addListener('registration', async (token) => { if (currentUser) { await supabaseClient.from('fcm_tokens').upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' }); } }); PushNotifications.addListener('pushNotificationReceived', (n) => alert('إشعار جديد: ' + (n.title || '') + "\n" + (n.body || ''))); } catch (e) { console.error("Error in registerPushNotifications:", e); } };
 function initializeAuth() { const authModal = document.getElementById('auth-modal'); const userIconBtn = document.getElementById('user-icon-btn'); const closeModalBtn = document.getElementById('close-auth-modal-btn'); const loginView = document.getElementById('login-view'); const signupView = document.getElementById('signup-view'); const loggedinView = document.getElementById('loggedin-view'); const loginForm = document.getElementById('login-form'); const signupForm = document.getElementById('signup-form'); const logoutBtn = document.getElementById('logout-btn'); const showSignupBtn = document.getElementById('show-signup'); const showLoginBtn = document.getElementById('show-login'); const authMessage = document.getElementById('auth-message'); const openProfileBtn = document.getElementById('open-profile-btn'); const openAuthModal = () => authModal.classList.add('show'); const closeAuthModal = () => authModal.classList.remove('show'); const showView = (view) => { loginView.style.display = 'none'; signupView.style.display = 'none'; loggedinView.style.display = 'none'; view.style.display = 'block'; authMessage.textContent = ''; }; userIconBtn.addEventListener('click', () => { if (currentUser) { const username = currentUser.user_metadata.username || currentUser.email; document.getElementById('user-email-display').textContent = `أهلاً بك، ${username}!`; showView(loggedinView); } else { showView(loginView); } openAuthModal(); }); if (openProfileBtn) { openProfileBtn.addEventListener('click', openProfilePage); } closeModalBtn.addEventListener('click', closeAuthModal); authModal.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); }); showSignupBtn.addEventListener('click', () => showView(signupView)); showLoginBtn.addEventListener('click', () => showView(loginView)); signupForm.addEventListener('submit', async (e) => { e.preventDefault(); const username = document.getElementById('signup-username').value; const email = document.getElementById('signup-email').value; const password = document.getElementById('signup-password').value; authMessage.textContent = 'جاري إنشاء الحساب...'; const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { username } } }); if (error) { authMessage.textContent = `خطأ: ${error.message}`; } else { authMessage.textContent = 'تم إنشاء الحساب بنجاح! يرجى مراجعة بريدك الإلكتروني لتفعيل الحساب.'; signupForm.reset(); } }); loginForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; authMessage.textContent = 'جاري تسجيل الدخول...'; const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { authMessage.textContent = `خطأ: ${error.message}`; } else { authMessage.textContent = 'تم تسجيل الدخول بنجاح!'; loginForm.reset(); setTimeout(closeAuthModal, 1000); } }); logoutBtn.addEventListener('click', async () => { authMessage.textContent = 'جاري تسجيل الخروج...'; if (currentUser) { await supabaseClient.from('predictions').delete().eq('user_id', currentUser.id); } const { error } = await supabaseClient.auth.signOut(); if (error) { authMessage.textContent = `خطأ: ${error.message}`; } else { authMessage.textContent = ''; closeAuthModal(); } }); supabaseClient.auth.onAuthStateChange((event, session) => { const userIcon = document.getElementById('user-icon-btn'); if (event === 'SIGNED_IN' || event === "INITIAL_SESSION") { currentUser = session.user; userIcon.classList.add('logged-in'); userIcon.innerHTML = `<i class="fa-solid fa-user-check"></i>`; loadUserPredictions(); refreshVisibleComments(); registerPushNotifications(); } else if (event === 'SIGNED_OUT') { currentUser = null; userIcon.classList.remove('logged-in'); userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`; resetUIOnLogout(); refreshVisibleComments(); } }); }
-function refreshVisibleComments() { document.querySelectorAll('.comments-section').forEach(section => { if (section.style.display === 'block') { const matchId = section.closest('.match-card').dataset.matchId; const listElement = section.querySelector('.comment-list'); if (matchId && listElement) { fetchAndRenderMatchComments(matchId, listElement); } } }); const articlePage = document.getElementById('article-page'); if (getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) { const articleId = document.getElementById('article-id-hidden-input').value; if (articleId) { fetchAndRenderNewsComments(articleId); } } }
+function refreshVisibleComments() { document.querySelectorAll('.comments-section').forEach(section => { if (section.style.display === 'block') { const matchId = section.closest('.match-card')?.dataset.matchId; const listElement = section.querySelector('.comment-list'); if (matchId && listElement) { fetchAndRenderMatchComments(matchId, listElement); } } }); const articlePage = document.getElementById('article-page'); if (articlePage && getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) { const articleId = document.getElementById('article-id-hidden-input')?.value; if (articleId) { fetchAndRenderNewsComments(articleId); } } }
 async function loadUserPredictions() { if (!currentUser) return; const { data, error } = await supabaseClient.from('predictions').select('match_id, predicted_winner, predicted_scorer').eq('user_id', currentUser.id); if (error) { console.error("Error fetching user predictions:", error); return; } data.forEach(p => { const matchCard = document.querySelector(`.match-card[data-match-id='${p.match_id}']`); if (matchCard) { const form = matchCard.querySelector('.prediction-form'); const winnerRadio = form.querySelector(`input[value="${p.predicted_winner}"]`); if (winnerRadio) winnerRadio.checked = true; const scorerInput = form.querySelector('.scorer-input'); if (scorerInput) scorerInput.value = p.predicted_scorer || '';[...form.elements].forEach(el => el.disabled = true); form.querySelector('.submit-btn').innerHTML = 'تم الإرسال ✅'; } }); }
 function resetUIOnLogout() { document.querySelectorAll('.prediction-form').forEach(form => { const matchCard = form.closest('.match-card'); const matchStatus = getMatchStatus(matchCard.dataset.datetime).state; if (matchStatus !== 'ended') { [...form.elements].forEach(el => { el.disabled = false; if (el.type === 'radio') el.checked = false; if (el.type === 'text') el.value = ''; }); form.querySelector('.submit-btn').innerHTML = 'إرسال التوقع'; } }); }
 async function initializePredictionsPage() { try { const container = document.getElementById('matches-container'); container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>'; const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true }); if (error) throw error; const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] })); container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`; initializeAppWithData(formattedMatches); } catch (error) { console.error("An error occurred:", error); document.getElementById('matches-container').innerHTML = '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>'; } }
