@@ -153,6 +153,9 @@ function initializeAuth() {
             userIcon.innerHTML = `<i class="fa-solid fa-user-pen"></i>`;
             resetUIOnLogout();
             refreshVisibleComments();
+            registerPushNotifications(); 
+    } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
         }
     });
 }
