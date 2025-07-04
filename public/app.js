@@ -8,6 +8,23 @@ const ADMIN_EMAIL = "your-email@example.com";
 const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
+let currentNewsSubPage = 'home'; // Moved to global scope for back button access
+
+// Moved to global scope for access from back button handler
+function navigateToSubPage(pageName) {
+    const newsHomePage = document.getElementById('home-page');
+    const newsArticlePage = document.getElementById('article-page');
+    currentNewsSubPage = pageName;
+    if (pageName === 'article') {
+        newsHomePage.style.transform = 'translateX(-100%)';
+        newsArticlePage.style.transform = 'translateX(0)';
+        newsArticlePage.scrollTop = 0;
+    } else {
+        newsHomePage.style.transform = 'translateX(0)';
+        newsArticlePage.style.transform = 'translateX(100%)';
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Check if Capacitor is available
@@ -50,7 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
+
+    // ===================================
+    //  NEW: Initialize new features
+    // ===================================
+    initializePullToRefresh();
+    initializeBackButtonHandler();
 });
+
 
 // ==========================================================
 // SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
@@ -222,9 +246,159 @@ function initializeAuth() {
 }
 
 
+// ==========================================================
+// NEW SECTION: PULL-TO-REFRESH & BACK BUTTON
+// ==========================================================
+
+/**
+ * Initializes Pull-to-Refresh functionality on scrollable pages.
+ */
+function initializePullToRefresh() {
+    // This indicator is created once and shown when needed.
+    const indicator = document.createElement('div');
+    indicator.className = 'pull-to-refresh-indicator-fixed';
+    document.body.appendChild(indicator);
+
+    // Refresh function for the article page (only refreshes comments)
+    const refreshArticleComments = async () => {
+        const articleId = document.getElementById('article-id-hidden-input').value;
+        if (articleId) {
+            await fetchAndRenderNewsComments(articleId);
+        }
+    };
+
+    const pages = [
+        { el: document.getElementById('predictions-page'), refreshFunc: initializePredictionsPage },
+        { el: document.getElementById('home-page'), refreshFunc: initializeNewsPage },
+        { el: document.getElementById('article-page'), refreshFunc: refreshArticleComments }
+    ];
+
+    const threshold = 80;
+    let startY = 0;
+    let isPulling = false;
+    let isRefreshing = false;
+
+    pages.forEach(pageInfo => {
+        const scrollableEl = pageInfo.el;
+
+        scrollableEl.addEventListener('touchstart', (e) => {
+            if (isRefreshing || scrollableEl.scrollTop !== 0) return;
+            isPulling = true;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
+        scrollableEl.addEventListener('touchmove', (e) => {
+            if (!isPulling || isRefreshing) return;
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+
+            if (diff > 0) { // Only when pulling down
+                indicator.style.display = 'flex';
+                const pullRatio = Math.min(diff / threshold, 1);
+                indicator.style.opacity = pullRatio;
+                indicator.style.transform = `translateY(${Math.min(diff, threshold + 20)}px) scale(${pullRatio})`;
+                
+                if (diff > threshold) {
+                    indicator.innerHTML = '<i class="fas fa-redo"></i>'; // Ready to refresh icon
+                } else {
+                    indicator.innerHTML = '<i class="fas fa-arrow-down"></i>'; // Pulling icon
+                }
+            }
+        }, { passive: true });
+
+        scrollableEl.addEventListener('touchend', async (e) => {
+            if (!isPulling || isRefreshing) return;
+            
+            isPulling = false;
+            const currentY = e.changedTouches[0].clientY;
+            const diff = currentY - startY;
+
+            if (diff > threshold) {
+                isRefreshing = true;
+                indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Refreshing icon
+                indicator.style.transition = 'opacity 0.3s, transform 0.3s';
+                indicator.style.opacity = 1;
+                indicator.style.transform = `translateY(30px) scale(1)`;
+
+                try {
+                    await pageInfo.refreshFunc();
+                } catch(err) {
+                    console.error("Refresh failed:", err);
+                } finally {
+                    // Hide indicator after refresh
+                    indicator.style.opacity = 0;
+                    indicator.style.transform = 'translateY(0) scale(0)';
+                    setTimeout(() => {
+                        indicator.style.display = 'none';
+                        indicator.style.transition = '';
+                        isRefreshing = false;
+                    }, 300);
+                }
+            } else {
+                // If not pulled enough, just hide the indicator
+                indicator.style.opacity = 0;
+            }
+        });
+    });
+}
+
+
+/**
+ * Initializes the hardware back button handler for native Android.
+ */
+function initializeBackButtonHandler() {
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+        return; // Only for native apps
+    }
+
+    const { App } = window.Capacitor.Plugins;
+
+    App.addListener('backButton', ({ canGoBack }) => {
+        const profilePage = document.getElementById('profile-page');
+        const authModal = document.getElementById('auth-modal');
+        const newsPage = document.getElementById('news-page');
+        const exitToast = document.getElementById('exit-toast');
+
+        // Priority 1: Close Profile Page if open
+        if (profilePage && profilePage.classList.contains('is-visible')) {
+            closeProfilePage();
+            return;
+        }
+
+        // Priority 2: Close Auth Modal if open
+        if (authModal && authModal.classList.contains('show')) {
+            authModal.classList.remove('show');
+            return;
+        }
+
+        // Priority 3: Navigate back from an article to the news list
+        if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') {
+            navigateToSubPage('home');
+            return;
+        }
+        
+        // Priority 4: If on News tab, switch to Predictions tab
+        if (!newsPage.classList.contains('hidden')) {
+            document.getElementById('nav-predictions-btn').click();
+            return;
+        }
+
+        // Last resort: We are on the main predictions page. Ask to exit.
+        if (!exitToast.classList.contains('show')) {
+            exitToast.classList.add('show');
+            setTimeout(() => {
+                exitToast.classList.remove('show');
+            }, 2000); // Hide after 2 seconds
+        } else {
+            // If the toast is already showing, exit the app.
+            App.exitApp();
+        }
+    });
+}
+
+
 // ======================================================================
-// باقي الملف يبقى كما هو تمامًا بدون تغيير
-// The rest of the file remains exactly the same
+// The rest of the file remains the same...
 // ======================================================================
 
 function refreshVisibleComments() {
@@ -407,15 +581,13 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-function initializeNewsPage() {
+async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
     const articleContent = document.getElementById('article-content');
-    const newsHomePage = document.getElementById('home-page');
     const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
     let articlesCache = [];
-    let currentNewsSubPage = 'home';
-
+    
     async function fetchArticlesFromDB() {
         articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
         const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
@@ -438,21 +610,35 @@ function initializeNewsPage() {
         navigateToSubPage('article');
         fetchAndRenderNewsComments(article.id);
     }
-    function navigateToSubPage(pageName) {
-        currentNewsSubPage = pageName;
-        if (pageName === 'article') { newsHomePage.style.transform = 'translateX(-100%)'; newsArticlePage.style.transform = 'translateX(0)'; newsArticlePage.scrollTop = 0; }
-        else { newsHomePage.style.transform = 'translateX(0)'; newsArticlePage.style.transform = 'translateX(100%)'; }
-    }
+    
     async function start() {
         const fetchedArticles = await fetchArticlesFromDB();
         if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
     }
+
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
-    let touchStartX = 0; newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true }); newsArticlePage.addEventListener('touchend', e => { const touchEndX = e.changedTouches[0].screenX; if (touchEndX > touchStartX && (touchEndX - touchStartX > 50)) { if (currentNewsSubPage === 'article') navigateToSubPage('home'); } }, { passive: true });
+    
+    // NEW: Enhanced swipe gesture
+    let touchStartX = 0;
+    newsArticlePage.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    newsArticlePage.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        // If there's a horizontal swipe of more than 50px, navigate back
+        if (Math.abs(touchEndX - touchStartX) > 50) {
+            if (currentNewsSubPage === 'article') {
+                navigateToSubPage('home');
+            }
+        }
+    }, { passive: true });
+    
     start();
 }
+
 
 async function fetchAndRenderNewsComments(articleId) {
     const commentsListDiv = document.getElementById('comments-list');
