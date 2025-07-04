@@ -27,12 +27,6 @@
         <div class="spinner"></div>
     </div>
 
-    <!-- Pull to Refresh Indicator -->
-    <div id="pull-to-refresh-indicator" class="pull-to-refresh-indicator">
-        <span class="ptr-arrow"><i class="fa-solid fa-arrow-down"></i></span>
-        <span class="ptr-spinner"><i class="fa-solid fa-spinner fa-spin"></i></span>
-    </div>
-
     <!-- Navigation Bar -->
     <nav class="bg-[#161b22] border-b border-[#30363d] p-3 sticky top-0 z-40">
         <div class="container mx-auto flex justify-center items-center gap-4">
@@ -40,6 +34,11 @@
             <button id="nav-news-btn" class="nav-btn text-gray-400 px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-newspaper ml-2"></i> أخبار كرة القدم</button>
         </div>
     </nav>
+    
+    <!-- Floating User Icon -->
+    <div class="floating-icon-container">
+        <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button>
+    </div>
 
     <!-- Predictions Page (Visible by default) -->
     <div id="predictions-page" class="page-container">
@@ -47,22 +46,29 @@
             <header><h1 class="text-2xl font-bold my-4 text-center"><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
             <main id="matches-container"></main>
         </div>
-        <div class="floating-icon-container" id="floating-icon-container">
-            <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button>
-        </div>
     </div>
     
     <!-- News Page (Hidden by default) -->
     <div id="news-page" class="page-container hidden relative overflow-hidden h-full">
-        <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
-        <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
-            <form id="comment-form" name="news-comment-form">
-                <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
-                <h3>أضف تعليقك</h3>
-                <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
-                <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
-            </form>
-        </div></div>
+        <!-- News Home (List of articles) -->
+        <div id="home-page" class="page">
+            <header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header>
+            <main id="articles-grid"></main>
+        </div>
+        <!-- Single Article Page -->
+        <div id="article-page" class="page">
+            <div id="article-content"></div>
+            <div class="comments-section">
+                <h2><i class="fa-solid fa-comments"></i> التعليقات</h2>
+                <div id="comments-list"></div>
+                <form id="comment-form" name="news-comment-form">
+                    <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
+                    <h3>أضف تعليقك</h3>
+                    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+                    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- MODAL FOR AUTHENTICATION -->
@@ -89,11 +95,8 @@
                 <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
             </div>
             <div id="loggedin-view" style="display: none;">
-                <h2>أهلاً بك!</h2>
-                <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
-                <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
-                    <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
-                </button>
+                <h2 id="user-email-display"></h2>
+                <button id="open-profile-btn" class="profile-btn"><i class="fa-solid fa-user-gear"></i> ملفي الشخصي</button>
                 <button id="logout-btn">تسجيل الخروج</button>
             </div>
             <div id="auth-message"></div>
@@ -128,7 +131,6 @@
 
     <!-- Toasts -->
     <div id="notification-toast"></div>
-    <div id="exit-toast">انقر مرة أخرى للخروج</div>
 
     <script src="capacitor.js"></script>
     <script src="app.js"></script>
