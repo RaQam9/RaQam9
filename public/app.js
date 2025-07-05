@@ -9,7 +9,7 @@ const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
 let currentNewsSubPage = 'home';
-let isOnline = true; // Global network status tracker
+let isOnline = true;
 
 // ==========================================================
 // SECTION 0.1: LIFECYCLE & INITIALIZATION
@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Capacitor is not available. Running in web mode.");
     }
 
-    // --- Initialize all features ---
     initializeNavigation();
     initializeAuth();
     initializeRealtimeListeners();
@@ -31,14 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePullToRefresh();
     initializeBackButtonHandler();
 
-    // The network listener will now trigger the first data load
-    initializeNetworkStatusListener();
+    // --- التعديل الرئيسي هنا: تأخير بسيط لضمان جهوزية كل شيء ---
+    setTimeout(() => {
+        console.log("Timer fired. Initializing network listener and data load.");
+        initializeNetworkStatusListener();
+    }, 150);
 });
 
 function initializeNavigation() {
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
-
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 }
@@ -48,9 +49,7 @@ function switchPage(pageToShow) {
     const newsPage = document.getElementById('news-page');
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
-
     if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
-    
     if (pageToShow === 'predictions') {
         predictionsPage.classList.remove('hidden');
         newsPage.classList.add('hidden');
@@ -83,67 +82,44 @@ function navigateToSubPage(pageName) {
 }
 
 // ==========================================================
-// SECTION 0.2: NETWORK & OFFLINE SUPPORT (CORRECTED)
+// SECTION 0.2: NETWORK & OFFLINE SUPPORT
 // ==========================================================
-
 async function initializeNetworkStatusListener() {
-    // This function is responsible for loading the initial data.
     const startDataLoad = () => {
         console.log("Starting initial data load...");
         initializePredictionsPage();
         initializeNewsPage();
     };
-
-    // Check for Capacitor's Network plugin (for native apps)
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Network) {
         console.log("Capacitor Network plugin found. Initializing...");
         const { Network } = window.Capacitor.Plugins;
-
-        // 1. Get the initial network status immediately.
         const status = await Network.getStatus();
-        handleNetworkChange(status.connected, false); // Update state without forcing a reload
-
-        // 2. Trigger the first data load right away.
+        handleNetworkChange(status.connected, false);
         startDataLoad();
-
-        // 3. Add a listener for any future network changes.
         Network.addListener('networkStatusChange', (status) => {
-            handleNetworkChange(status.connected, true); // Future changes should trigger a reload
+            handleNetworkChange(status.connected, true);
         });
     } else {
-        // Fallback for web browsers
         console.log("Network plugin not available. Using browser's navigator.onLine.");
-
-        // 1. Get the initial network status from the browser.
-        handleNetworkChange(navigator.onLine, false); // Update state without forcing a reload
-
-        // 2. Trigger the first data load right away. (THIS WAS THE MISSING PIECE)
+        handleNetworkChange(navigator.onLine, false);
         startDataLoad();
-        
-        // 3. Add listeners for future changes.
         window.addEventListener('online', () => handleNetworkChange(true, true));
         window.addEventListener('offline', () => handleNetworkChange(false, true));
     }
 }
 
 function handleNetworkChange(isConnected, shouldReload) {
-    // Only act if the network status has actually changed
     if (isOnline === isConnected && shouldReload) return;
-
     isOnline = isConnected;
     console.log(`Network status is now: ${isOnline ? 'Online' : 'Offline'}`);
     showOfflineToast(!isOnline);
     toggleFormInteractions(isOnline);
-
-    // If connection is restored and we are told to, refresh data.
     if (isOnline && shouldReload) {
         console.log("Connection restored. Refreshing data...");
-        // Re-initialize pages to fetch fresh data
         initializePredictionsPage();
         initializeNewsPage();
     }
 }
-
 
 function showOfflineToast(isOffline) {
     const toastId = 'offline-toast';
@@ -154,38 +130,24 @@ function showOfflineToast(isOffline) {
         toast.style.cssText = 'position:fixed; top:0; left:0; right:0; background-color:orange; color:black; font-weight:bold; padding:12px; text-align:center; z-index:9999; transition: transform 0.4s ease-in-out; transform: translateY(-100%); border-bottom: 3px solid rgba(0,0,0,0.2);';
         document.body.appendChild(toast);
     }
-
-    if (isOffline) {
-        toast.textContent = 'غير متصل. يتم عرض البيانات المحفوظة.';
-        toast.style.transform = 'translateY(0)';
-    } else {
-        // Hide the toast smoothly
-        toast.style.transform = 'translateY(-100%)';
-    }
+    toast.style.transform = isOffline ? 'translateY(0)' : 'translateY(-100%)';
 }
 
 function toggleFormInteractions(isOnline) {
     document.querySelectorAll('form[name="prediction-form"], form[name="match-comment-form"], form[name="news-comment-form"]').forEach(form => {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (!submitBtn) return;
-
         const originalText = submitBtn.dataset.originalText || submitBtn.textContent;
         if (!submitBtn.dataset.originalText) {
             submitBtn.dataset.originalText = originalText;
         }
-
-        if (isOnline) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-            submitBtn.style.opacity = '1';
-        } else {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'غير متصل';
-            submitBtn.style.opacity = '0.6';
-        }
+        submitBtn.disabled = !isOnline;
+        submitBtn.textContent = isOnline ? originalText : 'غير متصل';
+        submitBtn.style.opacity = isOnline ? '1' : '0.6';
     });
 }
-
+//... The rest of the functions are exactly the same as the previous correct version...
+// Just copy this entire block.
 // ==========================================================
 // SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
 // ==========================================================
@@ -438,17 +400,19 @@ function initializeBackButtonHandler() {
 
 async function initializePredictionsPage() {
     const container = document.getElementById('matches-container');
+    if (!container) {
+        console.error("CRITICAL: '#matches-container' not found.");
+        return;
+    }
     const cacheKey = 'cached_matches';
 
     const loadFromCache = () => {
         const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
-            console.log("Loading predictions from cache.");
             const formattedMatches = JSON.parse(cachedData);
             container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
             initializeAppWithData(formattedMatches);
         } else {
-            console.log("No cached predictions found.");
             container.innerHTML = '<p class="text-center text-red-500 mt-8">أنت غير متصل بالإنترنت ولا توجد بيانات محفوظة لعرضها.</p>';
         }
     };
@@ -458,18 +422,15 @@ async function initializePredictionsPage() {
             container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
             const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
             if (error) throw error;
-            
             const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
             container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
             initializeAppWithData(formattedMatches);
             localStorage.setItem(cacheKey, JSON.stringify(formattedMatches));
-            console.log("Fetched and cached new predictions.");
         } catch (error) {
             console.error("Error fetching matches, falling back to cache:", error);
             loadFromCache();
         }
     } else {
-        console.log("Offline mode: attempting to load predictions from cache.");
         loadFromCache();
     }
 }
@@ -500,16 +461,18 @@ function initializeAppWithData(matchesData) {
 
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
+    if (!articlesGrid) {
+        console.error("CRITICAL: '#articles-grid' not found.");
+        return;
+    }
     const cacheKey = 'cached_articles';
 
     const loadFromCache = () => {
         const cachedData = localStorage.getItem(cacheKey);
         if (cachedData) {
-            console.log("Loading news from cache.");
             const articles = JSON.parse(cachedData);
             renderArticleCards(articles);
         } else {
-            console.log("No cached news found.");
             articlesGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">أنت غير متصل بالإنترنت ولا توجد أخبار محفوظة لعرضها.</p>';
         }
     };
@@ -521,13 +484,11 @@ async function initializeNewsPage() {
             if (error) throw error;
             renderArticleCards(data);
             localStorage.setItem(cacheKey, JSON.stringify(data));
-            console.log("Fetched and cached new articles.");
         } catch (error) {
             console.error("Error fetching news, falling back to cache:", error);
             loadFromCache();
         }
     } else {
-        console.log("Offline mode: attempting to load news from cache.");
         loadFromCache();
     }
 }
@@ -555,9 +516,8 @@ function renderArticleCards(articles) {
     toggleFormInteractions(isOnline);
 }
 
-
 // ======================================================================
-// ALL OTHER FUNCTIONS (UNCHANGED)
+// ALL OTHER FUNCTIONS
 // ======================================================================
 
 async function handleFormSubmit(form) {
