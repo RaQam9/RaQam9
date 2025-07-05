@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         StatusBar.setStyle({ style: Style.Dark });
         
         // منع المحتوى من الظهور خلف شريط الحالة
-        StatusBar.setOverlaysWebView({ overlay: false });
+        StatusBar.setOverlaysWebView({ overlay: true });
 
         // إخفاء شاشة البداية بعد أن يتم تحميل الصفحة
         SplashScreen.hide();
