@@ -12,11 +12,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. إعداد Java 17
+      # 2. إعداد Java 21
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       # 3. إعداد Node.js 20
