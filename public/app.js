@@ -30,12 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePullToRefresh();
     initializeBackButtonHandler();
 
-    // --- التعديل الرئيسي هنا: تأخير بسيط لضمان جهوزية كل شيء ---
-    // This is the main fix: A short delay ensures everything is ready before loading data.
-    setTimeout(() => {
-        console.log("Timer fired. Initializing network listener and data load.");
-        initializeNetworkStatusListener();
-    }, 150);
+    // --- التعديل الرئيسي هنا: تم إزالة التأخير (setTimeout) ---
+    // The artificial delay has been removed to start the loading process immediately.
+    initializeNetworkStatusListener();
 });
 
 function initializeNavigation() {
@@ -111,7 +108,7 @@ async function initializeNetworkStatusListener() {
 }
 
 function handleNetworkChange(isConnected, shouldReload) {
-    if (isOnline === isConnected && shouldReload) return;
+    if (isOnline === isConnected && !shouldReload) return;
     isOnline = isConnected;
     console.log(`Network status is now: ${isOnline ? 'Online' : 'Offline'}`);
     showOfflineToast(!isOnline);
@@ -518,7 +515,7 @@ function renderArticleCards(articles) {
 }
 
 // ======================================================================
-// ALL OTHER FUNCTIONS (UNCHANGED)
+// OTHER FUNCTIONS
 // ======================================================================
 
 async function handleFormSubmit(form) {
@@ -812,7 +809,8 @@ function initializeGlobalEventListeners() {
     let touchStartX = 0;
     newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
     newsArticlePage.addEventListener('touchend', e => {
-        if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 50) {
+        const touchEndX = e.changedTouches[0].screenX;
+        if (Math.abs(touchEndX - touchStartX) > 50 && touchEndX > touchStartX) { // Swipe Right
             if (currentNewsSubPage === 'article') navigateToSubPage('home');
         }
     }, { passive: true });
@@ -882,7 +880,7 @@ async function handleUpdateUsername(e) {
     const newUsername = usernameInput.value.trim();
     if (newUsername.length < 3) { statusP.textContent = 'يجب أن يكون الاسم 3 أحرف على الأقل.'; statusP.style.color = 'var(--danger-color)'; return; }
     btn.disabled = true; btn.textContent = '...'; statusP.textContent = 'جاري الحفظ...'; statusP.style.color = 'var(--secondary-text-color)';
-    const { error } = await supabaseClient.auth.updateUser({ data: { username: newUsername } });
+    const { data, error } = await supabaseClient.auth.updateUser({ data: { username: newUsername } });
     if (error) { statusP.textContent = `خطأ: ${error.message}`; statusP.style.color = 'var(--danger-color)'; } 
     else { statusP.textContent = 'تم حفظ الاسم بنجاح!'; statusP.style.color = 'var(--success-color)'; currentUser.user_metadata.username = newUsername; }
     btn.disabled = false; btn.textContent = 'حفظ';
