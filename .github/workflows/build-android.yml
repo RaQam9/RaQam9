@@ -19,11 +19,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. إعداد Node.js 18
+      # 3. إعداد Node.js 20
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       # 4. تثبيت كل الأدوات اللازمة
