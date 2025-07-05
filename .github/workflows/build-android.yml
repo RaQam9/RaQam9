@@ -29,7 +29,6 @@ jobs:
       - name: Add Android Platform
         run: npx cap add android
 
-      # 6. توليد الأيقونات
 - name: Generate Resources
   run: npx capacitor-assets generate
 
