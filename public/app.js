@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeProfilePageListeners();
 
     // ===================================
-    //  NEW: Initialize new features
+    //  Initialize new features
     // ===================================
     initializePullToRefresh();
     initializeBackButtonHandler();
@@ -247,19 +247,18 @@ function initializeAuth() {
 
 
 // ==========================================================
-// NEW SECTION: PULL-TO-REFRESH & BACK BUTTON
+//  (MODIFIED) PULL-TO-REFRESH & BACK BUTTON
 // ==========================================================
 
 /**
  * Initializes Pull-to-Refresh functionality on scrollable pages.
+ * (IMPROVED VERSION)
  */
 function initializePullToRefresh() {
-    // This indicator is created once and shown when needed.
     const indicator = document.createElement('div');
     indicator.className = 'pull-to-refresh-indicator-fixed';
     document.body.appendChild(indicator);
 
-    // Refresh function for the article page (only refreshes comments)
     const refreshArticleComments = async () => {
         const articleId = document.getElementById('article-id-hidden-input').value;
         if (articleId) {
@@ -282,41 +281,64 @@ function initializePullToRefresh() {
         const scrollableEl = pageInfo.el;
 
         scrollableEl.addEventListener('touchstart', (e) => {
-            if (isRefreshing || scrollableEl.scrollTop !== 0) return;
-            isPulling = true;
-            startY = e.touches[0].clientY;
+            // لا تبدأ السحب إلا إذا كنا في الأعلى.
+            if (scrollableEl.scrollTop === 0 && !isRefreshing) {
+                isPulling = true;
+                startY = e.touches[0].clientY;
+            }
         }, { passive: true });
 
         scrollableEl.addEventListener('touchmove', (e) => {
-            if (!isPulling || isRefreshing) return;
+            // إذا لم يكن السحب مفعلًا، أو كنا نقوم بالتحديث، أو لم نعد في الأعلى، فتوقف.
+            if (!isPulling || isRefreshing || scrollableEl.scrollTop !== 0) {
+                isPulling = false; // نلغي السحب إذا بدأ المستخدم بالتمرير للأسفل قبل التحديث
+                return;
+            }
+
             const currentY = e.touches[0].clientY;
             const diff = currentY - startY;
 
-            if (diff > 0) { // Only when pulling down
+            // فقط قم بتفعيل المؤشر عند السحب للأسفل
+            if (diff > 0) { 
+                // منع التمرير الافتراضي للصفحة أثناء السحب للتحديث
+                e.preventDefault(); 
+                
                 indicator.style.display = 'flex';
                 const pullRatio = Math.min(diff / threshold, 1);
                 indicator.style.opacity = pullRatio;
                 indicator.style.transform = `translateY(${Math.min(diff, threshold + 20)}px) scale(${pullRatio})`;
                 
                 if (diff > threshold) {
-                    indicator.innerHTML = '<i class="fas fa-redo"></i>'; // Ready to refresh icon
+                    indicator.innerHTML = '<i class="fas fa-redo"></i>'; // أيقونة الاستعداد للتحديث
                 } else {
-                    indicator.innerHTML = '<i class="fas fa-arrow-down"></i>'; // Pulling icon
+                    indicator.innerHTML = '<i class="fas fa-arrow-down"></i>'; // أيقونة السحب
                 }
+            } else {
+                // إذا بدأ المستخدم بالسحب للأعلى بعد أن كان يسحب للأسفل، ألغِ العملية
+                isPulling = false;
             }
-        }, { passive: true });
+        }, { passive: false }); // غيرنا passive إلى false للسماح بـ e.preventDefault()
 
         scrollableEl.addEventListener('touchend', async (e) => {
-            if (!isPulling || isRefreshing) return;
+            if (!isPulling || isRefreshing) {
+                return; // إذا لم تكن هناك عملية سحب جارية، لا تفعل شيئًا
+            }
             
-            isPulling = false;
+            // نخفي المؤشر تدريجيًا
+            indicator.style.transition = 'opacity 0.3s, transform 0.3s';
+            indicator.style.opacity = 0;
+            indicator.style.transform = 'translateY(0) scale(0)';
+            
             const currentY = e.changedTouches[0].clientY;
             const diff = currentY - startY;
+            
+            // نضع isPulling = false الآن لتجنب أي تفعيلات خاطئة
+            isPulling = false;
 
             if (diff > threshold) {
                 isRefreshing = true;
-                indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Refreshing icon
-                indicator.style.transition = 'opacity 0.3s, transform 0.3s';
+                // نعرض أيقونة التحميل فورًا
+                indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 indicator.style.opacity = 1;
                 indicator.style.transform = `translateY(30px) scale(1)`;
 
@@ -325,18 +347,17 @@ function initializePullToRefresh() {
                 } catch(err) {
                     console.error("Refresh failed:", err);
                 } finally {
-                    // Hide indicator after refresh
+                    // بعد انتهاء التحديث، نخفي المؤشر مرة أخرى (قد يكون ضرورياً إذا انتهى التحديث بسرعة)
                     indicator.style.opacity = 0;
                     indicator.style.transform = 'translateY(0) scale(0)';
+                    
+                    // ننتظر انتهاء الأنيميشن قبل إخفاء العنصر بالكامل وإعادة تعيين الحالة
                     setTimeout(() => {
                         indicator.style.display = 'none';
-                        indicator.style.transition = '';
+                        indicator.style.transition = ''; // نزيل الانتقال المؤقت
                         isRefreshing = false;
                     }, 300);
                 }
-            } else {
-                // If not pulled enough, just hide the indicator
-                indicator.style.opacity = 0;
             }
         });
     });
