@@ -1080,3 +1080,48 @@ window.addEventListener('load', () => {
         loader.style.display = 'none';
     }
 });
+
+// app.js
+
+/**
+ * دالة محدّثة لمشاركة المحتوى (Capacitor-first).
+ * @param {string} title - عنوان المحتوى.
+ * @param {string} text - نص المحتوى.
+ * @param {string} url - الرابط.
+ */
+async function shareContent(title, text, url) {
+    // التحقق مما إذا كنا نعمل داخل تطبيق Capacitor أصلي
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { Share } = window.Capacitor.Plugins;
+        try {
+            await Share.share({
+                title: title,
+                text: text,
+                url: url,
+                dialogTitle: 'مشاركة المقال مع أصدقائك', // عنوان يظهر على أندرويد
+            });
+        } catch (err) {
+            console.error('Capacitor Share Error:', err);
+            // كحل بديل داخل التطبيق، يمكننا نسخ الرابط
+            await navigator.clipboard.writeText(url);
+            showNotification('تم نسخ الرابط بنجاح!');
+        }
+    } 
+    // إذا لم نكن في بيئة Capacitor، نستخدم Web Share API
+    else if (navigator.share) {
+        try {
+            await navigator.share({ title, text, url });
+        } catch (err) {
+            console.error('Web Share API Error:', err);
+        }
+    } 
+    // الحل الأخير: نسخ الرابط للمتصفحات القديمة
+    else {
+        try {
+            await navigator.clipboard.writeText(url);
+            showNotification('تم نسخ رابط المقال بنجاح!');
+        } catch (err) {
+            console.error('Clipboard API Error:', err);
+        }
+    }
+}
