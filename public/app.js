@@ -685,7 +685,20 @@ async function initializeNewsPage() {
     function renderArticleDetail(articleId) {
         const article = articlesCache.find(a => a.id === articleId); if (!article) return;
         document.getElementById('article-id-hidden-input').value = article.id;
-        articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
+        
+        // ===================================
+        // ==== تعديل: إضافة زر المشاركة ====
+        // ===================================
+        articleContent.innerHTML = `
+            <div id="article-header">
+                <h1>${article.title}</h1>
+                <button id="share-article-btn" class="share-btn" data-article-id="${article.id}" data-article-title="${article.title}">
+                    <i class="fa-solid fa-share-nodes"></i> مشاركة
+                </button>
+            </div>
+            <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+            <div>${article.content}</div>`;
+        
         navigateToSubPage('article');
         fetchAndRenderNewsComments(article.id);
     }
@@ -716,6 +729,55 @@ async function initializeNewsPage() {
     }, { passive: true });
     
     start();
+}
+
+
+// ===================================
+// ==== إضافة: دالة المشاركة الجديدة ====
+// ===================================
+/**
+ * Handles sharing an article.
+ * It prioritizes Capacitor Share, then Web Share API, and falls back to copying to clipboard.
+ * @param {string} articleId - The ID of the article to share.
+ * @param {string} articleTitle - The title of the article.
+ */
+async function handleShareArticle(articleId, articleTitle) {
+    // بناء رابط فريد للمقال يمكن مشاركته
+    const shareUrl = `${window.location.origin}${window.location.pathname}?article=${articleId}`;
+    const shareData = {
+        title: articleTitle,
+        text: `اطلع على هذا الخبر: "${articleTitle}"`,
+        url: shareUrl,
+    };
+
+    try {
+        // 1. الأولوية لتطبيق Capacitor الأصلي
+        if (window.Capacitor && window.Capacitor.Plugins.Share) {
+            console.log("Using Capacitor Share API");
+            await window.Capacitor.Plugins.Share.share(shareData);
+            return; // تمت المشاركة بنجاح
+        }
+
+        // 2. المحاولة الثانية: استخدام Web Share API في المتصفحات الداعمة
+        if (navigator.share) {
+            console.log("Using Web Share API");
+            await navigator.share(shareData);
+            return; // تمت المشاركة بنجاح
+        }
+
+        // 3. الحل البديل: نسخ الرابط إلى الحافظة
+        console.log("Fallback: Copying to clipboard");
+        await navigator.clipboard.writeText(shareUrl);
+        showNotification('✅ تم نسخ رابط المقال إلى الحافظة!');
+
+    } catch (err) {
+        // تجاهل الأخطاء الناتجة عن إلغاء المستخدم لعملية المشاركة
+        if (err.name !== 'AbortError' && !err.message.includes('Share canceled')) {
+            console.error('Share failed:', err);
+            // إظهار إشعار في حالة فشل النسخ
+            showNotification('❌ فشلت عملية المشاركة أو النسخ.');
+        }
+    }
 }
 
 
@@ -852,6 +914,8 @@ function initializeRealtimeListeners() {
 
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
+        
+        // --- مستمع حدث لحذف التعليقات (موجود مسبقاً) ---
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
@@ -873,6 +937,19 @@ function initializeGlobalEventListeners() {
                     }
                     showNotification('تم حذف التعليق بنجاح.');
                 } catch (error) { console.error('Error deleting comment:', error); alert('حدث خطأ أثناء حذف التعليق.'); }
+            }
+        }
+
+        // ===============================================
+        // ==== تعديل: إضافة مستمع لزر المشاركة الجديد ====
+        // ===============================================
+        const shareBtn = e.target.closest('#share-article-btn');
+        if (shareBtn) {
+            e.preventDefault();
+            const articleId = shareBtn.dataset.articleId;
+            const articleTitle = shareBtn.dataset.articleTitle;
+            if (articleId && articleTitle) {
+                handleShareArticle(articleId, articleTitle);
             }
         }
     });
