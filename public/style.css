@@ -824,3 +824,30 @@ body {
     overflow-y: auto;          /* إضافة شريط تمرير داخلي عند الحاجة */
     overflow-x: hidden;        /* منع التمرير الأفقي */
 }
+
+/* style.css */
+
+/* ... (في نهاية الملف) ... */
+
+/* =================================== */
+/*   STYLES FOR IMAGE PLACEHOLDERS     */
+/* =================================== */
+
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--border-color); /* لون خلفية رمادي داكن */
+    color: var(--secondary-text-color);   /* لون الأيقونة رمادي فاتح */
+    width: 100%;
+    height: 180px; /* نفس ارتفاع الصورة في بطاقة المقال */
+    font-size: 3rem; /* حجم الأيقونة */
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#article-page .image-placeholder {
+    height: 250px; /* ارتفاع مختلف للصورة في صفحة المقال */
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
