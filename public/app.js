@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeBackButtonHandler();
 
     // --- التعديل الرئيسي هنا: تأخير بسيط لضمان جهوزية كل شيء ---
+    // This is the main fix: A short delay ensures everything is ready before loading data.
     setTimeout(() => {
         console.log("Timer fired. Initializing network listener and data load.");
         initializeNetworkStatusListener();
@@ -85,6 +86,7 @@ function navigateToSubPage(pageName) {
 // SECTION 0.2: NETWORK & OFFLINE SUPPORT
 // ==========================================================
 async function initializeNetworkStatusListener() {
+    // This function will now be the single starting point for loading data.
     const startDataLoad = () => {
         console.log("Starting initial data load...");
         initializePredictionsPage();
@@ -95,14 +97,14 @@ async function initializeNetworkStatusListener() {
         const { Network } = window.Capacitor.Plugins;
         const status = await Network.getStatus();
         handleNetworkChange(status.connected, false);
-        startDataLoad();
+        startDataLoad(); // Data load is called AFTER network check.
         Network.addListener('networkStatusChange', (status) => {
             handleNetworkChange(status.connected, true);
         });
     } else {
         console.log("Network plugin not available. Using browser's navigator.onLine.");
         handleNetworkChange(navigator.onLine, false);
-        startDataLoad();
+        startDataLoad(); // Data load is called AFTER network check.
         window.addEventListener('online', () => handleNetworkChange(true, true));
         window.addEventListener('offline', () => handleNetworkChange(false, true));
     }
@@ -146,8 +148,7 @@ function toggleFormInteractions(isOnline) {
         submitBtn.style.opacity = isOnline ? '1' : '0.6';
     });
 }
-//... The rest of the functions are exactly the same as the previous correct version...
-// Just copy this entire block.
+
 // ==========================================================
 // SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
 // ==========================================================
@@ -517,7 +518,7 @@ function renderArticleCards(articles) {
 }
 
 // ======================================================================
-// ALL OTHER FUNCTIONS
+// ALL OTHER FUNCTIONS (UNCHANGED)
 // ======================================================================
 
 async function handleFormSubmit(form) {
