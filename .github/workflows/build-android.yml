@@ -6,6 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       # 1. سحب الكود
       - name: Checkout Code
@@ -29,13 +30,13 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 5. إضافة منصة الأندرويد (سينشئ مجلد android نظيف)
+      # 5. إضافة منصة الأندرويد
       - name: Add Android Platform
         run: npx cap add android
 
-      # 6. توليد الأيقونات ووضعها في مجلد android الذي تم إنشاؤه
+      # 6. توليد الأيقونات
       - name: Generate Resources
-  run: npx capacitor-assets generate --android --asset-path=./
+        run: npx capacitor-assets generate --android --asset-path=./
 
       # 7. نسخ ملف إعدادات Firebase
       - name: Copy Google Services File
