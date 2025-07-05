@@ -27,6 +27,41 @@ function navigateToSubPage(pageName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // =============================================
+    // ==== الأكواد المضافة لدعم PWA والأوفلاين ====
+    // =============================================
+    // 1. تسجيل الـ Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
+    }
+
+    // 2. إدارة إظهار وإخفاء شريط حالة الاتصال
+    const offlineStatusDiv = document.getElementById('offline-status');
+    const handleConnectionChange = () => {
+        if (navigator.onLine) {
+            offlineStatusDiv.style.display = 'none';
+        } else {
+            offlineStatusDiv.style.display = 'block';
+        }
+    };
+
+    window.addEventListener('online', handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
+
+    // التحقق من الحالة عند تحميل الصفحة لأول مرة
+    handleConnectionChange();
+    // =============================================
+
+
     // Check if Capacitor is available
     if (window.Capacitor) {
         console.log("Capacitor is available.");
@@ -479,12 +514,22 @@ async function initializePredictionsPage() {
         const container = document.getElementById('matches-container');
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
         const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
-        if (error) throw error;
+        if (error) {
+            // في حال وجود خطأ (مثل عدم وجود انترنت)، لا نعرض رسالة الخطأ
+            // لأن الـ Service Worker سيقوم بعرض النسخة المخزنة
+            // سنعرض الخطأ فقط إذا كان المستخدم متصلاً وفشل الطلب
+            if (navigator.onLine) {
+                 throw error;
+            }
+            console.warn('Failed to fetch matches, but hopefully serving from cache.', error);
+            // لا تفعل شيئا آخر هنا، دع الكاش يتولى الأمر
+            return;
+        }
         const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
     } catch (error) {
-        console.error("An error occurred:", error);
+        console.error("An error occurred while fetching predictions:", error);
         document.getElementById('matches-container').innerHTML = '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>';
     }
 }
@@ -497,6 +542,7 @@ function initializeAppWithData(matchesData) {
     function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
     function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
     async function handleFormSubmit(form) {
+        if (!navigator.onLine) { alert('لا يمكن إرسال البيانات وأنت غير متصل بالإنترنت.'); return; }
         const submitBtn = form.querySelector('button[type="submit"]');
         if (!currentUser) { alert('الرجاء تسجيل الدخول أولاً للمشاركة.'); document.getElementById('user-icon-btn').click(); return; }
         submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; submitBtn.disabled = true;
@@ -535,7 +581,11 @@ function initializeAppWithData(matchesData) {
                 .eq('match_id', matchId)
                 .order('created_at', { ascending: true });
             
-            if (error) throw error;
+            if (error) {
+                if (navigator.onLine) throw error;
+                console.warn('Failed to fetch comments, hopefully serving from cache.');
+                return;
+            }
             listElement.innerHTML = '';
             const commentsById = {};
             const rootComments = [];
@@ -612,7 +662,15 @@ async function initializeNewsPage() {
     async function fetchArticlesFromDB() {
         articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
         const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
-        if (error) { console.error("Supabase error:", error); articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; return null; }
+        if (error) { 
+             if (navigator.onLine) {
+                console.error("Supabase error:", error); 
+                articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; 
+             } else {
+                console.warn('Failed to fetch articles, hopefully serving from cache.');
+             }
+             return null;
+        }
         return data;
     }
     function renderArticleCards(articles) {
@@ -672,7 +730,11 @@ async function fetchAndRenderNewsComments(articleId) {
             .eq('article_id', articleId)
             .order('created_at', { ascending: true });
             
-        if (error) throw error;
+        if (error) {
+             if (navigator.onLine) throw error;
+             console.warn('Failed to fetch news comments, hopefully serving from cache.');
+             return;
+        }
         commentsListDiv.innerHTML = '';
         const commentsById = {};
         const rootComments = [];
@@ -734,6 +796,7 @@ function addNewsCommentToDOM(container, commentData) {
 
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
+    if (!navigator.onLine) { alert('لا يمكن إرسال البيانات وأنت غير متصل بالإنترنت.'); return; }
     const submitBtn = document.getElementById('submit-comment-btn');
     if (!currentUser) { alert('يجب تسجيل الدخول أولاً للتعليق.'); document.getElementById('user-icon-btn').click(); return; }
     submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
@@ -792,6 +855,7 @@ function initializeGlobalEventListeners() {
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
+            if (!navigator.onLine) { alert('لا يمكن حذف التعليق وأنت غير متصل بالإنترنت.'); return; }
             const commentId = deleteBtn.dataset.commentId;
             const tableName = deleteBtn.dataset.tableName;
             const isConfirmed = confirm('هل أنت متأكد من أنك تريد حذف هذا التعليق؟');
@@ -888,8 +952,12 @@ async function fetchAndRenderProfilePredictions() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error fetching profile predictions:", error);
-        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        if(navigator.onLine) {
+            console.error("Error fetching profile predictions:", error);
+            predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        } else {
+            predictionsListDiv.innerHTML = '<p class="text-gray-400">لا يمكن عرض التوقعات وأنت غير متصل.</p>';
+        }
         return;
     }
     if (data.length === 0) {
@@ -927,7 +995,11 @@ async function fetchAndRenderProfileComments() {
     ]);
 
     if (matchComments.error || newsComments.error) {
-        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        if (navigator.onLine) {
+            commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        } else {
+            commentsListDiv.innerHTML = '<p class="text-gray-400">لا يمكن عرض التعليقات وأنت غير متصل.</p>';
+        }
         return;
     }
     
@@ -949,6 +1021,7 @@ async function fetchAndRenderProfileComments() {
 }
 
 async function handleUpdateUsername(e) {
+    if (!navigator.onLine) { alert('لا يمكن تعديل البيانات وأنت غير متصل بالإنترنت.'); return; }
     const btn = e.target;
     const usernameInput = document.getElementById('profile-username-input');
     const statusP = document.getElementById('username-status');
@@ -980,6 +1053,7 @@ async function handleUpdateUsername(e) {
 
 async function handleDeleteComment(e) {
     if (!e.target.classList.contains('delete-comment-btn-profile')) return;
+    if (!navigator.onLine) { alert('لا يمكن حذف التعليق وأنت غير متصل بالإنترنت.'); return; }
     const btn = e.target;
     const commentId = btn.dataset.commentId;
     const tableName = btn.dataset.table;
