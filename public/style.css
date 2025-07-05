@@ -851,3 +851,46 @@ body {
     border-radius: 8px;
     margin-bottom: 20px;
 }
+
+/* =================================== */
+/*   STYLES FOR ARTICLE SHARE BUTTON   */
+/*   تنسيقات زر مشاركة المقال       */
+/* =================================== */
+
+/* هذا الجزء يجعل العنوان وزر المشاركة بجانب بعضهما */
+#news-page #article-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem; /* مسافة بين العنوان والزر */
+    margin-bottom: 20px; /* زيادة المسافة السفلية للتنسيق */
+}
+
+/* هذا الجزء يخصص مساحة أكبر للعنوان */
+#news-page #article-header h1 {
+   flex-grow: 1; /* يسمح للعنوان بأخذ المساحة المتاحة */
+   margin-bottom: 0; /* إزالة الهامش السفلي من العنوان لأنه موجود الآن في الحاوية */
+}
+
+/* هذا الجزء ينسق زر المشاركة نفسه */
+#share-article-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif; /* ضمان استخدام نفس الخط */
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: inline-flex; /* لترتيب الأيقونة والنص بالداخل */
+    align-items: center;
+    gap: 0.5rem; /* مسافة بين الأيقونة والنص */
+    flex-shrink: 0; /* يمنع الزر من التقلص إذا كان العنوان طويلاً */
+    transition: background-color 0.2s;
+}
+
+/* تأثير عند مرور الفأرة فوق الزر */
+#share-article-btn:hover {
+    background-color: #2563eb; /* درجة أغمق من اللون الأزرق */
+}
