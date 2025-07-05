@@ -6,9 +6,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. سحب الكود
       - name: Checkout Code
         uses: actions/checkout@v4
 
