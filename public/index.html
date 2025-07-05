@@ -24,51 +24,59 @@
     
     <link rel="stylesheet" href="style.css">
 </head>
-<!-- ✨✨ التعديل الأول: جعل body حاوية مرنة تملأ الشاشة ولا يمكن تمريرها ✨✨ -->
-<body class="bg-[#0d1117] font-tajawal h-screen overflow-hidden flex flex-col">
+<!-- ✨ التعديل 1: إزالة كلاسات flex من الـ body ✨ -->
+<body class="bg-[#0d1117] font-tajawal">
 
-    <!-- Splash Screen / Loader -->
-    <div id="loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; z-index: 9999; display: flex; justify-content: center; align-items: center;">
-        <style>.spinner{width:50px;height:50px;border:5px solid #30363d;border-top-color:#2f81f7;border-radius:50%;animation:spin 1s linear infinite;}@keyframes spin{to{transform:rotate(360deg);}}</style>
-        <div class="spinner"></div>
-    </div>
-    
-    <!-- Navigation Bar (لم يعد بحاجة لـ sticky) -->
-    <nav class="bg-[#161b22] border-b border-[#30363d] p-3 pb-4 z-50">
-        <div class="container mx-auto flex justify-center items-center gap-4">
-            <button id="nav-predictions-btn" class="nav-btn bg-blue-600 text-white px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-trophy ml-2"></i> توقعات المباريات</button>
-            <button id="nav-news-btn" class="nav-btn text-gray-400 px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-newspaper ml-2"></i> أخبار كرة القدم</button>
-        </div>
-    </nav>
+    <!-- ✨ التعديل 2: إضافة حاوية رئيسية للتطبيق ✨ -->
+    <div id="app-container" class="h-screen w-screen flex flex-col">
+        <!-- Navigation Bar (جزء من التخطيط الرئيسي) -->
+        <nav class="bg-[#161b22] border-b border-[#30363d] p-3 pb-4 z-10">
+            <div class="container mx-auto flex justify-center items-center gap-4">
+                <button id="nav-predictions-btn" class="nav-btn bg-blue-600 text-white px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-trophy ml-2"></i> توقعات المباريات</button>
+                <button id="nav-news-btn" class="nav-btn text-gray-400 px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-newspaper ml-2"></i> أخبار كرة القدم</button>
+            </div>
+        </nav>
 
-    <!-- ✨✨ التعديل الثاني: إضافة حاوية رئيسية قابلة للتمرير ✨✨ -->
-    <main class="flex-grow overflow-y-auto relative">
-        <!-- Predictions Page -->
-        <div id="predictions-page" class="page-container p-4">
-            <div class="container mx-auto">
-                <h1 class="text-2xl font-bold mb-4 text-white"><i class="fa-solid fa-trophy text-blue-400"></i> توقعات المباريات</h1>
-                <div id="matches-container" class="mt-4">
-                    <!-- Content is loaded by JavaScript -->
+        <!-- Main Content Area (جزء من التخطيط الرئيسي وقابل للتمرير) -->
+        <main class="flex-grow overflow-y-auto relative">
+            <!-- Predictions Page -->
+            <div id="predictions-page" class="page-container p-4">
+                <div class="container mx-auto">
+                    <h1 class="text-2xl font-bold mb-4 text-white"><i class="fa-solid fa-trophy text-blue-400"></i> توقعات المباريات</h1>
+                    <div id="matches-container" class="mt-4">
+                        <!-- Content is loaded by JavaScript -->
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- News Page -->
-        <div id="news-page" class="page-container hidden p-4">
-             <div id="home-page" class="page absolute w-full h-full transition-transform duration-300 ease-in-out p-4"><h1 class="text-2xl font-bold mb-4 text-white"><i class="fa-solid fa-newspaper text-blue-400"></i> أخبار كرة القدم</h1><main id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></main></div>
-             <div id="article-page" class="page absolute w-full h-full transition-transform duration-300 ease-in-out transform translate-x-full bg-[#0d1117] overflow-y-auto p-4"><div id="article-content"></div><div id="comments-section" class="comments-section mt-8"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
-                <form id="comment-form" name="news-comment-form">
-                    <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
-                    <h3>أضف تعليقك</h3>
-                    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
-                    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
-                </form>
-            </div></div>
-        </div>
-    </main>
+            
+            <!-- News Page -->
+            <div id="news-page" class="page-container hidden p-4">
+                <div id="home-page" class="page absolute inset-0 transition-transform duration-300 ease-in-out p-4 overflow-y-auto">
+                    <h1 class="text-2xl font-bold mb-4 text-white"><i class="fa-solid fa-newspaper text-blue-400"></i> أخبار كرة القدم</h1>
+                    <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div id="article-page" class="page absolute inset-0 transition-transform duration-300 ease-in-out transform translate-x-full bg-[#0d1117] overflow-y-auto p-4">
+                    <div id="article-content"></div>
+                    <div id="comments-section" class="comments-section mt-8">
+                        <h2><i class="fa-solid fa-comments"></i> التعليقات</h2>
+                        <div id="comments-list"></div>
+                        <form id="comment-form" name="news-comment-form">
+                            <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
+                            <h3>أضف تعليقك</h3>
+                            <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+                            <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    <!-- العناصر العائمة والمودال تبقى خارج منطقة التمرير الرئيسية -->
+    <!-- ✨ التعديل 3: كل العناصر العائمة والنوافذ المنبثقة الآن خارج الحاوية الرئيسية ✨ -->
+    <!-- Floating Icon -->
     <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
+    
+    <!-- Auth Modal -->
     <div class="modal" id="auth-modal">
         <div class="modal-content">
             <span class="close-button" id="close-auth-modal-btn">×</span>
@@ -91,14 +99,24 @@
             <div id="auth-message"></div>
         </div>
     </div>
-    <div id="notification-toast"></div>
-    <div id="exit-toast">انقر مرة أخرى للخروج</div>
+
+    <!-- Profile Page -->
     <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
         <header class="flex items-center justify-between pb-4 border-b border-[#30363d] mb-6">
             <h1 class="text-2xl font-bold text-white"><i class="fa-solid fa-user-circle ml-3"></i>الملف الشخصي</h1>
             <button id="close-profile-btn" class="text-2xl text-gray-400">×</button>
         </header>
         <main><section id="username-section" class="mb-8 p-4 bg-[#161b22] rounded-lg border border-[#30363d]"><h2 class="text-lg font-bold mb-3 text-white">تغيير اسم المستخدم</h2><div class="flex gap-2"><input type="text" id="profile-username-input" class="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2 text-white" placeholder="اسم المستخدم الجديد..."><button id="save-username-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold">حفظ</button></div><p id="username-status" class="text-sm mt-2 text-gray-400"></p></section><section id="profile-predictions-section" class="mb-8"><h2 class="text-lg font-bold mb-3 text-white">آخر توقعاتك</h2><div id="profile-predictions-list" class="space-y-3"></div></section><section id="profile-comments-section"><h2 class="text-lg font-bold mb-3 text-white">آخر تعليقاتك</h2><div id="profile-comments-list" class="space-y-3"></div></section></main>
+    </div>
+
+    <!-- Global Toasts -->
+    <div id="notification-toast"></div>
+    <div id="exit-toast">انقر مرة أخرى للخروج</div>
+    
+    <!-- Loader should be outside everything to cover the full screen -->
+    <div id="loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <style>.spinner{width:50px;height:50px;border:5px solid #30363d;border-top-color:#2f81f7;border-radius:50%;animation:spin 1s linear infinite;}@keyframes spin{to{transform:rotate(360deg);}}</style>
+        <div class="spinner"></div>
     </div>
     
     <script src="capacitor.js"></script>
