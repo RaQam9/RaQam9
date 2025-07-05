@@ -2,6 +2,7 @@
   "appId": "com.raqam9.app",
   "appName": "RaQam9",
   "webDir": "public",
+  "backgroundColor": "#0d1117",
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 3000,
