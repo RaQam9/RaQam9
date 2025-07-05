@@ -8,49 +8,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. سحب الكود
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. إعداد Java 17
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
-      # 3. إعداد Node.js 18
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
-      # 4. تثبيت كل الأدوات اللازمة
       - name: Install Dependencies
         run: npm install
 
-      # 5. إضافة منصة الأندرويد (سينشئ مجلد android نظيف)
       - name: Add Android Platform
         run: npx cap add android
 
-      # 6. توليد الأيقونات ووضعها في مجلد android الذي تم إنشاؤه
       - name: Generate Resources
-        run: npx capacitor-assets generate --android
+        run: npx capacitor-assets generate
 
-      # 7. نسخ ملف إعدادات Firebase
       - name: Copy Google Services File
         run: cp google-services.json android/app/
 
-      # 8. إعطاء صلاحية التنفيذ
       - name: Make Gradlew Executable
         run: chmod +x android/gradlew
         
-      # 9. بناء التطبيق
       - name: Build APK
         run: cd android && ./gradlew assembleDebug
 
-      # 10. رفع الـ APK
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:

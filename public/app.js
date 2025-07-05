@@ -27,6 +27,26 @@ function navigateToSubPage(pageName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // ⬇️⬇️ الكود الجديد للتحكم في شريط الحالة و شاشة البداية ⬇️⬇️
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { StatusBar, SplashScreen, Style } = window.Capacitor.Plugins;
+        
+        // إظهار شريط الحالة
+        StatusBar.show();
+        
+        // جعل لونه داكنًا ليتناسب مع تصميمك
+        StatusBar.setStyle({ style: Style.Dark });
+        
+        // منع المحتوى من الظهور خلف شريط الحالة
+        StatusBar.setOverlaysWebView({ overlay: false });
+
+        // إخفاء شاشة البداية بعد أن يتم تحميل الصفحة
+        SplashScreen.hide();
+    }
+    // ⬆️⬆️ نهاية الكود الجديد ⬆️⬆️
+
+    // ======== الكود الأصلي الخاص بك يبدأ من هنا ========
+
     // Check if Capacitor is available
     if (window.Capacitor) {
         console.log("Capacitor is available.");
