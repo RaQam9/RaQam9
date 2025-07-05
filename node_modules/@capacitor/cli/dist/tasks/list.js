@@ -14,7 +14,7 @@ async function listCommand(config, selectedPlatformName) {
     var _a;
     const platforms = await (0, common_2.selectPlatforms)(config, selectedPlatformName);
     try {
-        await (0, promise_1.allSerial)(platforms.map(platformName => () => list(config, platformName)));
+        await (0, promise_1.allSerial)(platforms.map((platformName) => () => list(config, platformName)));
     }
     catch (e) {
         if ((0, errors_1.isFatal)(e)) {
@@ -40,11 +40,11 @@ async function list(config, platform) {
     else {
         throw `Platform ${colors_1.default.input(platform)} is not valid.`;
     }
-    const capacitorPlugins = plugins.filter(p => (0, plugin_1.getPluginType)(p, platform) === 0 /* PluginType.Core */);
+    const capacitorPlugins = plugins.filter((p) => (0, plugin_1.getPluginType)(p, platform) === 0 /* PluginType.Core */);
     (0, plugin_1.printPlugins)(capacitorPlugins, platform);
-    const cordovaPlugins = plugins.filter(p => (0, plugin_1.getPluginType)(p, platform) === 1 /* PluginType.Cordova */);
+    const cordovaPlugins = plugins.filter((p) => (0, plugin_1.getPluginType)(p, platform) === 1 /* PluginType.Cordova */);
     (0, plugin_1.printPlugins)(cordovaPlugins, platform, 'cordova');
-    const incompatibleCordovaPlugins = plugins.filter(p => (0, plugin_1.getPluginType)(p, platform) === 2 /* PluginType.Incompatible */);
+    const incompatibleCordovaPlugins = plugins.filter((p) => (0, plugin_1.getPluginType)(p, platform) === 2 /* PluginType.Incompatible */);
     (0, plugin_1.printPlugins)(incompatibleCordovaPlugins, platform, 'incompatible');
 }
 exports.list = list;

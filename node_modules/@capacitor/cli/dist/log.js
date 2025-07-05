@@ -9,9 +9,7 @@ const options = {
     colors: colors_1.default,
     stream: process.argv.includes('--json') ? process.stderr : process.stdout,
 };
-exports.output = (0, term_1.isInteractive)()
-    ? new cli_framework_output_1.TTYOutputStrategy(options)
-    : new cli_framework_output_1.StreamOutputStrategy(options);
+exports.output = (0, term_1.isInteractive)() ? new cli_framework_output_1.TTYOutputStrategy(options) : new cli_framework_output_1.StreamOutputStrategy(options);
 exports.logger = (0, cli_framework_output_1.createDefaultLogger)({
     output: exports.output,
     formatterOptions: {

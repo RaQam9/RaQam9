@@ -26,7 +26,7 @@ async function updateCommand(config, selectedPlatformName, deployment) {
         const platforms = await (0, common_1.selectPlatforms)(config, selectedPlatformName);
         try {
             await (0, common_1.check)([() => (0, common_1.checkPackage)(), ...updateChecks(config, platforms)]);
-            await (0, promise_1.allSerial)(platforms.map(platformName => async () => await update(config, platformName, deployment)));
+            await (0, promise_1.allSerial)(platforms.map((platformName) => async () => await update(config, platformName, deployment)));
             const now = +new Date();
             const diff = (now - then) / 1000;
             log_1.logger.info(`Update finished in ${diff}s`);

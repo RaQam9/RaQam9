@@ -12,9 +12,7 @@ async function buildAndroid(config, buildOptions) {
     const releaseType = (_a = buildOptions.androidreleasetype) !== null && _a !== void 0 ? _a : 'AAB';
     const releaseTypeIsAAB = releaseType === 'AAB';
     const flavor = (_b = buildOptions.flavor) !== null && _b !== void 0 ? _b : '';
-    const arg = releaseTypeIsAAB
-        ? `:app:bundle${flavor}Release`
-        : `assemble${flavor}Release`;
+    const arg = releaseTypeIsAAB ? `:app:bundle${flavor}Release` : `assemble${flavor}Release`;
     const gradleArgs = [arg];
     try {
         await (0, common_1.runTask)('Running Gradle build', async () => (0, subprocess_1.runCommand)('./gradlew', gradleArgs, {

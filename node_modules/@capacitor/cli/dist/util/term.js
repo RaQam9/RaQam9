@@ -18,7 +18,7 @@ const checkInteractive = (...args) => {
     }
     // Make sure none of the provided args are empty, otherwise print the interactive
     // warning and return false
-    if (args.filter(arg => !arg).length) {
+    if (args.filter((arg) => !arg).length) {
         log_1.logger.error(`Non-interactive shell detected.\n` +
             `Run the command with ${colors_1.default.input('--help')} to see a list of arguments that must be provided.`);
         return false;

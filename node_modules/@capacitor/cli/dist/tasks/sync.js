@@ -25,12 +25,8 @@ async function syncCommand(config, selectedPlatformName, deployment, inline = fa
         const then = +new Date();
         const platforms = await (0, common_1.selectPlatforms)(config, selectedPlatformName);
         try {
-            await (0, common_1.check)([
-                () => (0, common_1.checkPackage)(),
-                () => (0, common_1.checkWebDir)(config),
-                ...(0, update_1.updateChecks)(config, platforms),
-            ]);
-            await (0, promise_1.allSerial)(platforms.map(platformName => () => sync(config, platformName, deployment, inline)));
+            await (0, common_1.check)([() => (0, common_1.checkPackage)(), () => (0, common_1.checkWebDir)(config), ...(0, update_1.updateChecks)(config, platforms)]);
+            await (0, promise_1.allSerial)(platforms.map((platformName) => () => sync(config, platformName, deployment, inline)));
             const now = +new Date();
             const diff = (now - then) / 1000;
             log_1.logger.info(`Sync finished in ${diff}s`);

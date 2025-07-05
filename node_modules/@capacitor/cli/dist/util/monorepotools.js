@@ -13,8 +13,7 @@ function findMonorepoRoot(currentPath) {
     const packageJsonPath = (0, node_path_1.join)(currentPath, 'package.json');
     const pnpmWorkspacePath = (0, node_path_1.join)(currentPath, 'pnpm-workspace.yaml');
     if ((0, node_fs_1.existsSync)(pnpmWorkspacePath) ||
-        ((0, node_fs_1.existsSync)(packageJsonPath) &&
-            JSON.parse((0, node_fs_1.readFileSync)(packageJsonPath, 'utf-8')).workspaces)) {
+        ((0, node_fs_1.existsSync)(packageJsonPath) && JSON.parse((0, node_fs_1.readFileSync)(packageJsonPath, 'utf-8')).workspaces)) {
         return currentPath;
     }
     const parentPath = (0, node_path_1.dirname)(currentPath);

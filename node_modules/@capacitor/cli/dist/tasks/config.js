@@ -15,10 +15,7 @@ async function configCommand(config, json) {
 }
 exports.configCommand = configCommand;
 async function deepAwait(obj) {
-    if (obj &&
-        !Array.isArray(obj) &&
-        typeof obj === 'object' &&
-        obj.constructor === Object) {
+    if (obj && !Array.isArray(obj) && typeof obj === 'object' && obj.constructor === Object) {
         const o = {};
         for (const [k, v] of Object.entries(obj)) {
             o[k] = await deepAwait(v);

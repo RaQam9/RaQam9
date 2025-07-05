@@ -9,7 +9,7 @@ const common_1 = require("../common");
 const native_run_1 = require("../util/native-run");
 const subprocess_1 = require("../util/subprocess");
 const debug = (0, debug_1.default)('capacitor:android:run');
-async function runAndroid(config, { target: selectedTarget, flavor: selectedFlavor, forwardPorts: selectedPorts, }) {
+async function runAndroid(config, { target: selectedTarget, flavor: selectedFlavor, forwardPorts: selectedPorts }) {
     var _a;
     const target = await (0, common_1.promptForPlatformTarget)(await (0, native_run_1.getPlatformTargets)('android'), selectedTarget);
     const runFlavor = selectedFlavor || ((_a = config.android) === null || _a === void 0 ? void 0 : _a.flavor) || '';

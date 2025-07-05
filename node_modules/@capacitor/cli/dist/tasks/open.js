@@ -41,7 +41,7 @@ async function openCommand(config, selectedPlatformName) {
 }
 exports.openCommand = openCommand;
 function createOpenablePlatformFilter(config) {
-    return platform => platform === config.ios.name || platform === config.android.name;
+    return (platform) => platform === config.ios.name || platform === config.android.name;
 }
 async function open(config, platformName) {
     if (platformName === config.ios.name) {

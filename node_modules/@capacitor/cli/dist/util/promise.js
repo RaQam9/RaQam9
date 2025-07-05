@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lazy = exports.LazyPromise = exports.allSerial = void 0;
 function allSerial(funcs) {
-    return funcs.reduce((promise, func) => promise.then(result => func().then(x => result.concat(x))), Promise.resolve([]));
+    return funcs.reduce((promise, func) => promise.then((result) => func().then((x) => result.concat(x))), Promise.resolve([]));
 }
 exports.allSerial = allSerial;
 class LazyPromise extends Promise {

@@ -10,7 +10,7 @@ const native_run_1 = require("../util/native-run");
 const spm_1 = require("../util/spm");
 const subprocess_1 = require("../util/subprocess");
 const debug = (0, debug_1.default)('capacitor:ios:run');
-async function runIOS(config, { target: selectedTarget, scheme: selectedScheme, configuration: selectedConfiguration, }) {
+async function runIOS(config, { target: selectedTarget, scheme: selectedScheme, configuration: selectedConfiguration }) {
     const target = await (0, common_1.promptForPlatformTarget)(await (0, native_run_1.getPlatformTargets)('ios'), selectedTarget);
     const runScheme = selectedScheme || config.ios.scheme;
     const configuration = selectedConfiguration || 'Debug';
@@ -43,9 +43,7 @@ async function runIOS(config, { target: selectedTarget, scheme: selectedScheme, 
         cwd: config.ios.nativeProjectDirAbs,
     }));
     const appName = `${runScheme}.app`;
-    const appPath = (0, path_1.resolve)(derivedDataPath, 'Build/Products', target.virtual
-        ? `${configuration}-iphonesimulator`
-        : `${configuration}-iphoneos`, appName);
+    const appPath = (0, path_1.resolve)(derivedDataPath, 'Build/Products', target.virtual ? `${configuration}-iphonesimulator` : `${configuration}-iphoneos`, appName);
     const nativeRunArgs = ['ios', '--app', appPath, '--target', target.id];
     debug('Invoking native-run with args: %O', nativeRunArgs);
     await (0, common_1.runTask)(`Deploying ${colors_1.default.strong(appName)} to ${colors_1.default.input(target.id)}`, async () => (0, native_run_1.runNativeRun)(nativeRunArgs));

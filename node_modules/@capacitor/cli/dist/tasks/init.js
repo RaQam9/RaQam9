@@ -14,7 +14,7 @@ const log_1 = require("../log");
 const sysconfig_1 = require("../sysconfig");
 const node_1 = require("../util/node");
 const term_1 = require("../util/term");
-async function initCommand(config, name, id, webDirFromCLI) {
+async function initCommand(config, name, id, webDirFromCLI, skipAppIDValidation) {
     var _a, _b;
     try {
         if (!(0, term_1.checkInteractive)(name, id)) {
@@ -30,11 +30,13 @@ async function initCommand(config, name, id, webDirFromCLI) {
         const appId = await getAppId(config, id);
         const webDir = (0, term_1.isInteractive)()
             ? await getWebDir(config, webDirFromCLI)
-            : (_a = webDirFromCLI !== null && webDirFromCLI !== void 0 ? webDirFromCLI : config.app.extConfig.webDir) !== null && _a !== void 0 ? _a : 'www';
-        await (0, common_1.check)([
-            () => (0, common_1.checkAppName)(config, appName),
-            () => (0, common_1.checkAppId)(config, appId),
-        ]);
+            : ((_a = webDirFromCLI !== null && webDirFromCLI !== void 0 ? webDirFromCLI : config.app.extConfig.webDir) !== null && _a !== void 0 ? _a : 'www');
+        if (skipAppIDValidation === true) {
+            await (0, common_1.check)([() => (0, common_1.checkAppName)(config, appName)]);
+        }
+        else {
+            await (0, common_1.check)([() => (0, common_1.checkAppName)(config, appName), () => (0, common_1.checkAppId)(config, appId)]);
+        }
         const cordova = await (0, cordova_1.getCordovaPreferences)(config);
         await runMergeConfig(config, {
             appId,
@@ -45,8 +47,7 @@ async function initCommand(config, name, id, webDirFromCLI) {
     }
     catch (e) {
         if (!(0, errors_1.isFatal)(e)) {
-            log_1.output.write('Usage: npx cap init appName appId\n' +
-                'Example: npx cap init "My App" "com.example.myapp"\n\n');
+            log_1.output.write('Usage: npx cap init appName appId\n' + 'Example: npx cap init "My App" "com.example.myapp"\n\n');
             (0, errors_1.fatal)((_b = e.stack) !== null && _b !== void 0 ? _b : e);
         }
         throw e;
@@ -61,9 +62,7 @@ async function getName(config, name) {
             type: 'text',
             name: 'name',
             message: `Name`,
-            initial: config.app.appName
-                ? config.app.appName
-                : (_a = config.app.package.name) !== null && _a !== void 0 ? _a : 'App',
+            initial: config.app.appName ? config.app.appName : ((_a = config.app.package.name) !== null && _a !== void 0 ? _a : 'App'),
         });
         return answers.name;
     }
