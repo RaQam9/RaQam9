@@ -36,7 +36,7 @@ jobs:
 
       # 6. توليد الأيقونات
       - name: Generate Resources
-        run: npx capacitor-assets generate --android --asset-path=./
+  run: npx capacitor-assets generate --android --asset-path "./"
 
       # 7. نسخ ملف إعدادات Firebase
       - name: Copy Google Services File
