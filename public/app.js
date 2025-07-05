@@ -27,7 +27,21 @@ function navigateToSubPage(pageName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if Capacitor is available
+    // ⬇️⬇️ أضف هذا الكود بالكامل ⬇️⬇️
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { StatusBar, Style } = window.Capacitor.Plugins;
+        
+        // إظهار شريط الحالة
+        StatusBar.show();
+        
+        // جعل لونه داكنًا ليتناسب مع تصميمك (يمكنك اختيار DARK أو LIGHT)
+        StatusBar.setStyle({ style: Style.Dark });
+        
+        // **هذه هي أهم خطوة**
+        // تمنع المحتوى من الظهور خلف شريط الحالة
+        StatusBar.setOverlaysWebView({ overlay: false });
+    }
+    // ⬆️⬆️ نهاية الكود المضاف ⬆️⬆️
     if (window.Capacitor) {
         console.log("Capacitor is available.");
     } else {
