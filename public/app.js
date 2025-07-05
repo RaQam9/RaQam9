@@ -26,14 +26,33 @@ function navigateToSubPage(pageName) {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if Capacitor is available
-    if (window.Capacitor) {
-        console.log("Capacitor is available.");
-    } else {
-        console.log("Capacitor is not available. Running in web mode.");
-    }
+// =================================================================================
+// ✨✨✨ بداية الجزء الذي تم تعديله ✨✨✨
+// =================================================================================
+document.addEventListener('DOMContentLoaded', async () => { 
+    // ⬇️⬇️ التحكم في شريط الحالة لملء الشاشة بالكامل بشكل صحيح ⬇️⬇️
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        const { StatusBar, SplashScreen, Style } = window.Capacitor.Plugins;
 
+        // الخطوة 1: جعل المحتوى يمتد خلف شريط الحالة
+        await StatusBar.setOverlaysWebView({ overlay: true });
+        
+        // الخطوة 2: الحصول على معلومات شريط الحالة (خصوصاً ارتفاعه)
+        const info = await StatusBar.getInfo();
+
+        // الخطوة 3: تطبيق ارتفاع شريط الحالة كمتغير CSS يمكن استخدامه في أي مكان
+        document.documentElement.style.setProperty('--status-bar-height', `${info.height}px`);
+
+        // إظهار شريط الحالة وجعل أيقوناته داكنة لتظهر فوق الخلفية الفاتحة
+        await StatusBar.show();
+        await StatusBar.setStyle({ style: Style.Dark });
+        
+        // إخفاء شاشة البداية بعد تحميل كل شيء
+        await SplashScreen.hide();
+    }
+    // ⬆️⬆️ نهاية كود شريط الحالة ⬆️⬆️
+
+    // ======== باقي الكود الأصلي يبدأ من هنا (بدون تغيير) ========
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
@@ -74,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePullToRefresh();
     initializeBackButtonHandler();
 });
+// =================================================================================
+// ✨✨✨ نهاية الجزء الذي تم تعديله ✨✨✨
+// =================================================================================
 
 
 // ==========================================================
@@ -419,7 +441,7 @@ function initializeBackButtonHandler() {
 
 
 // ======================================================================
-// The rest of the file remains the same...
+// The rest of the file remains the same... (No changes below this line)
 // ======================================================================
 
 function refreshVisibleComments() {
