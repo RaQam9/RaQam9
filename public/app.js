@@ -1,27 +1,22 @@
 // ==========================================================
-// SECTION 0: GLOBAL SETUP & CAPACITOR BRIDGE
+// SECTION 0: GLOBAL SETUP
 // ==========================================================
 const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const ADMIN_EMAIL = "your-email@example.com";
-const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
 let currentNewsSubPage = 'home';
 let isOnline = true;
 
 // ==========================================================
-// SECTION 0.1: LIFECYCLE & INITIALIZATION
+// SECTION 0.1: APP INITIALIZATION
 // ==========================================================
+window.runApplication = () => {
+    console.log("window.runApplication() has been triggered. Setting up UI and loading data.");
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.Capacitor) {
-        console.log("Capacitor is available.");
-    } else {
-        console.log("Capacitor is not available. Running in web mode.");
-    }
-
+    injectInitialHTML();
+    
     initializeNavigation();
     initializeAuth();
     initializeRealtimeListeners();
@@ -30,13 +25,70 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePullToRefresh();
     initializeBackButtonHandler();
 
-    // --- التعديل الرئيسي هنا: تأخير بسيط لضمان جهوزية كل شيء ---
-    // This is the main fix: A short delay ensures everything is ready before loading data.
-    setTimeout(() => {
-        console.log("Timer fired. Initializing network listener and data load.");
-        initializeNetworkStatusListener();
-    }, 150);
-});
+    initializeNetworkStatusListener();
+};
+
+function injectInitialHTML() {
+    document.getElementById('predictions-page').innerHTML = `
+        <div class="container">
+            <header><h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
+            <div class="news-ticker"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
+            <main id="matches-container"></main>
+        </div>
+    `;
+
+    document.getElementById('news-page').innerHTML = `
+        <div id="home-page" class="page">
+            <header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header>
+            <main id="articles-grid"></main>
+        </div>
+        <div id="article-page" class="page">
+            <div id="article-content"></div>
+            <div id="comments-section" class="comments-section">
+                <h2><i class="fa-solid fa-comments"></i> التعليقات</h2>
+                <div id="comments-list"></div>
+                <form id="comment-form" name="news-comment-form">
+                    <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
+                    <h3>أضف تعليقك</h3>
+                    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+                    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+                </form>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('common-elements-container').innerHTML = `
+        <div class="floating-icon-container" id="floating-icon-container">
+            <button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button>
+            <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button>
+        </div>
+        <div class="modal" id="auth-modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-auth-modal-btn">×</span>
+                <div id="login-view">
+                    <h2>تسجيل الدخول</h2>
+                    <form id="login-form"><div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div><div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div><button type="submit">دخول</button></form><p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
+                </div>
+                <div id="signup-view" style="display: none;">
+                    <h2>إنشاء حساب جديد</h2>
+                    <form id="signup-form"><div class="form-control"><label for="signup-username">اسم المستخدم</label><input type="text" id="signup-username" required></div><div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div><div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div><button type="submit">إنشاء حساب</button></form><p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
+                </div>
+                <div id="loggedin-view" style="display: none;">
+                    <h2>أهلاً بك!</h2><p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p><button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;"><i class="fa-solid fa-user-gear"></i> ملفي الشخصي</button><button id="logout-btn">تسجيل الخروج</button>
+                </div>
+                <div id="auth-message"></div>
+            </div>
+        </div>
+        <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
+             <header class="flex items-center justify-between pb-4 border-b border-[#30363d] mb-6"><h1 class="text-2xl font-bold"><i class="fa-solid fa-user-circle ml-3"></i>الملف الشخصي</h1><button id="close-profile-btn" class="text-2xl text-gray-400">×</button></header><main><section id="username-section" class="mb-8 p-4 bg-[#161b22] rounded-lg border border-[#30363d]"><h2 class="text-lg font-bold mb-3">تغيير اسم المستخدم</h2><div class="flex gap-2"><input type="text" id="profile-username-input" class="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2 text-white" placeholder="اسم المستخدم الجديد..."><button id="save-username-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold">حفظ</button></div><p id="username-status" class="text-sm mt-2 text-gray-400"></p></section><section id="profile-predictions-section" class="mb-8"><h2 class="text-lg font-bold mb-3">آخر توقعاتك</h2><div id="profile-predictions-list" class="space-y-3"></div></section><section id="profile-comments-section"><h2 class="text-lg font-bold mb-3">آخر تعليقاتك</h2><div id="profile-comments-list" class="space-y-3"></div></section></main>
+        </div>
+        <div id="notification-toast"></div>
+        <div id="exit-toast">انقر مرة أخرى للخروج</div>
+    `;
+    
+    const loader = document.getElementById('loader');
+    if(loader) loader.style.display = 'none';
+}
 
 function initializeNavigation() {
     const predictionsBtn = document.getElementById('nav-predictions-btn');
@@ -82,36 +134,35 @@ function navigateToSubPage(pageName) {
     }
 }
 
-// ==========================================================
-// SECTION 0.2: NETWORK & OFFLINE SUPPORT
-// ==========================================================
 async function initializeNetworkStatusListener() {
-    // This function will now be the single starting point for loading data.
     const startDataLoad = () => {
         console.log("Starting initial data load...");
         initializePredictionsPage();
         initializeNewsPage();
     };
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Network) {
+    
+    // For Capacitor 5, we use Capacitor.Plugins
+    const { Network } = (window.Capacitor && Capacitor.Plugins) ? Capacitor.Plugins : {};
+
+    if (Network) {
         console.log("Capacitor Network plugin found. Initializing...");
-        const { Network } = window.Capacitor.Plugins;
         const status = await Network.getStatus();
         handleNetworkChange(status.connected, false);
-        startDataLoad(); // Data load is called AFTER network check.
+        startDataLoad();
         Network.addListener('networkStatusChange', (status) => {
             handleNetworkChange(status.connected, true);
         });
     } else {
         console.log("Network plugin not available. Using browser's navigator.onLine.");
         handleNetworkChange(navigator.onLine, false);
-        startDataLoad(); // Data load is called AFTER network check.
+        startDataLoad();
         window.addEventListener('online', () => handleNetworkChange(true, true));
         window.addEventListener('offline', () => handleNetworkChange(false, true));
     }
 }
 
 function handleNetworkChange(isConnected, shouldReload) {
-    if (isOnline === isConnected && shouldReload) return;
+    if (isOnline === isConnected && !shouldReload) return;
     isOnline = isConnected;
     console.log(`Network status is now: ${isOnline ? 'Online' : 'Offline'}`);
     showOfflineToast(!isOnline);
@@ -124,6 +175,7 @@ function handleNetworkChange(isConnected, shouldReload) {
 }
 
 function showOfflineToast(isOffline) {
+    // This function creates the toast if it doesn't exist, so it's safe to call
     const toastId = 'offline-toast';
     let toast = document.getElementById(toastId);
     if (!toast) {
@@ -149,30 +201,23 @@ function toggleFormInteractions(isOnline) {
     });
 }
 
-// ==========================================================
-// SECTION 0.5: AUTHENTICATION & PUSH NOTIFICATIONS
-// ==========================================================
 const registerPushNotifications = async () => {
-  if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
-    return;
-  }
+  if (!window.Capacitor || !Capacitor.isNativePlatform()) return;
   
-  const { PushNotifications } = window.Capacitor.Plugins;
+  const { PushNotifications } = Capacitor.Plugins;
 
   try {
     let permStatus = await PushNotifications.checkPermissions();
     if (permStatus.receive === 'prompt') {
       permStatus = await PushNotifications.requestPermissions();
     }
-    if (permStatus.receive !== 'granted') {
-      return;
-    }
+    if (permStatus.receive !== 'granted') return;
+    
     await PushNotifications.register();
+    
     PushNotifications.addListener('registration', async (token) => {
       if (currentUser) {
-        await supabaseClient
-          .from('fcm_tokens')
-          .upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
+        await supabaseClient.from('fcm_tokens').upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
       }
     });
   } catch(e) {
@@ -217,10 +262,7 @@ function initializeAuth() {
         openAuthModal();
     });
     
-    if (openProfileBtn) {
-       openProfileBtn.addEventListener('click', openProfilePage);
-    }
-
+    if (openProfileBtn) openProfileBtn.addEventListener('click', openProfilePage);
     closeModalBtn.addEventListener('click', closeAuthModal);
     authModal.addEventListener('click', (e) => { if (e.target === authModal) closeAuthModal(); });
     showSignupBtn.addEventListener('click', () => showView(signupView));
@@ -286,11 +328,6 @@ function initializeAuth() {
     });
 }
 
-
-// ==========================================================
-// SECTION 1: PULL-TO-REFRESH & BACK BUTTON
-// ==========================================================
-
 function initializePullToRefresh() {
     const indicator = document.createElement('div');
     indicator.className = 'pull-to-refresh-indicator-fixed';
@@ -298,9 +335,7 @@ function initializePullToRefresh() {
     const preventBodyScroll = (event) => event.preventDefault();
     const refreshArticleComments = async () => {
         const articleId = document.getElementById('article-id-hidden-input').value;
-        if (articleId) {
-            await fetchAndRenderNewsComments(articleId);
-        }
+        if (articleId) await fetchAndRenderNewsComments(articleId);
     };
     const pages = [
         { el: document.getElementById('predictions-page'), refreshFunc: initializePredictionsPage },
@@ -308,25 +343,17 @@ function initializePullToRefresh() {
         { el: document.getElementById('article-page'), refreshFunc: refreshArticleComments }
     ];
     const threshold = 80;
-    let startY = 0;
-    let isPulling = false;
-    let isRefreshing = false;
+    let startY = 0, isPulling = false, isRefreshing = false;
 
     pages.forEach(pageInfo => {
         const scrollableEl = pageInfo.el;
+        if (!scrollableEl) return;
         scrollableEl.addEventListener('touchstart', (e) => {
-            if (scrollableEl.scrollTop === 0 && !isRefreshing) {
-                isPulling = true;
-                startY = e.touches[0].clientY;
-            }
+            if (scrollableEl.scrollTop === 0 && !isRefreshing) { isPulling = true; startY = e.touches[0].clientY; }
         }, { passive: true });
         scrollableEl.addEventListener('touchmove', (e) => {
-            if (!isPulling || isRefreshing || scrollableEl.scrollTop !== 0) {
-                isPulling = false;
-                return;
-            }
-            const currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
+            if (!isPulling || isRefreshing || scrollableEl.scrollTop !== 0) { isPulling = false; return; }
+            const diff = e.touches[0].clientY - startY;
             if (diff > 0) { 
                 e.preventDefault(); 
                 indicator.style.display = 'flex';
@@ -334,9 +361,7 @@ function initializePullToRefresh() {
                 indicator.style.opacity = pullRatio;
                 indicator.style.transform = `translateY(${Math.min(diff, threshold + 20)}px) scale(${pullRatio})`;
                 indicator.innerHTML = diff > threshold ? '<i class="fas fa-redo"></i>' : '<i class="fas fa-arrow-down"></i>';
-            } else {
-                isPulling = false;
-            }
+            } else { isPulling = false; }
         }, { passive: false });
         scrollableEl.addEventListener('touchend', async (e) => {
             if (!isPulling || isRefreshing) return;
@@ -351,19 +376,12 @@ function initializePullToRefresh() {
                 indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 indicator.style.opacity = 1;
                 indicator.style.transform = `translateY(30px) scale(1)`;
-                try {
-                    await pageInfo.refreshFunc();
-                } catch(err) {
-                    console.error("Refresh failed:", err);
-                } finally {
+                try { await pageInfo.refreshFunc(); } catch(err) { console.error("Refresh failed:", err); }
+                finally {
                     document.body.removeEventListener('touchmove', preventBodyScroll, { passive: false });
                     indicator.style.opacity = 0;
                     indicator.style.transform = 'translateY(0) scale(0)';
-                    setTimeout(() => {
-                        indicator.style.display = 'none';
-                        indicator.style.transition = '';
-                        isRefreshing = false;
-                    }, 300);
+                    setTimeout(() => { indicator.style.display = 'none'; indicator.style.transition = ''; isRefreshing = false; }, 300);
                 }
             }
         });
@@ -371,22 +389,18 @@ function initializePullToRefresh() {
 }
 
 function initializeBackButtonHandler() {
-    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
-    const { App } = window.Capacitor.Plugins;
-    App.addListener('backButton', () => {
+    if (!window.Capacitor || !Capacitor.isNativePlatform()) return;
+    const { App } = Capacitor.Plugins;
+    App.addListener('backButton', ({ canGoBack }) => {
         const profilePage = document.getElementById('profile-page');
         const authModal = document.getElementById('auth-modal');
         const newsPage = document.getElementById('news-page');
         const exitToast = document.getElementById('exit-toast');
-        if (profilePage && profilePage.classList.contains('is-visible')) {
-            closeProfilePage();
-        } else if (authModal && authModal.classList.contains('show')) {
-            authModal.classList.remove('show');
-        } else if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') {
-            navigateToSubPage('home');
-        } else if (!newsPage.classList.contains('hidden')) {
-            document.getElementById('nav-predictions-btn').click();
-        } else if (!exitToast.classList.contains('show')) {
+        if (profilePage && profilePage.classList.contains('is-visible')) closeProfilePage();
+        else if (authModal && authModal.classList.contains('show')) authModal.classList.remove('show');
+        else if (!newsPage.classList.contains('hidden') && currentNewsSubPage === 'article') navigateToSubPage('home');
+        else if (!newsPage.classList.contains('hidden')) document.getElementById('nav-predictions-btn').click();
+        else if (!exitToast.classList.contains('show')) {
             exitToast.classList.add('show');
             setTimeout(() => exitToast.classList.remove('show'), 2000);
         } else {
@@ -395,27 +409,15 @@ function initializeBackButtonHandler() {
     });
 }
 
-// ======================================================================
-// SECTION 2: PREDICTIONS PAGE
-// ======================================================================
-
 async function initializePredictionsPage() {
     const container = document.getElementById('matches-container');
-    if (!container) {
-        console.error("CRITICAL: '#matches-container' not found.");
-        return;
-    }
+    if (!container) return;
     const cacheKey = 'cached_matches';
 
     const loadFromCache = () => {
         const cachedData = localStorage.getItem(cacheKey);
-        if (cachedData) {
-            const formattedMatches = JSON.parse(cachedData);
-            container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
-            initializeAppWithData(formattedMatches);
-        } else {
-            container.innerHTML = '<p class="text-center text-red-500 mt-8">أنت غير متصل بالإنترنت ولا توجد بيانات محفوظة لعرضها.</p>';
-        }
+        if (cachedData) initializeAppWithData(JSON.parse(cachedData));
+        else container.innerHTML = '<p class="text-center text-red-500 mt-8">أنت غير متصل ولا توجد بيانات محفوظة.</p>';
     };
 
     if (isOnline) {
@@ -424,28 +426,23 @@ async function initializePredictionsPage() {
             const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
             if (error) throw error;
             const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
-            container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
             initializeAppWithData(formattedMatches);
             localStorage.setItem(cacheKey, JSON.stringify(formattedMatches));
-        } catch (error) {
-            console.error("Error fetching matches, falling back to cache:", error);
-            loadFromCache();
-        }
-    } else {
-        loadFromCache();
-    }
+        } catch (error) { console.error("Error fetching matches:", error); loadFromCache(); }
+    } else { loadFromCache(); }
 }
 
 function initializeAppWithData(matchesData) {
+    const matchesContainer = document.getElementById('matches-container');
+    matchesContainer.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
     const dateTabsContainer = document.getElementById('date-tabs');
     const daysContentContainer = document.getElementById('days-content-container');
 
     function renderMatchesForDay(d, m) { d.innerHTML = ''; if (!m || m.length === 0) return; const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; m.forEach(t => { const a = new Date(t.datetime); const e = a.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const i = a.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/[٠-٩]/g, c => n[c]); const s = getMatchStatus(t.datetime); let o; switch (s.state) { case 'ended': o = `<span class="match-status ended">انتهت</span>`; break; case 'live': o = `<span class="match-status live">مباشر</span>`; break; case 'soon': o = `<span class="match-status soon">بعد قليل</span>`; break; default: o = `<div class="match-time">${i}</div>`; } const l = (t.channels && t.channels.length > 0) ? t.channels.join(' / ') : "غير محددة"; const r = s.state === 'ended'; const u = document.createElement('div'); u.className = 'match-card'; u.dataset.matchId = t.id; u.dataset.datetime = t.datetime; u.innerHTML = `<div class="match-header"><span class="match-league">${t.league}</span><span class="match-date-time">${e}</span></div><div class="match-body"><div class="teams-row"><div class="team"><img src="${t.team1.logo}" alt="${t.team1.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team1.name}</span></div><div class="match-status-container">${o}</div><div class="team"><img src="${t.team2.logo}" alt="${t.team2.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/50';"><span class="team-name">${t.team2.name}</span></div></div><form name="prediction-form" class="prediction-form ${r ? 'disabled' : ''}"><div class="form-group"><legend class="channel-info"><i class="fa-solid fa-tv"></i> <span>${l}</span></legend></div><div class="form-group"><legend>توقع النتيجة:</legend><div class="prediction-options"><input type="radio" name="winner" id="win1-${t.id}" value="${t.team1.name}" required><label for="win1-${t.id}">${t.team1.name}</label><input type="radio" name="winner" id="draw-${t.id}" value="تعادل"><label for="draw-${t.id}">تعادل</label><input type="radio" name="winner" id="win2-${t.id}" value="${t.team2.name}"><label for="win2-${t.id}">${t.team2.name}</label></div></div><div class="form-group"><legend>من سيسجل أولاً؟ (اختياري)</legend><input type="text" name="scorer" class="scorer-input" placeholder="اكتب اسم اللاعب..."></div><div class="form-group"><button type="submit" class="submit-btn">${r ? 'أغلقت التوقعات' : 'إرسال التوقع'}</button></div></form></div><div class="match-footer"><button class="toggle-comments-btn">💬 التعليقات</button><div class="comments-section" style="display:none;"><div class="comment-list"></div><form name="match-comment-form" class="comment-form"><textarea name="comment_text" placeholder="أضف تعليقك..." required></textarea><button type="submit">إرسال</button></form></div></div>`; d.appendChild(u); }); }
-    function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
-    function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
+    function attachTabEventListeners() { dateTabsContainer.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
+    function attachMatchEventListeners() { daysContentContainer.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') handleFormSubmit(e.target); }); daysContentContainer.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const upcomingMatchesData = matchesData.filter(m => new Date(new Date(m.datetime).toLocaleDateString('fr-CA')) >= today);
     const matchesByDay = upcomingMatchesData.reduce((acc, m) => { const d = new Date(m.datetime).toLocaleDateString('fr-CA'); if (!acc[d]) acc[d] = []; acc[d].push(m); return acc; }, {});
     if (Object.keys(matchesByDay).length === 0) { daysContentContainer.innerHTML = `<p class="text-center text-gray-400 mt-8">لا توجد مباريات قادمة. يرجى التحقق لاحقًا.</p>`; } else { const s = Object.keys(matchesByDay).sort(); const n = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9' }; s.forEach((d, i) => { const a = new Date(d + 'T00:00:00Z'); const t = a.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }).replace(/[٠-٩]/g, c => n[c]); const b = document.createElement('div'); b.className = `date-tab ${i === 0 ? 'active' : ''}`; b.textContent = t; b.dataset.tabId = d; dateTabsContainer.appendChild(b); const e = document.createElement('div'); e.className = `day-content ${i === 0 ? 'active' : ''}`; e.id = `day-${d}`; daysContentContainer.appendChild(e); const o = { 'live': 1, 'soon': 2, 'scheduled': 3, 'ended': 4 }; const r = matchesByDay[d].sort((x, y) => { const sA = getMatchStatus(x.datetime).state; const sB = getMatchStatus(y.datetime).state; if (o[sA] !== o[sB]) return o[sA] - o[sB]; return new Date(x.datetime) - new Date(y.datetime); }); renderMatchesForDay(e, r); }); }
@@ -456,26 +453,15 @@ function initializeAppWithData(matchesData) {
     toggleFormInteractions(isOnline);
 }
 
-// ======================================================================
-// SECTION 3: NEWS PAGE
-// ======================================================================
-
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
-    if (!articlesGrid) {
-        console.error("CRITICAL: '#articles-grid' not found.");
-        return;
-    }
+    if (!articlesGrid) return;
     const cacheKey = 'cached_articles';
 
     const loadFromCache = () => {
         const cachedData = localStorage.getItem(cacheKey);
-        if (cachedData) {
-            const articles = JSON.parse(cachedData);
-            renderArticleCards(articles);
-        } else {
-            articlesGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">أنت غير متصل بالإنترنت ولا توجد أخبار محفوظة لعرضها.</p>';
-        }
+        if (cachedData) renderArticleCards(JSON.parse(cachedData));
+        else articlesGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">أنت غير متصل ولا توجد أخبار محفوظة.</p>';
     };
 
     if (isOnline) {
@@ -485,13 +471,8 @@ async function initializeNewsPage() {
             if (error) throw error;
             renderArticleCards(data);
             localStorage.setItem(cacheKey, JSON.stringify(data));
-        } catch (error) {
-            console.error("Error fetching news, falling back to cache:", error);
-            loadFromCache();
-        }
-    } else {
-        loadFromCache();
-    }
+        } catch (error) { console.error("Error fetching news:", error); loadFromCache(); }
+    } else { loadFromCache(); }
 }
 
 function renderArticleCards(articles) {
@@ -506,26 +487,17 @@ function renderArticleCards(articles) {
         card.className = 'article-card';
         card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
         card.addEventListener('click', () => {
-            const articleContent = document.getElementById('article-content');
             document.getElementById('article-id-hidden-input').value = article.id;
-            articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
+            document.getElementById('article-content').innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
             navigateToSubPage('article');
             fetchAndRenderNewsComments(article.id);
         });
         articlesGrid.appendChild(card);
     });
-    toggleFormInteractions(isOnline);
 }
 
-// ======================================================================
-// ALL OTHER FUNCTIONS (UNCHANGED)
-// ======================================================================
-
 async function handleFormSubmit(form) {
-    if (!isOnline) {
-        alert('لا يمكن إرسال البيانات. يرجى التحقق من اتصالك بالإنترنت.');
-        return;
-    }
+    if (!isOnline) { alert('لا يمكن إرسال البيانات. يرجى التحقق من اتصالك بالإنترنت.'); return; }
     const submitBtn = form.querySelector('button[type="submit"]');
     if (!currentUser) { alert('الرجاء تسجيل الدخول أولاً للمشاركة.'); document.getElementById('user-icon-btn').click(); return; }
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; submitBtn.disabled = true;
@@ -534,7 +506,7 @@ async function handleFormSubmit(form) {
         const matchId = form.closest('.match-card').dataset.matchId;
         const winnerRadio = form.querySelector('input[name="winner"]:checked');
         if (!winnerRadio) { alert('الرجاء اختيار نتيجة المباراة.'); submitBtn.innerHTML = 'إرسال التوقع'; submitBtn.disabled = false; return; }
-        const predictionData = { match_id: parseInt(matchId), user_id: currentUser.id, user_email: currentUser.email, username: username, predicted_winner: winnerRadio.value, predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() };
+        const predictionData = { match_id: parseInt(matchId), user_id: currentUser.id, username: username, predicted_winner: winnerRadio.value, predicted_scorer: form.querySelector('input[name="scorer"]').value.trim() };
         try {
             const { error } = await supabaseClient.from('predictions').upsert(predictionData, { onConflict: 'user_id, match_id' });
             if (error) throw error;
@@ -544,11 +516,11 @@ async function handleFormSubmit(form) {
         const matchId = form.closest('.match-card').dataset.matchId;
         const commentText = form.querySelector('textarea').value;
         try {
-            if (!commentText.trim()) { alert("لا يمكن إرسال تعليق فارغ."); throw new Error("Empty comment"); }
+            if (!commentText.trim()) { throw new Error("Empty comment"); }
             const { error } = await supabaseClient.from('comments').insert([{ match_id: parseInt(matchId), user_id: currentUser.id, author: username, comment_text: commentText }]);
             if (error) throw error;
             form.querySelector('textarea').value = '';
-        } catch (error) { if (error.message !== "Empty comment") { alert('حدث خطأ أثناء إرسال تعليقك.'); } } finally { submitBtn.innerHTML = "إرسال"; submitBtn.disabled = false; }
+        } catch (error) { if (error.message !== "Empty comment") alert('حدث خطأ أثناء إرسال تعليقك.'); } finally { submitBtn.innerHTML = "إرسال"; submitBtn.disabled = false; }
     }
 }
 
@@ -563,21 +535,14 @@ async function fetchAndRenderMatchComments(matchId, listElement) {
             else { listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا يمكن تحميل التعليقات وأنت غير متصل.</p>'; return; }
         }
         listElement.innerHTML = '';
-        const commentsById = {};
-        const rootComments = [];
+        const commentsById = {}, rootComments = [];
         data.forEach(comment => { commentsById[comment.id] = { ...comment, replies: [] }; });
         data.forEach(comment => {
-            if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) {
-                commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
-            } else {
-                rootComments.push(commentsById[comment.id]);
-            }
+            if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
+            else rootComments.push(commentsById[comment.id]);
         });
-        if (rootComments.length === 0) {
-            listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
-        } else {
-            rootComments.forEach(comment => { addCommentToDOM(listElement, comment, 'comments'); });
-        }
+        if (rootComments.length === 0) listElement.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
+        else rootComments.forEach(comment => addCommentToDOM(listElement, comment, 'comments'));
     } catch (e) { console.error("Error fetching comments:", e); listElement.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
 }
 
@@ -586,8 +551,7 @@ function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const 
 function resetUIOnLogout() {
     document.querySelectorAll('.prediction-form').forEach(form => {
         const matchCard = form.closest('.match-card');
-        const matchStatus = getMatchStatus(matchCard.dataset.datetime).state;
-        if (matchStatus !== 'ended') {
+        if (getMatchStatus(matchCard.dataset.datetime).state !== 'ended') {
             [...form.elements].forEach(el => {
                 el.disabled = false;
                 if (el.type === 'radio') el.checked = false;
@@ -627,30 +591,20 @@ async function fetchAndRenderNewsComments(articleId) {
             else { commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا يمكن تحميل التعليقات وأنت غير متصل.</p>'; return; }
         }
         commentsListDiv.innerHTML = '';
-        const commentsById = {};
-        const rootComments = [];
+        const commentsById = {}, rootComments = [];
         data.forEach(comment => { commentsById[comment.id] = { ...comment, replies: [] }; });
         data.forEach(comment => {
-            if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) {
-                commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
-            } else {
-                rootComments.push(commentsById[comment.id]);
-            }
+            if (comment.parent_comment_id && commentsById[comment.parent_comment_id]) commentsById[comment.parent_comment_id].replies.push(commentsById[comment.id]);
+            else rootComments.push(commentsById[comment.id]);
         });
-        if (rootComments.length === 0) {
-            commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
-        } else {
-            rootComments.forEach(commentData => { addNewsCommentToDOM(commentsListDiv, commentData); });
-        }
+        if (rootComments.length === 0) commentsListDiv.innerHTML = '<p class="text-center text-gray-500 my-2">لا توجد تعليقات. كن أول من يعلق!</p>';
+        else rootComments.forEach(commentData => addNewsCommentToDOM(commentsListDiv, commentData));
     } catch (err) { console.error('Error fetching news comments:', err); commentsListDiv.innerHTML = '<p class="text-center text-red-500 my-2">فشل تحميل التعليقات.</p>'; }
 }
 
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
-    if (!isOnline) {
-        alert('لا يمكن إرسال البيانات. يرجى التحقق من اتصالك بالإنترنت.');
-        return;
-    }
+    if (!isOnline) { alert('لا يمكن إرسال البيانات. يرجى التحقق من اتصالك بالإنترنت.'); return; }
     const submitBtn = document.getElementById('submit-comment-btn');
     if (!currentUser) { alert('يجب تسجيل الدخول أولاً للتعليق.'); document.getElementById('user-icon-btn').click(); return; }
     submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
@@ -668,34 +622,24 @@ async function handleNewsCommentSubmit(event) {
 function refreshVisibleComments() {
     document.querySelectorAll('.comments-section').forEach(section => {
         if (section.style.display === 'block') {
-            const matchId = section.closest('.match-card').dataset.matchId;
+            const matchId = section.closest('.match-card')?.dataset.matchId;
             const listElement = section.querySelector('.comment-list');
-            if (matchId && listElement) {
-                fetchAndRenderMatchComments(matchId, listElement);
-            }
+            if (matchId && listElement) fetchAndRenderMatchComments(matchId, listElement);
         }
     });
     const articlePage = document.getElementById('article-page');
-    if (getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) {
+    if (articlePage && getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) {
         const articleId = document.getElementById('article-id-hidden-input').value;
-        if (articleId) {
-            fetchAndRenderNewsComments(articleId);
-        }
+        if (articleId) fetchAndRenderNewsComments(articleId);
     }
 }
 
 function addCommentToDOM(listElement, commentData, tableName) {
     const commentDiv = document.createElement('div');
     commentDiv.className = 'comment';
-    if (commentData.author === 'المدير') { commentDiv.classList.add('admin-reply'); }
+    if (commentData.author === 'المدير') commentDiv.classList.add('admin-reply');
     commentDiv.dataset.commentId = commentData.id;
-    commentDiv.innerHTML = `
-        <div class="comment-avatar"><i class="fa-solid fa-${commentData.author === 'المدير' ? 'user-shield' : 'user'}"></i></div>
-        <div class="comment-body">
-            <span class="comment-author">${commentData.author}</span>
-            <p class="comment-text">${commentData.comment_text}</p>
-        </div>
-    `;
+    commentDiv.innerHTML = `<div class="comment-avatar"><i class="fa-solid fa-${commentData.author === 'المدير' ? 'user-shield' : 'user'}"></i></div><div class="comment-body"><span class="comment-author">${commentData.author}</span><p class="comment-text">${commentData.comment_text}</p></div>`;
     if (currentUser && currentUser.id === commentData.user_id) {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-comment-btn';
@@ -708,7 +652,7 @@ function addCommentToDOM(listElement, commentData, tableName) {
     if (commentData.replies && commentData.replies.length > 0) {
         const repliesContainer = document.createElement('div');
         repliesContainer.className = 'replies-container';
-        commentData.replies.forEach(reply => { addCommentToDOM(repliesContainer, reply, tableName); });
+        commentData.replies.forEach(reply => addCommentToDOM(repliesContainer, reply, tableName));
         listElement.appendChild(repliesContainer);
     }
 }
@@ -716,16 +660,10 @@ function addCommentToDOM(listElement, commentData, tableName) {
 function addNewsCommentToDOM(container, commentData) {
     const commentEl = document.createElement('div');
     commentEl.className = 'comment-item';
-    if (commentData.author === 'المدير') { commentEl.classList.add('admin-reply'); }
+    if (commentData.author === 'المدير') commentEl.classList.add('admin-reply');
     commentEl.dataset.commentId = commentData.id;
     const authorHTML = commentData.parent_comment_id ? `<i class="fa-solid fa-reply fa-flip-horizontal" style="margin-left: 5px;"></i> ${commentData.author}` : commentData.author;
-    commentEl.innerHTML = `
-        <div class="comment-header">
-            <span class="comment-author">${authorHTML}</span>
-            <span class="comment-date" style="font-size: 0.8rem;">${new Date(commentData.created_at).toLocaleDateString('ar-EG')}</span>
-        </div>
-        <p class="comment-body">${commentData.comment_text}</p>
-    `;
+    commentEl.innerHTML = `<div class="comment-header"><span class="comment-author">${authorHTML}</span><span class="comment-date" style="font-size: 0.8rem;">${new Date(commentData.created_at).toLocaleDateString('ar-EG')}</span></div><p class="comment-body">${commentData.comment_text}</p>`;
     if (currentUser && currentUser.id === commentData.user_id) {
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-comment-btn';
@@ -738,7 +676,7 @@ function addNewsCommentToDOM(container, commentData) {
     if (commentData.replies && commentData.replies.length > 0) {
         const repliesContainer = document.createElement('div');
         repliesContainer.className = 'news-replies-container';
-        commentData.replies.forEach(reply => { addNewsCommentToDOM(repliesContainer, reply); });
+        commentData.replies.forEach(reply => addNewsCommentToDOM(repliesContainer, reply));
         container.appendChild(repliesContainer);
     }
 }
@@ -753,27 +691,22 @@ function showNotification(message) {
 
 function initializeRealtimeListeners() {
     const handleRealtimeChange = (payload) => {
-        if (!isOnline) return; // Don't process realtime events if offline
+        if (!isOnline) return;
         if ((payload.table === 'matches' || payload.table === 'articles') && payload.eventType !== 'DELETE') {
             const pageName = payload.table === 'matches' ? 'المباريات' : 'الأخبار';
             showNotification(`📢 تم تحديث قائمة ${pageName}!`);
             if (payload.table === 'matches') initializePredictionsPage(); else initializeNewsPage();
-            return;
-        }
-        if (payload.table === 'comments') {
+        } else if (payload.table === 'comments') {
             const matchCard = document.querySelector(`.match-card[data-match-id='${payload.new?.match_id || payload.old?.id}']`);
             if (matchCard && matchCard.querySelector('.comments-section').style.display === 'block') {
-                fetchAndRenderMatchComments(payload.new?.match_id, matchCard.querySelector('.comment-list'));
+                fetchAndRenderMatchComments(payload.new.match_id, matchCard.querySelector('.comment-list'));
             }
-            return;
-        }
-        if (payload.table === 'news_comments') {
+        } else if (payload.table === 'news_comments') {
             const articleIdOnPage = document.getElementById('article-id-hidden-input').value;
             if (articleIdOnPage && parseInt(articleIdOnPage) === (payload.new?.article_id || payload.old?.article_id)) {
                 if (payload.eventType === 'INSERT') showNotification('💬 تم إضافة تعليق جديد!');
                 fetchAndRenderNewsComments(articleIdOnPage);
             }
-            return;
         }
     };
     supabaseClient.channel('public-dynamic-content').on('postgres_changes', { event: '*', schema: 'public' }, handleRealtimeChange).subscribe();
@@ -784,12 +717,8 @@ function initializeGlobalEventListeners() {
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
-            if (!isOnline) {
-                alert('لا يمكن حذف التعليق وأنت غير متصل.');
-                return;
-            }
-            const commentId = deleteBtn.dataset.commentId;
-            const tableName = deleteBtn.dataset.tableName;
+            if (!isOnline) { alert('لا يمكن حذف التعليق وأنت غير متصل.'); return; }
+            const commentId = deleteBtn.dataset.commentId, tableName = deleteBtn.dataset.tableName;
             if (confirm('هل أنت متأكد من أنك تريد حذف هذا التعليق؟')) {
                 try {
                     const { error } = await supabaseClient.from(tableName).delete().eq('id', commentId);
@@ -797,9 +726,7 @@ function initializeGlobalEventListeners() {
                     const commentElement = deleteBtn.closest('.comment, .comment-item');
                     if(commentElement) {
                         const repliesContainer = commentElement.nextElementSibling;
-                        if (repliesContainer && (repliesContainer.classList.contains('replies-container') || repliesContainer.classList.contains('news-replies-container'))) {
-                            repliesContainer.remove();
-                        }
+                        if (repliesContainer && (repliesContainer.classList.contains('replies-container') || repliesContainer.classList.contains('news-replies-container'))) repliesContainer.remove();
                         commentElement.remove();
                     }
                     showNotification('تم حذف التعليق بنجاح.');
@@ -808,19 +735,16 @@ function initializeGlobalEventListeners() {
         }
     });
     
-    const newsArticlePage = document.getElementById('article-page');
+    document.getElementById('comment-form')?.addEventListener('submit', handleNewsCommentSubmit);
+
     let touchStartX = 0;
+    const newsArticlePage = document.getElementById('news-page');
     newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
     newsArticlePage.addEventListener('touchend', e => {
         if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 50) {
             if (currentNewsSubPage === 'article') navigateToSubPage('home');
         }
     }, { passive: true });
-
-    window.addEventListener('load', () => {
-        const loader = document.getElementById('loader');
-        if (loader) loader.style.display = 'none';
-    });
 }
 
 let profilePage;
@@ -833,6 +757,7 @@ function initializeProfilePageListeners() {
     if (saveUsernameBtn) saveUsernameBtn.addEventListener('click', handleUpdateUsername);
     if (profileCommentsList) profileCommentsList.addEventListener('click', handleDeleteComment);
 }
+
 function openProfilePage() { if (!currentUser || !profilePage) return; document.getElementById('auth-modal').classList.remove('show'); profilePage.classList.remove('hidden'); setTimeout(() => profilePage.classList.add('is-visible'), 10); loadProfileData(); }
 function closeProfilePage() { if (!profilePage) return; const onTransitionEnd = () => { profilePage.classList.add('hidden'); profilePage.removeEventListener('transitionend', onTransitionEnd); }; profilePage.addEventListener('transitionend', onTransitionEnd, { once: true }); profilePage.classList.remove('is-visible'); setTimeout(() => { if (!profilePage.classList.contains('hidden')) onTransitionEnd(); }, 500); }
 async function loadProfileData() {
@@ -854,8 +779,9 @@ async function fetchAndRenderProfilePredictions() {
         if (!p.matches) return '';
         let resultClass = 'pending', resultIcon = '⏳', resultText = 'قيد الانتظار';
         if (p.matches.actual_winner) {
-            if (p.predicted_winner === p.matches.actual_winner) { resultClass = 'correct'; resultIcon = '✅'; resultText = 'توقع صحيح'; } 
-            else { resultClass = 'incorrect'; resultIcon = '❌'; resultText = `توقع خاطئ (الفائز: ${p.matches.actual_winner})`; }
+            resultClass = p.predicted_winner === p.matches.actual_winner ? 'correct' : 'incorrect';
+            resultIcon = p.predicted_winner === p.matches.actual_winner ? '✅' : '❌';
+            resultText = p.predicted_winner === p.matches.actual_winner ? 'توقع صحيح' : `توقع خاطئ (الفائز: ${p.matches.actual_winner})`;
         }
         return `<div class="profile-prediction-item ${resultClass}"><div class="prediction-match-info"><span>${p.matches.team1_name} ضد ${p.matches.team2_name}</span><span class="prediction-status">${resultIcon} ${resultText}</span></div><div class="prediction-details">توقعت فوز: <strong>${p.predicted_winner}</strong>${p.predicted_scorer ? ` | ومسجل الهدف الأول: <strong>${p.predicted_scorer}</strong>` : ''}</div></div>`;
     }).join('');
