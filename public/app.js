@@ -53,7 +53,7 @@ function navigateToSubPage(pageName) {
     if (pageName === 'article') {
         newsHomePage.style.transform = 'translateX(-100%)';
         newsArticlePage.style.transform = 'translateX(0)';
-        newsArticlePage.scrollTop = 0;
+        if(newsArticlePage) newsArticlePage.scrollTop = 0;
     } else {
         newsHomePage.style.transform = 'translateX(0)';
         newsArticlePage.style.transform = 'translateX(100%)';
@@ -107,7 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (e) {
         console.error("A critical error occurred during initialization:", e);
-        document.body.innerHTML = `<div style="padding: 20px; color: red; text-align: center;"><h1>خطأ فادح في التطبيق</h1><p>${e.message}</p></div>`;
+        // عرض الخطأ للمستخدم النهائي إذا فشلت التهيئة
+        document.body.innerHTML = `<div style="padding: 20px; color: red; text-align: center;"><h1>خطأ فادح في التطبيق</h1><p>${e.message}</p><p>Cannot read properties of undefined (reading 'addListener')</p></div>`;
     }
 });
 
@@ -473,7 +474,7 @@ async function handleFormSubmit(e) {
     } catch (error) {
         showNotification(error.message);
     } finally {
-        if (!form.querySelector('.submit-btn').innerHTML.includes('✅')) {
+        if (form.name !== 'prediction-form' || !submitBtn.innerHTML.includes('✅')) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = form.name === 'prediction-form' ? 'إرسال التوقع' : 'إرسال';
         }
@@ -568,7 +569,7 @@ function renderArticleDetail(articleId) {
     navigateToSubPage('article');
     fetchAndRenderNewsComments(article.id);
     document.getElementById('share-article-btn').addEventListener('click', () => {
-        const articleUrl = `${window.location.origin}/article/${article.id}`;
+        const articleUrl = `${window.location.origin}/#article/${article.id}`;
         shareContent(article.title, `اقرأ هذا المقال: ${article.title}`, articleUrl);
     });
 }
@@ -772,22 +773,25 @@ async function handleUpdateUsername(e) {
 // SECTION 8: NATIVE & REALTIME
 // ==========================================================
 async function registerPushNotifications() {
-  if (!window.Capacitor || !window.Capacitor.isNativePlatform() || !window.Capacitor.Plugins.PushNotifications) return;
-  const { PushNotifications } = window.Capacitor.Plugins;
-  try {
-    let permStatus = await PushNotifications.checkPermissions();
-    if (permStatus.receive === 'prompt') permStatus = await PushNotifications.requestPermissions();
-    if (permStatus.receive !== 'granted') return;
-    await PushNotifications.register();
-    PushNotifications.addListener('registration', async token => {
-      if (currentUser) {
-        await supabaseClient.from('fcm_tokens').upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
-      }
-    });
-    PushNotifications.addListener('pushNotificationReceived', notification => {
-        alert('إشعار جديد: ' + (notification.title || '') + "\n" + (notification.body || ''));
-    });
-  } catch(e) { console.error("Error registering push notifications:", e); }
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform() || !window.Capacitor.Plugins.PushNotifications) {
+        console.log("Push notifications not available on this platform.");
+        return;
+    }
+    const { PushNotifications } = window.Capacitor.Plugins;
+    try {
+        let permStatus = await PushNotifications.checkPermissions();
+        if (permStatus.receive === 'prompt') permStatus = await PushNotifications.requestPermissions();
+        if (permStatus.receive !== 'granted') return;
+        await PushNotifications.register();
+        PushNotifications.addListener('registration', async token => {
+            if (currentUser) {
+                await supabaseClient.from('fcm_tokens').upsert({ user_id: currentUser.id, token: token.value }, { onConflict: 'token' });
+            }
+        });
+        PushNotifications.addListener('pushNotificationReceived', notification => {
+            alert('إشعار جديد: ' + (notification.title || '') + "\n" + (notification.body || ''));
+        });
+    } catch(e) { console.error("Error registering push notifications:", e); }
 }
 
 function initializePullToRefresh() {
@@ -840,8 +844,15 @@ function initializePullToRefresh() {
 }
 
 function initializeBackButtonHandler() {
-    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) return;
+    if (!window.Capacitor || !window.Capacitor.isNativePlatform()) {
+        console.log("Not a native platform. Back button handler will not be initialized.");
+        return;
+    }
     const { App } = window.Capacitor.Plugins;
+    if (!App) {
+        console.warn("Capacitor 'App' plugin is not available.");
+        return;
+    }
     App.addListener('backButton', () => {
         const profilePage = document.getElementById('profile-page');
         const authModal = document.getElementById('auth-modal');
