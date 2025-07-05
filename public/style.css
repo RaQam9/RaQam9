@@ -810,3 +810,17 @@ body {
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     border: 1px solid var(--border-color);
 }
+/* ========================================================== */
+/*   FIX FOR UNIFIED PAGE SCROLLING (Pull-to-Refresh FIX)   */
+/* ========================================================== */
+/*
+  This rule unifies the scrolling behavior for both main pages.
+  It gives them a specific height (viewport height minus the top nav bar)
+  and makes them scroll internally. This is crucial for the "pull-to-refresh"
+  feature to work correctly on both the Predictions and News pages.
+*/
+#predictions-page, #news-page {
+    height: calc(100vh - 70px); /* ارتفاع الشاشة مطروحًا منه ارتفاع شريط التنقل العلوي */
+    overflow-y: auto;          /* إضافة شريط تمرير داخلي عند الحاجة */
+    overflow-x: hidden;        /* منع التمرير الأفقي */
+}
