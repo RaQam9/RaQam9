@@ -2,159 +2,156 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>أخبار وتوقعات المباريات</title>
-
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>المركز الرياضي - نسخة مستقرة</title>
     
-    <!-- Google Fonts (Cairo) -->
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Fonts and Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
+    </script>
 
-    <!-- Link to your external stylesheet -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-05JCQWTWHK');
+    </script>
+    
+   <link rel="stylesheet" href="style.css">
 
 </head>
-<body>
+<body class="bg-[#0d1117]">
 
-    <!-- Initial Loading Spinner -->
-    <div id="loader">
-        <i class="fas fa-spinner fa-spin"></i>
+    <!-- Splash Screen / Loader -->
+    <div id="loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <style>
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 5px solid #30363d;
+                border-top-color: #2f81f7;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        </style>
+        <div class="spinner"></div>
     </div>
-
-    <!-- Header -->
-    <header>
-        <button id="user-icon-btn" class="user-icon-btn">
-            <i class="fa-solid fa-user-pen"></i>
-        </button>
-        <nav>
-            <button id="nav-news-btn" class="nav-btn">أخبار القدم</button>
-            <button id="nav-predictions-btn" class="nav-btn bg-blue-600 text-white">المباريات</button>
-        </nav>
-        <!-- هذا العنصر فارغ لعمل توازن في التصميم -->
-        <div style="width: 30px;"></div>
-    </header>
-
-    <!-- Main Content Area -->
-    <main>
-        <!-- Predictions Page -->
-        <div id="predictions-page" class="page-container">
-            <h1 class="page-title">🏆 توقعات المباريات</h1>
-            <div id="matches-container">
-                <!-- Match cards will be injected here by JS -->
-                <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> جاري تحميل المباريات...</p>
-            </div>
+    
+    <!-- Navigation Bar -->
+    <nav class="bg-[#161b22] border-b border-[#30363d] p-3 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-center items-center gap-4">
+            <button id="nav-predictions-btn" class="nav-btn bg-blue-600 text-white px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-trophy ml-2"></i> توقعات المباريات</button>
+            <button id="nav-news-btn" class="nav-btn text-gray-400 px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-newspaper ml-2"></i> أخبار كرة القدم</button>
         </div>
+    </nav>
 
-        <!-- News Page -->
-        <div id="news-page" class="page-container hidden">
-            <!-- News Home (List of Articles) -->
-            <div id="home-page" class="news-sub-page">
-                 <h1 class="page-title">📰 أخبار كرة القدم</h1>
-                <div id="articles-grid">
-                    <!-- Article cards will be injected here by JS -->
-                    <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>
-                </div>
-            </div>
-            <!-- Single Article View -->
-            <div id="article-page" class="news-sub-page">
-                <input type="hidden" id="article-id-hidden-input">
-                <div id="article-content">
-                    <!-- Full article content will be injected here -->
-                </div>
-                <div id="comments-section-news">
-                    <h3 class="comments-title">التعليقات</h3>
-                    <div id="comments-list" class="comments-list-container">
-                        <!-- News comments will be injected here -->
-                    </div>
-                    <form id="news-comment-form" name="news-comment-form" onsubmit="handleNewsCommentSubmit(event)">
-                        <textarea id="comment-text" name="comment_text" placeholder="أضف تعليقك..." required rows="3"></textarea>
-                        <button id="submit-comment-btn" type="submit" class="submit-btn">إرسال التعليق</button>
+    <!-- Predictions Page -->
+    <div id="predictions-page" class="page-container">
+        <div class="container">
+            <header><h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
+            <div class="news-ticker"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
+            <main id="matches-container">
+                <!-- Content is loaded by JavaScript -->
+            </main>
+        </div>
+        <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
+        
+        <!-- MODAL FOR AUTHENTICATION -->
+        <div class="modal" id="auth-modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-auth-modal-btn">×</span>
+                <!-- Login View -->
+                <div id="login-view">
+                    <h2>تسجيل الدخول</h2>
+                    <form id="login-form">
+                        <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
+                        <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
+                        <button type="submit">دخول</button>
                     </form>
+                    <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
                 </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Authentication Modal -->
-    <div id="auth-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button id="close-auth-modal-btn" class="close-modal-btn">×</button>
-            
-            <!-- Login View -->
-            <div id="login-view">
-                <h2>تسجيل الدخول</h2>
-                <form id="login-form" class="auth-form">
-                    <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
-                    <input type="password" id="login-password" placeholder="كلمة المرور" required>
-                    <button type="submit" class="submit-btn">دخول</button>
-                </form>
-                <div class="auth-switch">
-                    <p>ليس لديك حساب؟ <a id="show-signup">إنشاء حساب جديد</a></p>
+                <!-- Signup View -->
+                <div id="signup-view" style="display: none;">
+                    <h2>إنشاء حساب جديد</h2>
+                    <form id="signup-form">
+                        <div class="form-control"><label for="signup-username">اسم المستخدم (سيظهر في التعليقات)</label><input type="text" id="signup-username" required></div>
+                        <div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div>
+                        <div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div>
+                        <button type="submit">إنشاء حساب</button>
+                    </form>
+                    <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
                 </div>
-            </div>
-
-            <!-- Signup View -->
-            <div id="signup-view" style="display: none;">
-                <h2>إنشاء حساب جديد</h2>
-                <form id="signup-form" class="auth-form">
-                    <input type="text" id="signup-username" placeholder="اسم المستخدم" required>
-                    <input type="email" id="signup-email" placeholder="البريد الإلكتروني" required>
-                    <input type="password" id="signup-password" placeholder="كلمة المرور" required>
-                    <button type="submit" class="submit-btn">إنشاء حساب</button>
-                </form>
-                <div class="auth-switch">
-                    <p>لديك حساب بالفعل؟ <a id="show-login">تسجيل الدخول</a></p>
+                <!-- Logged In View -->
+                <div id="loggedin-view" style="display: none;">
+                    <h2>أهلاً بك!</h2>
+                    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
+                    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
+                        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
+                    </button>
+                    <button id="logout-btn">تسجيل الخروج</button>
                 </div>
+                <div id="auth-message"></div>
             </div>
-            
-            <!-- Logged In View -->
-            <div id="loggedin-view" style="display: none;">
-                <h2 id="user-email-display">أهلاً بك!</h2>
-                <button id="open-profile-btn" class="modal-button">ملفي الشخصي</button>
-                <button id="logout-btn" class="modal-button danger">تسجيل الخروج</button>
-            </div>
-
-            <p id="auth-message"></p>
         </div>
     </div>
-
+    
+    <!-- News Page -->
+    <div id="news-page" class="page-container hidden relative">
+        <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
+        <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
+            <form id="comment-form" name="news-comment-form">
+                <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
+                <h3>أضف تعليقك</h3>
+                <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+                <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+            </form>
+        </div></div>
+        <div id="notification-toast"></div>
+        <div id="exit-toast">انقر مرة أخرى للخروج</div>
+    </div>
+  
     <!-- Profile Page -->
-    <div id="profile-page" class="modal-overlay hidden">
-        <div class="profile-content">
-            <button id="close-profile-btn" class="close-modal-btn">×</button>
-            <h2>الملف الشخصي</h2>
-            
-            <div class="profile-section">
-                <h3>تعديل اسم المستخدم</h3>
-                <input type="text" id="profile-username-input" class="text-input" placeholder="اكتب اسمك الجديد هنا">
-                <button id="save-username-btn" class="submit-btn">حفظ</button>
-                <p id="username-status"></p>
-            </div>
-            
-            <div class="profile-section">
-                <h3>توقعاتي</h3>
-                <div id="profile-predictions-list" class="profile-list"></div>
-            </div>
-
-            <div class="profile-section">
-                <h3>تعليقاتي</h3>
-                <div id="profile-comments-list" class="profile-list"></div>
-            </div>
-        </div>
+    <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
+        <header class="flex items-center justify-between pb-4 border-b border-[#30363d] mb-6">
+            <h1 class="text-2xl font-bold"><i class="fa-solid fa-user-circle ml-3"></i>الملف الشخصي</h1>
+            <button id="close-profile-btn" class="text-2xl text-gray-400">×</button>
+        </header>
+        <main>
+            <section id="username-section" class="mb-8 p-4 bg-[#161b22] rounded-lg border border-[#30363d]">
+                <h2 class="text-lg font-bold mb-3">تغيير اسم المستخدم</h2>
+                <div class="flex gap-2">
+                    <input type="text" id="profile-username-input" class="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2 text-white" placeholder="اسم المستخدم الجديد...">
+                    <button id="save-username-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold">حفظ</button>
+                </div>
+                <p id="username-status" class="text-sm mt-2 text-gray-400"></p>
+            </section>
+            <section id="profile-predictions-section" class="mb-8">
+                <h2 class="text-lg font-bold mb-3">آخر توقعاتك</h2>
+                <div id="profile-predictions-list" class="space-y-3"></div>
+            </section>
+            <section id="profile-comments-section">
+                <h2 class="text-lg font-bold mb-3">آخر تعليقاتك</h2>
+                <div id="profile-comments-list" class="space-y-3"></div>
+            </section>
+        </main>
     </div>
     
-    <!-- Toasts for Notifications -->
-    <div id="notification-toast" class="toast"></div>
-    <div id="exit-toast" class="toast">اضغط مرة أخرى للخروج</div>
-    
-    <!-- Link to your JavaScript file -->
-    <script defer src="script.js"></script>
-
+    <script src="capacitor.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
