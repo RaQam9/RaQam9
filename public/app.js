@@ -27,7 +27,7 @@ function navigateToSubPage(pageName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ⬇️⬇️ الكود الجديد للتحكم في شريط الحالة و شاشة البداية ⬇️⬇️
+    // ⬇️⬇️ الكود الجديد للتحكم في شريط الحالة و شاشة البداية (مع التعديل) ⬇️⬇️
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
         const { StatusBar, SplashScreen, Style } = window.Capacitor.Plugins;
         
@@ -37,15 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // جعل لونه داكنًا ليتناسب مع تصميمك
         StatusBar.setStyle({ style: Style.Dark });
         
-        // منع المحتوى من الظهور خلف شريط الحالة
-        StatusBar.setOverlaysWebView({ overlay: true });
+        // =================================================================
+        //                       ✨✨  الحل هنا ✨✨
+        //  قمنا بتغيير القيمة إلى false لمنع المحتوى من الاختباء خلف شريط الحالة
+        // =================================================================
+        StatusBar.setOverlaysWebView({ overlay: false });
 
         // إخفاء شاشة البداية بعد أن يتم تحميل الصفحة
         SplashScreen.hide();
     }
     // ⬆️⬆️ نهاية الكود الجديد ⬆️⬆️
 
-    // ======== الكود الأصلي الخاص بك يبدأ من هنا ========
+    // ======== الكود الأصلي الخاص بك يبدأ من هنا (بدون تغيير) ========
 
     // Check if Capacitor is available
     if (window.Capacitor) {
@@ -94,6 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initializePullToRefresh();
     initializeBackButtonHandler();
 });
+
+// ... باقي الكود يبقى كما هو بدون أي تغيير
 
 
 // ==========================================================
