@@ -14,7 +14,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Node
@@ -30,7 +30,7 @@ jobs:
         run: npx cap add android
 
       - name: Generate Resources
-        run: npx capacitor-assets generate
+        run: npx capacitor-assets generate --asset-path
 
       - name: Copy Google Services File
         run: cp google-services.json android/app/
