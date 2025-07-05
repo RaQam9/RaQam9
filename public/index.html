@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>المركز الرياضي - نسخة مستقرة</title>
     
+    <!-- ============================================= -->
+    <!-- ==== الأكواد المضافة لدعم PWA والأوفلاين ==== -->
+    <!-- ============================================= -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#161b22">
+    <!-- ============================================= -->
+    
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -153,5 +160,14 @@
     
     <script src="capacitor.js"></script>
     <script src="app.js"></script>
+
+    <!-- ======================================================== -->
+    <!-- ==== العنصر المضاف لإظهار حالة عدم الاتصال بالإنترنت ==== -->
+    <!-- ======================================================== -->
+    <div id="offline-status" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #c93434; color: white; text-align: center; padding: 10px; z-index: 10000; font-family: 'Tajawal', sans-serif; font-size: 0.9rem; font-weight: bold; border-top: 1px solid #e25858;">
+        <i class="fa-solid fa-wifi-slash" style="margin-left: 8px;"></i> أنت غير متصل. يتم عرض نسخة محفوظة.
+    </div>
+    <!-- ======================================================== -->
+
 </body>
 </html>
