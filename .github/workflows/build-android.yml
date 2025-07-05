@@ -29,8 +29,9 @@ jobs:
       - name: Add Android Platform
         run: npx cap add android
 
-      - name: Generate Resources
-        run: npx capacitor-assets generate --android --asset-path "./"
+      # 6. توليد الأيقونات
+- name: Generate Resources
+  run: npx capacitor-assets generate
 
       - name: Copy Google Services File
         run: cp google-services.json android/app/
