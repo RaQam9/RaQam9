@@ -737,45 +737,47 @@ async function initializeNewsPage() {
 // ==== إضافة: دالة المشاركة الجديدة ====
 // ===================================
 /**
- * Handles sharing an article.
- * This version prioritizes the native share dialog (Capacitor/Web Share)
- * and does not fall back to copying a link, as per user request.
- * It prepares the share data WITHOUT a URL, based on the feedback "يمسح فقط الرابط".
+ * Handles sharing an article with a unique, deep-linkable URL.
+ * It prioritizes Capacitor Share, then Web Share API, and falls back to copying to clipboard.
  * @param {string} articleId - The ID of the article to share.
  * @param {string} articleTitle - The title of the article.
  */
 async function handleShareArticle(articleId, articleTitle) {
-    // بناء بيانات المشاركة بدون رابط، بناءً على طلب "يمسح فقط الرابط"
+    // 1. توليد الرابط العميق الكامل للمقال
+    // يستخدم window.location.origin للحصول على نطاق موقعك تلقائيًا (e.g., https://myapp.netlify.app)
+    const shareUrl = `${window.location.origin}/news/${articleId}`;
+
+    // 2. إعداد بيانات المشاركة
     const shareData = {
         title: articleTitle,
         text: `اطلع على هذا الخبر: "${articleTitle}"`,
-        // خاصية الرابط (url) تم حذفها عمداً
+        url: shareUrl, // الرابط الذي سيتم مشاركته
     };
 
     try {
-        // 1. الأولوية لتطبيق Capacitor الأصلي
+        // 3. محاولة المشاركة باستخدام واجهات برمجة التطبيقات الأصلية أولاً
         if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-            console.log("Using Capacitor Share API (Text Only)");
+            console.log("Using Capacitor Share API");
             await window.Capacitor.Plugins.Share.share(shareData);
-            return; // تمت المشاركة بنجاح
+            return;
         }
 
-        // 2. المحاولة الثانية: استخدام Web Share API في المتصفحات الداعمة
         if (navigator.share) {
-            console.log("Using Web Share API (Text Only)");
+            console.log("Using Web Share API");
             await navigator.share(shareData);
-            return; // تمت المشاركة بنجاح
+            return;
         }
 
-        // 3. الحل البديل: إذا لم تكن أي من طرق المشاركة متاحة، يتم إعلام المستخدم
-        // Fallback: Instead of copying, inform the user that sharing is not supported.
-        showNotification('عذراً، المشاركة الأصلية غير مدعومة على هذا الجهاز.');
+        // 4. الحل البديل للمتصفحات التي لا تدعم المشاركة: نسخ الرابط
+        console.log("Fallback: Copying to clipboard");
+        await navigator.clipboard.writeText(shareUrl);
+        showNotification('✅ تم نسخ رابط المقال إلى الحافظة!');
 
     } catch (err) {
         // تجاهل الأخطاء الناتجة عن إلغاء المستخدم لعملية المشاركة
         if (err.name !== 'AbortError' && !err.message.includes('Share canceled')) {
             console.error('Share failed:', err);
-            showNotification('❌ فشلت عملية المشاركة.');
+            showNotification('❌ فشلت عملية المشاركة أو النسخ.');
         }
     }
 }
@@ -1157,3 +1159,70 @@ window.addEventListener('load', () => {
         loader.style.display = 'none';
     }
 });
+
+/**
+ * Checks the URL on load for a deep link to a news article and displays it.
+ * @returns {Promise<boolean>} - Returns true if a deep link was handled, false otherwise.
+ */
+async function handleDeepLink() {
+    const path = window.location.pathname; // e.g., "/news/123"
+    const match = path.match(/^\/news\/(\d+)/); // Check if path matches /news/ARTICLE_ID
+
+    if (match && match[1]) {
+        const articleId = match[1];
+        console.log(`Deep link detected for article ID: ${articleId}`);
+
+        // أظهر شاشة التحميل مجدداً بشكل مؤقت
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'flex';
+
+        try {
+            // قم بالتبديل إلى صفحة الأخبار
+            document.getElementById('nav-news-btn').click();
+
+            // جلب بيانات المقال المحدد مباشرة من Supabase
+            const { data: article, error } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('id', articleId)
+                .single(); // .single() لجلب سجل واحد فقط
+
+            if (error || !article) {
+                throw new Error(error ? error.message : "Article not found.");
+            }
+
+            // الآن، قم بعرض تفاصيل المقال
+            // نحتاج إلى التأكد من أن articlesCache موجودة
+            if (!window.articlesCache) window.articlesCache = [];
+            // أضف المقال إلى الكاش إذا لم يكن موجودًا
+            if (!window.articlesCache.some(a => a.id === article.id)) {
+                 window.articlesCache.push(article);
+            }
+           
+            // ابحث عن دالة renderArticleDetail وعرض المقال
+            const articleContent = document.getElementById('article-content');
+            document.getElementById('article-id-hidden-input').value = article.id;
+            articleContent.innerHTML = `
+                <div id="article-header"><h1>${article.title}</h1></div>
+                <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+                <div>${article.content}</div>
+                <div id="article-footer">
+                    <button id="share-article-btn" data-article-id="${article.id}" data-article-title="${article.title}">
+                        <i class="fa-solid fa-share-nodes"></i> مشاركة المقال
+                    </button>
+                </div>`;
+            navigateToSubPage('article');
+            fetchAndRenderNewsComments(article.id);
+
+            return true; // تم التعامل مع الرابط بنجاح
+        } catch (err) {
+            console.error("Failed to handle deep link:", err);
+            // إذا فشل، قم بالعودة إلى الصفحة الرئيسية
+            window.history.replaceState({}, document.title, "/");
+            return false;
+        } finally {
+             if (loader) loader.style.display = 'none';
+        }
+    }
+    return false; // لا يوجد رابط عميق للتعامل معه
+}
