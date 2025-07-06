@@ -757,7 +757,74 @@ async function initializeNewsPage(renderList = true) {
     }
 }
 
+// ==========================================================
+//  (NEW) Article Rendering Functions
+// ==========================================================
 
+/**
+ * Renders the list of article cards on the news home page.
+ * @param {Array} articles - The array of article objects to render.
+ */
+function renderArticleCards(articles) {
+    const articlesGrid = document.getElementById('articles-grid');
+    articlesGrid.innerHTML = '';
+    if (!articles || articles.length === 0) {
+        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
+        return;
+    }
+    articles.forEach(article => {
+        const card = document.createElement('div');
+        card.className = 'article-card';
+        card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
+        
+        // عند الضغط على البطاقة، نستدعي الدالة الجديدة
+        card.addEventListener('click', () => renderArticleDetail(article.id));
+        
+        articlesGrid.appendChild(card);
+    });
+}
+
+/**
+ * Renders the detail view for a single article.
+ * @param {number} articleId - The ID of the article to render.
+ * @param {boolean} fromDeepLink - Flag to indicate if the call is from a deep link.
+ */
+function renderArticleDetail(articleId, fromDeepLink = false) {
+    // ابحث عن المقال في الكاش الذي قمنا بتعبئته
+    const article = articlesCache.find(a => a.id === articleId);
+    if (!article) {
+        console.error(`Article with ID ${articleId} not found in cache.`);
+        // يمكنك هنا إضافة رسالة خطأ للمستخدم
+        return;
+    }
+
+    const articleContent = document.getElementById('article-content');
+    document.getElementById('article-id-hidden-input').value = article.id;
+    
+    // بناء HTML لصفحة المقال مع زر المشاركة الجديد
+    articleContent.innerHTML = `
+        <div id="article-header">
+            <h1>${article.title}</h1>
+        </div>
+        <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+        <div>${article.content}</div>
+        
+        <div id="article-footer">
+            <button id="share-article-btn" data-article-id="${article.id}" data-article-title="${article.title}">
+                <i class="fa-solid fa-share-nodes"></i> مشاركة المقال
+            </button>
+        </div>`;
+    
+    // الانتقال إلى صفحة عرض المقال
+    navigateToSubPage('article');
+    // جلب التعليقات الخاصة بهذا المقال
+    fetchAndRenderNewsComments(article.id);
+    
+    // تحديث الرابط في شريط العنوان (فقط إذا لم نأت من رابط مباشر)
+    if (!fromDeepLink) {
+        window.history.pushState({ articleId: article.id }, article.title, `/news/${article.id}`);
+    }
+}
 // ===================================
 // ==== إضافة: دالة المشاركة الجديدة ====
 // ===================================
