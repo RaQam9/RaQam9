@@ -9,6 +9,59 @@ const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
 let currentNewsSubPage = 'home'; // Moved to global scope for back button access
+let articlesCache = [];
+
+/**
+ * Checks the URL on load for a deep link to a news article and displays it.
+ * @returns {Promise<boolean>} - Returns true if a deep link was handled, false otherwise.
+ */
+async function handleDeepLink() {
+    const path = window.location.pathname;
+    const match = path.match(/^\/news\/(\d+)/);
+
+    if (match && match[1]) {
+        const articleId = parseInt(match[1], 10);
+        console.log(`Deep link detected for article ID: ${articleId}`);
+
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'flex';
+
+        try {
+            // قم بالتبديل إلى صفحة الأخبار لعرضها
+            document.getElementById('nav-news-btn').click();
+            
+            const { data: article, error } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('id', articleId)
+                .single();
+
+            if (error || !article) {
+                throw new Error(error ? error.message : "Article not found.");
+            }
+            
+            // أضف المقال إلى الكاش إذا لم يكن موجوداً
+            if (!articlesCache.some(a => a.id === article.id)) {
+                 articlesCache.push(article);
+            }
+           
+            // استدعاء دالة عرض المقال مباشرة
+            renderArticleDetail(article.id, true);
+            
+            // تحديث سجل التصفح لتجنب إعادة التحميل الخاطئة
+            window.history.replaceState({}, '', `/news/${articleId}`);
+
+            return true;
+        } catch (err) {
+            console.error("Failed to handle deep link:", err);
+            window.history.replaceState({}, '', "/");
+            return false;
+        } finally {
+             if (loader) loader.style.display = 'none';
+        }
+    }
+    return false;
+}
 
 // Moved to global scope for access from back button handler
 function navigateToSubPage(pageName) {
@@ -26,12 +79,9 @@ function navigateToSubPage(pageName) {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 
-    // =============================================
-    // ==== الأكواد المضافة لدعم PWA والأوفلاين ====
-    // =============================================
-    // 1. تسجيل الـ Service Worker
+    // PWA & Offline Support Setup
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
@@ -43,32 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     }
-
-    // 2. إدارة إظهار وإخفاء شريط حالة الاتصال
     const offlineStatusDiv = document.getElementById('offline-status');
     const handleConnectionChange = () => {
-        if (navigator.onLine) {
-            offlineStatusDiv.style.display = 'none';
-        } else {
-            offlineStatusDiv.style.display = 'block';
-        }
+        offlineStatusDiv.style.display = navigator.onLine ? 'none' : 'block';
     };
-
     window.addEventListener('online', handleConnectionChange);
     window.addEventListener('offline', handleConnectionChange);
-
-    // التحقق من الحالة عند تحميل الصفحة لأول مرة
     handleConnectionChange();
-    // =============================================
 
-
-    // Check if Capacitor is available
-    if (window.Capacitor) {
-        console.log("Capacitor is available.");
-    } else {
-        console.log("Capacitor is not available. Running in web mode.");
-    }
-
+    // Navigation Buttons Setup
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
@@ -92,22 +125,34 @@ document.addEventListener('DOMContentLoaded', () => {
             predictionsBtn.classList.add('text-gray-400');
         }
     }
-
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
+    // Initialize Core Functionalities
     initializeAuth();
-    initializePredictionsPage();
-    initializeNewsPage();
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
-
-    // ===================================
-    //  Initialize new features
-    // ===================================
     initializePullToRefresh();
     initializeBackButtonHandler();
+
+    // Handle Deep Link or Load Default Pages
+    const deepLinkHandled = await handleDeepLink();
+
+    if (deepLinkHandled) {
+        // إذا تم عرض مقال، قم بتحميل باقي الصفحات في الخلفية
+        initializeNewsPage(false); // حمّل قائمة الأخبار لكن لا تعرضها
+        initializePredictionsPage();
+    } else {
+        // إذا لم يكن هناك رابط، قم بتحميل الصفحة الافتراضية
+        switchPage('predictions');
+        initializePredictionsPage();
+        initializeNewsPage(true); // حمّل قائمة الأخبار واعرضها
+    }
+    
+    // Hide main loader
+    const loader = document.getElementById('loader');
+    if(loader) loader.style.display = 'none';
 });
 
 
