@@ -697,84 +697,64 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-async function initializeNewsPage() {
+// ==========================================================
+//  (REVISED) initializeNewsPage Function
+// ==========================================================
+async function initializeNewsPage(renderList = true) {
     const articlesGrid = document.getElementById('articles-grid');
-    const articleContent = document.getElementById('article-content');
-    const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
-    let articlesCache = [];
-    
-    async function fetchArticlesFromDB() {
-        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
-        const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
-        if (error) { 
-             if (navigator.onLine) {
-                console.error("Supabase error:", error); 
-                articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; 
-             } else {
-                console.warn('Failed to fetch articles, hopefully serving from cache.');
-             }
-             return null;
+
+    // دالة داخلية لجلب وتخزين المقالات
+    async function fetchAndCacheArticles() {
+        // لا نعرض "جاري التحميل" إلا إذا كنا سنعرض القائمة بالفعل
+        if (renderList) {
+           articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
         }
-        return data;
-    }
-    function renderArticleCards(articles) {
-        articlesGrid.innerHTML = ''; if (!articles || articles.length === 0) { articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>'; return; }
-        articles.forEach(article => {
-            const card = document.createElement('div'); card.className = 'article-card';
-            card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
-            card.addEventListener('click', () => renderArticleDetail(article.id));
-            articlesGrid.appendChild(card);
-        });
-    }
-        function renderArticleDetail(articleId) {
-        const article = articlesCache.find(a => a.id === articleId); if (!article) return;
-        document.getElementById('article-id-hidden-input').value = article.id;
-        
-        // ==== تعديل: تم نقل زر المشاركة إلى حاوية جديدة في الأسفل ====
-        articleContent.innerHTML = `
-            <div id="article-header">
-                <h1>${article.title}</h1>
-            </div>
-            <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
-            <div>${article.content}</div>
+        try {
+            const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
+            if (error) throw error;
             
-            <div id="article-footer">
-                <button id="share-article-btn" data-article-id="${article.id}" data-article-title="${article.title}">
-                    <i class="fa-solid fa-share-nodes"></i> مشاركة المقال
-                </button>
-            </div>`;
-        
-        navigateToSubPage('article');
-        fetchAndRenderNewsComments(article.id);
-    }
-    
-    async function start() {
-        const fetchedArticles = await fetchArticlesFromDB();
-        if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
+            // تحديث الكاش العام بالبيانات الجديدة
+            articlesCache = data; 
+            
+            // عرض بطاقات الأخبار فقط إذا كان renderList صحيحًا
+            if (renderList) {
+                renderArticleCards(articlesCache);
+            }
+        } catch (error) {
+            if (navigator.onLine) {
+                console.error("Error fetching articles:", error);
+                if (renderList) articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
+            } else {
+                console.warn('Failed to fetch articles, hopefully serving from cache.');
+                // إذا كان المستخدم غير متصل، حاول عرض البيانات من الكاش إن وجدت
+                if (renderList && articlesCache.length > 0) {
+                    renderArticleCards(articlesCache);
+                }
+            }
+        }
     }
 
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
     
-    // NEW: Enhanced swipe gesture
+    // Swipe gesture for back navigation
+    const newsArticlePage = document.getElementById('article-page');
     let touchStartX = 0;
-    newsArticlePage.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-    
+    newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
     newsArticlePage.addEventListener('touchend', e => {
-        const touchEndX = e.changedTouches[0].screenX;
-        // If there's a horizontal swipe of more than 50px, navigate back
-        if (Math.abs(touchEndX - touchStartX) > 50) {
+        if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 50) {
             if (currentNewsSubPage === 'article') {
                 navigateToSubPage('home');
             }
         }
     }, { passive: true });
     
-    start();
+    // نقوم بجلب المقالات فقط إذا كان الكاش فارغًا أو إذا كنا بحاجة لعرض القائمة
+    if (articlesCache.length === 0 || renderList) {
+        await fetchAndCacheArticles();
+    }
 }
 
 
