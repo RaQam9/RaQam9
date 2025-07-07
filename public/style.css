@@ -18,17 +18,16 @@
     padding: 0;
     box-sizing: border-box;
 }
-/* تعديل 1: إصلاح بنية التمرير الرئيسية */
 html, body {
     font-family: 'Tajawal', sans-serif;
     background-color: var(--bg-color);
     color: var(--primary-text-color);
     line-height: 1.6;
-    overflow: hidden;
+    overflow: hidden; /* يمنع تمرير الصفحة بأكملها */
     height: 100%;
 }
 .page-container {
-    height: calc(100vh - 61px); /* اضبط هذا الرقم ليتناسب مع ارتفاع الشريط العلوي */
+    height: calc(100vh - 61px); /* اضبط 61px ليتناسب مع ارتفاع الشريط العلوي لديك */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -67,9 +66,8 @@ html, body {
 
 
 /* ========================================================== */
-/*   GLOBAL COMPONENTS (MODAL, FLOATING ICON) - (MODIFIED)    */
+/*   GLOBAL COMPONENTS (MODAL, FLOATING ICON)               */
 /* ========================================================== */
-/* تعديل 2: جعل هذه العناصر عامة بدلاً من حصرها بصفحة التوقعات */
 .floating-icon-container {
     position: fixed;
     bottom: 20px; left: 20px;
@@ -139,18 +137,13 @@ html, body {
 .modal #auth-message {
     text-align: center; margin-top: 10px; font-size: 0.9rem;
 }
+
+
 /* =================================== */
 /*   PREDICTIONS PAGE STYLES           */
 /* =================================== */
 #predictions-page .container {
     max-width: 800px; margin: 0 auto; padding: 15px;
-}
-#predictions-page header h1, #news-page header h1 {
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    font-weight: 700;
-    padding: 15px 0;
 }
 #predictions-page .news-ticker {
     background-color: var(--surface-color);
@@ -315,9 +308,8 @@ html, body {
 /* =================================== */
 /*        NEWS PAGE STYLES (FIXED)     */
 /* =================================== */
-/* تعديل 3: إصلاح بنية صفحة الأخبار الفرعية والمقال */
 #news-page {
-    /* لا نحتاج لتحديد ارتفاع هنا لأن .page-container يعتني به */
+    /* الارتفاع يُدار الآن بواسطة .page-container العام */
     position: relative;
     overflow: hidden; /* مهم لمنع ظهور الصفحات المنزلقة */
 }
@@ -331,6 +323,8 @@ html, body {
     transition: transform .35s ease-in-out;
     display: flex;
     flex-direction: column;
+    overflow-y: auto; /* كل صفحة فرعية (قائمة الأخبار والمقال) لها تمريرها الخاص */
+    -webkit-overflow-scrolling: touch;
 }
 
 #news-page #home-page {
@@ -348,6 +342,13 @@ html, body {
     padding: 15px; /* Add padding to content */
     padding-top: 0;
     flex-grow: 1; 
+}
+#predictions-page header h1, #news-page header h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+    padding: 15px 0;
 }
 #article-page #article-header h1 {
     font-size: 2.2rem;
@@ -501,6 +502,7 @@ html, body {
     font-weight: 700;
     flex-grow: 1;
 }
+
 /* --- Toasts & Notifications --- */
 #exit-toast, #notification-toast {
     position: fixed;
@@ -598,7 +600,6 @@ html, body {
     color: var(--accent-color);
     font-weight: bold;
 }
-
 
 /* =================================== */
 /*   STYLES FOR IMAGE PLACEHOLDERS     */
