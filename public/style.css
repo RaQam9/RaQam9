@@ -26,54 +26,41 @@ body {
 }
 
 /* ========================================================== */
-/*   ⬇️⬇️⬇️   إصلاح سلاسة التمرير والانتقال (التعديل الرئيسي)   ⬇️⬇️⬇️    */
+/*   إصلاح سلاسة التمرير والانتقال (التعديل الرئيسي)    */
 /* ========================================================== */
-
-/* الخطوة 1: منع العنصر body من التمرير لعزل تمرير المحتوى */
 html, body {
-    overflow: hidden; /* يمنع ظهور شريط التمرير على الصفحة بأكملها */
-    height: 100%;     /* يضمن أن body يملأ الشاشة بالكامل */
+    overflow: hidden; 
+    height: 100%;     
 }
-
-/* الخطوة 2: جعل حاويات الصفحات الرئيسية (مثل صفحة التوقعات) تملأ المساحة المتبقية وتكون قابلة للتمرير */
 .page-container {
-    height: calc(100vh - 70px); /* 100% من ارتفاع الشاشة ناقص ارتفاع شريط التنقل (70px تقريبيًا) */
-    overflow-y: auto;          /* إضافة شريط تمرير رأسي فقط عند الحاجة */
-    overflow-x: hidden;        /* منع التمرير الأفقي غير المرغوب فيه */
-    -webkit-overflow-scrolling: touch; /* لتحسين سلاسة التمرير على أجهزة iOS */
+    height: calc(100vh - 70px); 
+    overflow-y: auto;          
+    overflow-x: hidden;        
+    -webkit-overflow-scrolling: touch; 
 }
-
-/* الخطوة 3: تعديل خاص لحاوية صفحة الأخبار (#news-page) */
-/* لأنها تحتوي على صفحات فرعية منزلقة، يجب أن تكون هي نفسها ثابتة (مخفية التمرير) لتكون بمثابة "إطار" للانتقال */
 #news-page {
-    overflow: hidden !important; /* مهم جدًا: لإخفاء الصفحة الفرعية التي تنزلق للخارج */
-    position: relative;          /* لكي يتم تحديد موضع الصفحات الفرعية بداخلها بشكل صحيح */
+    overflow: hidden !important; 
+    position: relative;          
 }
-
-/* الخطوة 4: تنسيق الصفحات الفرعية داخل حاوية الأخبار (قائمة المقالات وصفحة المقال) */
-#news-page .page { /* يطبق على #home-page و #article-page */
+#news-page .page {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;               /* تجعلها تملأ حاوية #news-page بالكامل */
-    overflow-y: auto;           /* هذه هي العناصر التي يجب أن تكون قابلة للتمرير فعليًا */
+    height: 100%;               
+    overflow-y: auto;           
     background-color: var(--bg-color);
     transition: transform .35s ease-in-out;
     display: flex;
     flex-direction: column;
 }
-/* ========================================================== */
-/*                ⬆️⬆️⬆️   نهاية قسم الإصلاح   ⬆️⬆️⬆️               */
-/* ========================================================== */
-
 
 /* =================================== */
 /* NEW STYLES for Pull-to-Refresh      */
 /* =================================== */
 .pull-to-refresh-indicator-fixed {
     position: fixed;
-    top: 70px; /* ليظهر تحت شريط التنقل مباشرة */
+    top: 70px; 
     left: 0;
     right: 0;
     z-index: 100;
@@ -98,6 +85,8 @@ html, body {
     border: 1px solid var(--border-color);
 }
 
+/* ... كل التنسيقات الأخرى تبقى كما هي ... */
+
 
 /* =================================== */
 /*   PREDICTIONS PAGE STYLES           */
@@ -117,7 +106,7 @@ html, body {
     padding: 15px 0;
 }
 
-/* --- Floating User Icon & Modal --- */
+/* ... (بقية تنسيقات صفحة التوقعات) ... */
 .floating-icon-container {
     position: fixed;
     bottom: 20px;
@@ -231,8 +220,6 @@ html, body {
     margin-top: 10px;
     font-size: 0.9rem;
 }
-
-/* --- News Ticker --- */
 .news-ticker {
     background-color: var(--surface-color);
     border-radius: 8px;
@@ -266,8 +253,6 @@ html, body {
     font-size: .9rem;
     color: var(--secondary-text-color);
 }
-
-/* --- Date Tabs --- */
 .date-tabs-container {
     display: flex;
     width: 100%;
@@ -302,8 +287,6 @@ html, body {
     from { opacity: 0; }
     to { opacity: 1; }
 }
-
-/* --- Match Card --- */
 .match-card {
     background-color: var(--surface-color);
     border: 1px solid var(--border-color);
@@ -381,8 +364,6 @@ html, body {
     color: white;
     background-color: var(--danger-color);
 }
-
-/* --- Prediction & Comment Forms --- */
 .prediction-form,
 .comment-form {
     background-color: var(--bg-color);
@@ -460,8 +441,6 @@ html, body {
     opacity: .8;
     cursor: not-allowed;
 }
-
-/* --- Match Comments Section --- */
 .match-footer {
     padding: 0 20px 20px;
 }
@@ -554,11 +533,19 @@ html, body {
     padding-bottom: 10px;
     flex-grow: 1;
 }
-#news-page #article-header h1 {
-    font-size: 1.8rem;
-    line-height: 1.4;
-    margin-bottom: 20px;
+
+/* ================================================== */
+/*   ⬇️⬇️⬇️   تعديل: تنسيق جديد لعنوان المقال   ⬇️⬇️⬇️   */
+/* ================================================== */
+#article-page #article-header h1 {
+    font-size: 2.2rem; /* تكبير حجم الخط */
+    font-weight: 700;  /* خط عريض */
+    line-height: 1.3;  /* تقليل المسافة بين السطور */
+    margin-bottom: 20px; /* مسافة سفلية */
+    color: var(--primary-text-color); /* استخدام اللون الرئيسي للنص */
 }
+/* ================================================== */
+
 #news-page #article-content img {
     width: 100%;
     max-height: 400px;
@@ -566,14 +553,13 @@ html, body {
     border-radius: 8px;
     margin-bottom: 20px;
 }
-#news-page #article-content > div {
+#news-page #article-content > div.article-body-text {
     font-size: 1.1rem;
     line-height: 1.8;
     color: var(--secondary-text-color);
 }
-
 #news-page .comments-section {
-    padding: 20px 0;
+    padding: 20px 15px;
     margin-top: 15px;
     border-top: 1px solid var(--border-color);
 }
@@ -679,8 +665,6 @@ html, body {
     font-weight: 700;
     flex-grow: 1;
 }
-
-/* --- Toasts & Notifications --- */
 #exit-toast, #notification-toast {
     position: fixed;
     bottom: -100px;
@@ -702,7 +686,7 @@ html, body {
 /*      PROFILE PAGE STYLES            */
 /* =================================== */
 #profile-page.is-visible { transform: translateX(0); }
-#profile-page.hidden { display: none !important; } /* Use important to ensure it's hidden */
+#profile-page.hidden { display: none !important; }
 
 .delete-comment-btn-profile {
     background-color: var(--danger-color);
@@ -761,8 +745,6 @@ html, body {
 .profile-comment-item .comment-content { flex-grow: 1; }
 .profile-comment-item .comment-text { display: block; margin-bottom: 5px; color: var(--primary-text-color); }
 .profile-comment-item .comment-meta { font-size: 0.8rem; color: var(--secondary-text-color); }
-
-/* --- Replies & Admin Comments --- */
 .replies-container, .news-replies-container {
     margin-right: 30px;
     margin-top: 10px;
@@ -778,11 +760,6 @@ html, body {
     color: var(--accent-color);
     font-weight: bold;
 }
-
-/* =================================== */
-/*   STYLES FOR IMAGE PLACEHOLDERS     */
-/* =================================== */
-
 .image-placeholder {
     display: flex;
     justify-content: center;
@@ -802,16 +779,13 @@ html, body {
     margin-bottom: 20px;
 }
 
-/* ================================================= */
-/* ==== Article Action Bar Styles                  ==== */
-/* ================================================= */
-
 .article-footer {
     display: flex;
     gap: 1rem;
-    padding-top: 1rem;
-    margin-top: auto; /* يدفع الشريط للأسفل */
+    padding: 1rem 15px; /* إضافة padding أفقي */
+    margin: auto -15px -15px -15px; /* إزالة الـ padding من الحاوية الرئيسية */
     border-top: 1px solid var(--border-color);
+    background-color: var(--bg-color); /* إضافة لون خلفية */
 }
 
 .article-action-btn {
