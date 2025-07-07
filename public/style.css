@@ -1,11 +1,11 @@
 /* =================================== */
-/*        GLOBAL & VARIABLES           */
+/* GLOBAL STYLES & VARIABLES           */
 /* =================================== */
 :root {
     --bg-color: #0d1117;
     --surface-color: #161b22;
-    --primary-text-color: #c9d1d9;
-    --secondary-text-color: #8b949e;
+    --primary-text-color: #e6edf3;
+    --secondary-text-color: #848d97;
     --accent-color: #2f81f7;
     --border-color: #30363d;
     --success-color: #238636;
@@ -18,317 +18,267 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
     font-family: 'Tajawal', sans-serif;
     background-color: var(--bg-color);
     color: var(--primary-text-color);
-    line-height: 1.6;
-    overflow: hidden; /* منع تمرير الجسم الرئيسي */
-}
-
-.page-container.hidden, #news-page.hidden {
-    display: none;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* ======================================================== */
-/*   CORE LAYOUT FIX: For Sticky Headers & Scrolling        */
-/* ======================================================== */
-
-/* هذا هو أهم تعديل لحل مشكلة التمرير */
-.page-container, #news-page .page {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 70px); /* ارتفاع الشاشة ناقص ارتفاع الشريط العلوي */
-    overflow: hidden; /* نمنع التمرير من الحاوية الأم */
 }
 
-.page-fixed-header, #article-header {
-    flex-shrink: 0; /* يمنع الهيدر من التقلص */
-    padding: 15px 15px 0 15px;
-    background-color: var(--bg-color); /* يغطي المحتوى الذي يمر خلفه */
-    z-index: 10;
-}
-
-.page-scrollable-content {
-    flex-grow: 1; /* يأخذ كل المساحة المتبقية */
-    overflow-y: auto; /* هنا فقط يتم تفعيل التمرير */
-    padding: 15px;
-}
-
-/* تعديل خاص لإزالة الحشو من الحاويات الرئيسية */
-#predictions-page .container, #news-page #home-page {
-    padding: 0;
-}
-#news-page #article-page .page-scrollable-content {
-    padding: 0 15px 15px 15px;
-}
-#article-content-wrapper {
-    padding-top: 15px;
-}
-
-/* ======================================================== */
-/*   GLOBAL COMPONENTS: Login Modal & Floating Button     */
-/* ======================================================== */
-
-.floating-icon-container {
+/* =================================== */
+/* LOADER                              */
+/* =================================== */
+#loader {
     position: fixed;
-    bottom: 85px; /* تم رفعه قليلاً ليكون فوق الشريط السفلي */
-    left: 20px;
-    z-index: 1001;
+    inset: 0;
+    background-color: var(--bg-color);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.3s ease-out;
 }
-
-.user-icon-button {
-    background-color: var(--accent-color);
-    color: white;
+.spinner {
     width: 50px;
     height: 50px;
+    border: 5px solid var(--border-color);
+    border-top-color: var(--accent-color);
     border-radius: 50%;
-    border: none;
-    font-size: 1.5rem;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =================================== */
+/* NAVIGATION BAR                      */
+/* =================================== */
+#main-nav {
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.nav-container {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-color);
+    border-radius: 8px;
+    padding: 0.25rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+.nav-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: all 0.25s ease;
+    background-color: transparent;
+    color: var(--secondary-text-color);
+    border: none;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,.3);
-}
-
-.user-icon-button.logged-in {
-    background-color: var(--success-color);
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,.7);
+    display: flex;
     justify-content: center;
     align-items: center;
-    animation: fadeIn 0.3s;
+    gap: 0.5rem;
+    font-size: 0.9rem;
 }
-
-.modal.show { display: flex; }
-
-.modal-content {
-    background-color: var(--surface-color);
-    padding: 25px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 450px;
-    position: relative;
-    border-top: 4px solid var(--accent-color);
-}
-
-.modal-content h2 { margin-bottom: 20px; text-align: center; }
-.modal .form-control { margin-bottom: 15px; }
-.modal .form-control input {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--bg-color);
-    color: var(--primary-text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-}
-.modal button {
-    width: 100%;
-    padding: 12px;
+.nav-btn.active {
     background-color: var(--accent-color);
     color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(47, 129, 247, 0.3);
 }
-.modal .close-button { position: absolute; top: 15px; right: 15px; color: var(--secondary-text-color); font-size: 24px; cursor: pointer; }
-.modal .auth-toggle { text-align: center; margin-top: 15px; font-size: .9rem; color: var(--accent-color); cursor: pointer; }
-.modal #logout-btn { background-color: var(--danger-color); margin-top: 10px; }
-.modal #auth-message { text-align: center; margin-top: 10px; font-size: 0.9rem; }
 
 /* =================================== */
-/*        PREDICTIONS PAGE             */
+/* PAGE WRAPPER & LAYOUT               */
 /* =================================== */
-
-#predictions-page .page-fixed-header h1 {
+#page-wrapper {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+}
+.page-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.page-container.active {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+.page-header {
+    padding: 1rem 1rem 0;
+}
+.page-header h1 {
     text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
+    font-size: 1.6rem;
     font-weight: 700;
 }
 
-/* --- News Ticker (شريط الإشعارات) --- */
-#predictions-page .news-ticker {
+/* =================================== */
+/* PREDICTIONS PAGE                    */
+/* =================================== */
+.news-ticker-wrapper {
+    padding: 1rem;
+}
+.news-ticker {
     background-color: var(--surface-color);
     border-radius: 8px;
-    padding: 10px 15px;
-    margin-bottom: 15px;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
     overflow: hidden;
     border: 1px solid var(--border-color);
 }
-#predictions-page .ticker-icon { color: var(--accent-color); font-size: 1.2rem; margin-left: 15px; }
-#predictions-page .ticker-content { white-space: nowrap; animation: ticker-scroll-rtl 25s linear infinite; }
-@keyframes ticker-scroll-rtl {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+.ticker-icon {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-left: 1rem;
 }
-#predictions-page .ticker-item { display: inline-block; margin-right: 50px; font-size: .9rem; color: var(--secondary-text-color); }
-
-/* --- Date Tabs --- */
-.date-tabs-container {
-    display: flex;
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: var(--surface-color);
-    margin-bottom: 20px;
-    border: 1px solid var(--border-color);
+.ticker-content {
+    white-space: nowrap;
+    animation: ticker-scroll 30s linear infinite;
 }
-.date-tab {
-    flex-grow: 1;
-    text-align: center;
-    padding: 12px 10px;
-    cursor: pointer;
+@keyframes ticker-scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+.ticker-content:hover { animation-play-state: paused; }
+.ticker-item {
+    display: inline-block;
+    margin-right: 50px;
     color: var(--secondary-text-color);
-    border-bottom: 4px solid transparent;
-    transition: all .2s;
-    font-weight: 700;
-    font-size: 1.1rem;
 }
-.date-tab.active {
-    color: var(--primary-text-color);
-    background-color: rgba(47, 129, 247, .15);
-    border-bottom-color: var(--accent-color);
+#matches-container {
+    padding: 0 1rem 5rem;
 }
 
-.day-content { display: none; }
-.day-content.active { display: block; animation: fadeIn .5s; }
-
-/* --- Match Card (All original styles remain the same) --- */
-/* ... (جميع تنسيقات بطاقة المباراة كما هي) ... */
-#predictions-page .match-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
-#predictions-page .match-header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: rgba(47,129,247,.1); }
-#predictions-page .match-league { font-weight: 700; color: var(--accent-color); }
-#predictions-page .match-date-time { font-size: .9rem; color: var(--secondary-text-color); }
-#predictions-page .match-body { padding: 20px; }
-#predictions-page .teams-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
-#predictions-page .team { text-align: center; width: 120px; }
-#predictions-page .team img { width: 50px; height: 50px; object-fit: contain; margin: 0 auto 10px auto; }
-#predictions-page .team-name { font-weight: 700; font-size: 1rem; }
-#predictions-page .match-status-container { text-align: center; }
-#predictions-page .match-time { font-size: 1.2rem; font-weight: 700; direction: ltr; }
-#predictions-page .match-status { font-size: 1rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
-#predictions-page .match-status.soon { color: white; background-color: var(--success-color); }
-#predictions-page .match-status.live { color: white; background-color: var(--warning-color); animation: pulse 1.5s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(247, 183, 49, .7); } 70% { box-shadow: 0 0 0 10px rgba(247, 183, 49, 0); } 100% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0); } }
-#predictions-page .match-status.ended { color: white; background-color: var(--danger-color); }
-/* ... (باقي التنسيقات المتعلقة بالتوقعات والتعليقات كما هي) ... */
-#predictions-page .prediction-form, #predictions-page .comment-form { background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-#predictions-page .prediction-form.disabled { opacity: .6; pointer-events: none; }
-#predictions-page .form-group { margin-bottom: 15px; }
-#predictions-page .form-group legend { font-size: 1rem; font-weight: 500; color: var(--secondary-text-color); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-#predictions-page .channel-info span { color: var(--channel-color); font-weight: 700; }
-#predictions-page .prediction-options { display: flex; gap: 10px; }
-#predictions-page .prediction-options input[type=radio] { display: none; }
-#predictions-page .prediction-options label { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); text-align: center; cursor: pointer; transition: all .2s; }
-#predictions-page .prediction-options input[type=radio]:checked + label { background-color: var(--success-color); border-color: var(--success-color); color: #fff; font-weight: 700; }
-#predictions-page .scorer-input { width: 100%; padding: 10px; background-color: var(--border-color); color: var(--primary-text-color); border: 1px solid var(--border-color); border-radius: 6px; }
-#predictions-page .submit-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
-#predictions-page .submit-btn:disabled { background-color: var(--success-color); opacity: .8; cursor: not-allowed; }
-#predictions-page .fa-spin { animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
-#predictions-page .match-footer { padding: 0 20px 20px; }
-#predictions-page .toggle-comments-btn { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--secondary-text-color); cursor: pointer; border-radius: 8px; margin-top: 15px; }
-#predictions-page .comments-section { display: none; margin-top: 15px; }
-#predictions-page .comment-list { margin-bottom: 15px; max-height: 200px; overflow-y: auto; }
-#predictions-page .comment { display: flex; gap: 10px; margin-bottom: 15px; position: relative; }
-#predictions-page .comment-avatar { width: 35px; height: 35px; border-radius: 50%; background-color: var(--border-color); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-#predictions-page .comment-body { flex: 1; }
-#predictions-page .comment-author { font-weight: 700; }
-#predictions-page .comment-text { font-size: .9rem; color: var(--secondary-text-color); }
-#predictions-page .comment-form textarea { width: 100%; min-height: 60px; padding: 10px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; resize: vertical; margin-bottom: 10px; }
-#predictions-page .comment-form button { padding: 8px 15px; background-color: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer; }
-
 /* =================================== */
-/*        NEWS PAGE & ARTICLES         */
+/* NEWS PAGE & ARTICLES                */
 /* =================================== */
-
-#news-page .page {
+.page-content {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    /* تم نقل الارتفاع والتمرير إلى القواعد الأساسية في الأعلى */
+    inset: 0;
+    display: flex;
+    flex-direction: column;
     background-color: var(--bg-color);
-    transition: transform .35s ease-in-out;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
-#news-page #home-page { transform: translateX(0); z-index: 10; }
-#news-page #article-page { transform: translateX(100%); z-index: 20; touch-action: pan-y; }
-
-/* --- News Home --- */
-#news-page header h1 { text-align: center; font-size: 1.8rem; margin-bottom: 15px; font-weight: 700; padding: 15px 0; }
-#news-page #articles-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 20px; padding-bottom: 80px; }
-#news-page .article-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform .2s ease,box-shadow .2s ease; }
-#news-page .article-card img { width: 100%; height: 180px; object-fit: cover; }
-#news-page .article-card .article-title { padding: 15px; font-size: 1.1rem; font-weight: 700; flex-grow: 1; }
-
-/* --- Article View --- */
-
-/*  ✅ NEW: تنسيق كبير وثابت لعنوان المقال */
-#article-header {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
+.page-content.active {
+    transform: translateX(0);
 }
-#article-header h1 {
-    font-size: 2rem; /* حجم كبير ومناسب */
-    font-weight: 800;
-    line-height: 1.4;
-    color: var(--primary-text-color);
-    margin: 0; /* تمت إزالة الهامش لأنه الآن في الهيدر */
+#home-page {
+    transform: translateX(0);
 }
-
-#article-content-wrapper img {
+#articles-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+}
+@media (min-width: 640px) {
+    #articles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.article-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+.article-card img {
     width: 100%;
-    max-height: 400px;
+    height: 180px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 20px;
 }
-#article-text-content {
+.article-card h3 {
+    padding: 1rem;
     font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--primary-text-color);
-    padding-bottom: 20px;
+    font-weight: 700;
+    flex-grow: 1;
 }
 
-/*  ✅ FIX: الشريط السفلي للمقال */
+/* Article Detail Page */
+#article-page main {
+    padding: 1rem;
+    flex-grow: 1;
+}
+#article-page .article-header h1 {
+    font-size: 1.8rem;
+    line-height: 1.4;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+@media (min-width: 768px) {
+    #article-page .article-header h1 { font-size: 2.2rem; }
+}
+#article-page .article-image {
+    width: 100%;
+    height: auto;
+    max-height: 350px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+#article-page .article-text-content {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: var(--secondary-text-color);
+    padding-bottom: 2rem;
+}
+
+/* Article Footer */
 .article-footer {
     display: flex;
     gap: 1rem;
-    padding: 1rem 0;
-    margin-top: auto;
+    padding: 1rem;
+    background-color: var(--surface-color);
     border-top: 1px solid var(--border-color);
-    background-color: var(--bg-color);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 .article-action-btn {
-    flex-grow: 1;
-    padding: 12px;
+    flex: 1;
+    padding: 0.8rem;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--surface-color);
-    color: var(--secondary-text-color);
+    border: none;
+    background-color: var(--accent-color);
+    color: white;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 700;
@@ -336,75 +286,176 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    transition: background-color 0.2s ease;
 }
+.article-action-btn:hover { background-color: #1e6ada; }
 
-/* ... (باقي تنسيقات التعليقات في صفحة الأخبار كما هي) ... */
-#news-page .comments-section { padding: 20px 0; margin-top: 15px; border-top: 1px solid var(--border-color); }
-#news-page .comments-section h2, #news-page #comment-form h3 { font-size: 1.5rem; margin-bottom: 20px; }
-#news-page .comment-item { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 10px; position: relative; }
-#news-page .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--secondary-text-color); font-size: .9rem; flex-wrap: wrap; }
-#news-page .comment-author { font-weight: 700; color: var(--primary-text-color); }
-#news-page .comment-body { font-size: 1rem; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; }
-.delete-comment-btn { position: absolute; top: 10px; left: 10px; background: 0 0; border: none; color: var(--secondary-text-color); cursor: pointer; font-size: .9rem; transition: color .2s; padding: 5px; }
-.delete-comment-btn:hover { color: var(--danger-color); }
-#news-page #comment-form textarea { width: 100%; padding: 12px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--primary-text-color); margin-bottom: 10px; font-size: 1rem; min-height: 80px; resize: vertical; }
-#news-page #comment-form button { width: 100%; background-color: var(--accent-color); color: white; border: none; cursor: pointer; font-weight: 700; padding: 12px; border-radius: 8px; font-size: 1rem; transition: background-color .2s; }
-#news-page #comment-form button:disabled { background-color: var(--secondary-text-color); cursor: not-allowed; }
-
-/* =================================== */
-/*        PROFILE PAGE STYLES          */
-/* ... (جميع تنسيقات صفحة البروفايل كما هي) ... */
-/* =================================== */
-#profile-page.is-visible { transform: translateX(0); }
-#profile-page.hidden { display: none; }
-.delete-comment-btn-profile { background-color: var(--danger-color); color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; }
-.profile-prediction-item { border-left-width: 5px; border-left-style: solid; background-color: var(--surface-color); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 8px; font-size: 0.9rem; transition: all 0.3s ease; }
-.profile-prediction-item.pending { border-left-color: var(--secondary-text-color); }
-.profile-prediction-item.correct { border-left-color: var(--success-color); background-color: rgba(35, 134, 54, 0.1); }
-.profile-prediction-item.incorrect { border-left-color: var(--danger-color); background-color: rgba(218, 54, 51, 0.1); }
-.prediction-match-info { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--primary-text-color); margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-.prediction-status { font-size: 0.8rem; font-weight: normal; padding: 3px 8px; border-radius: 12px; }
-.profile-prediction-item.pending .prediction-status { background-color: var(--border-color); color: var(--secondary-text-color); }
-.profile-prediction-item.correct .prediction-status { background-color: var(--success-color); color: white; }
-.profile-prediction-item.incorrect .prediction-status { background-color: var(--danger-color); color: white; }
-.prediction-details { color: var(--secondary-text-color); font-size: 0.85rem; }
-.prediction-details strong { color: var(--primary-text-color); font-weight: 700; }
-.profile-comment-item { background-color: var(--surface-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.profile-comment-item .comment-content { flex-grow: 1; }
-.profile-comment-item .comment-text { display: block; margin-bottom: 5px; color: var(--primary-text-color); }
-.profile-comment-item .comment-meta { font-size: 0.8rem; color: var(--secondary-text-color); }
-
+/* Comments Section */
+#comments-section {
+    padding: 1.5rem 1rem;
+    background: var(--bg-color);
+}
+#comments-section h2, #comments-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+/* ... Add your specific comment item styles here ... */
 
 /* =================================== */
-/*      UTILITIES & INDICATORS         */
+/* MODALS & FLOATING BUTTONS           */
 /* =================================== */
-
-/* --- Pull-to-Refresh Indicator --- */
-.pull-to-refresh-indicator-fixed {
+.floating-icon-container {
     position: fixed;
-    top: 75px; /* تم تعديله ليكون أسفل الشريط العلوي */
-    left: 0;
-    right: 0;
-    z-index: 100;
-    display: none;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1001;
+}
+.user-icon-button {
+    background-color: var(--accent-color);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,.3);
+}
+.user-icon-button.logged-in {
+    background-color: var(--success-color);
+}
+.modal, .modal-page {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background-color: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
     justify-content: center;
     align-items: center;
     opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
-.pull-to-refresh-indicator-fixed i { background: var(--surface-color); border-radius: 50%; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 1px solid var(--border-color); font-size: 22px; color: var(--primary-text-color); }
+.modal.show, .modal-page.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.modal-content, .modal-page-container {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+.modal.show .modal-content, .modal-page.show .modal-page-container {
+    transform: scale(1);
+}
+.modal-content {
+    padding: 2rem;
+    position: relative;
+}
+.modal-page {
+    align-items: flex-start; /* To position content at top for scrolling */
+}
+.modal-page-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.modal-page-header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+}
+.modal-page-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.modal-page-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    width: 100%;
+}
+.close-button {
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+}
+.modal .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+.form-control { margin-bottom: 1rem; }
+.form-control label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; }
+.form-control input {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: var(--bg-color);
+    color: var(--primary-text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+.modal-content button, .profile-section button {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+}
+.modal #login-view button, .modal #signup-view button {
+    background-color: var(--accent-color);
+    color: white;
+}
+#logout-btn { background-color: var(--danger-color); color: white; margin-top: 0.5rem; }
+#open-profile-btn { background-color: var(--success-color); color: white; }
+.auth-toggle { text-align: center; margin-top: 1rem; color: var(--accent-color); cursor: pointer; }
 
-/* --- Toasts & Notifications --- */
-#exit-toast, #notification-toast {
+/* =================================== */
+/* TOASTS & NOTIFICATIONS              */
+/* =================================== */
+.toast {
     position: fixed;
     bottom: -100px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(0,0,0,.8);
+    background-color: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(5px);
     color: white;
     padding: 10px 20px;
     border-radius: 20px;
-    z-index: 2000;
+    z-index: 9000;
     font-size: .9rem;
-    transition: bottom .3s ease-in-out;
+    transition: all .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    max-width: 90%;
+    text-align: center;
 }
-#exit-toast.show, #notification-toast.show { bottom: 85px; }
+.toast.show {
+    bottom: 30px;
+}
+.toast.offline {
+    background-color: var(--danger-color);
+    display: none;
+}
+body.offline .toast.offline {
+    display: block;
+}
