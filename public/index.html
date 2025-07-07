@@ -8,6 +8,7 @@
     <!-- PWA and Offline Support -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#161b22">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -37,43 +38,31 @@
         </div>
     </nav>
     
-    <!-- ✨ [هيكل جديد] حاوية الصفحات الرئيسية لتمكين الانزلاق -->
+    <!-- Main Pages Container -->
     <main id="main-content-area" class="relative w-full overflow-hidden" style="height: calc(100vh - 68px);">
 
         <!-- Predictions Page -->
         <div id="predictions-page" class="page-container">
             <div class="container mx-auto p-4">
-                 <main id="matches-container">
-                    <!-- Content is loaded by JavaScript -->
-                </main>
+                 <main id="matches-container"><!-- Content loaded by JS --></main>
             </div>
         </div>
 
         <!-- News Page -->
         <div id="news-page" class="page-container">
-            <!-- Sub-page for Articles List -->
+            <!-- Sub-page: Articles List -->
             <div id="home-page" class="page">
-                 <header class="p-4">
-                    <h1 class="text-2xl font-bold text-center"><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1>
-                </header>
+                 <header class="p-4"><h1 class="text-2xl font-bold text-center"><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header>
                 <main id="articles-grid" class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></main>
             </div>
 
-            <!-- Sub-page for Article Detail -->
+            <!-- Sub-page: Article Detail -->
             <div id="article-page" class="page">
-                <div id="article-content" class="p-4 flex-grow">
-                    <!-- Article content will be injected here by JS -->
-                </div>
-                <!-- New Actions Footer -->
+                <div id="article-content" class="p-4 flex-grow"><!-- Article content injected by JS --></div>
                 <div class="article-footer p-4">
-                    <button id="share-article-btn" class="article-action-btn">
-                        <i class="fa-solid fa-share-nodes"></i> مشاركة
-                    </button>
-                    <button id="toggle-news-comments-btn" class="article-action-btn">
-                        <i class="fa-solid fa-comments"></i> التعليقات
-                    </button>
+                    <button id="share-article-btn" class="article-action-btn"><i class="fa-solid fa-share-nodes"></i> مشاركة</button>
+                    <button id="toggle-news-comments-btn" class="article-action-btn"><i class="fa-solid fa-comments"></i> التعليقات</button>
                 </div>
-                <!-- Comments Section (initially hidden) -->
                 <div id="comments-section" class="comments-section p-4" style="display:none;">
                     <h2 class="text-xl font-bold mb-4"><i class="fa-solid fa-comments"></i> التعليقات</h2>
                     <div id="comments-list" class="mb-4"></div>
@@ -92,7 +81,6 @@
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span id="close-auth-modal-btn" class="close-button">×</span>
-            <!-- Login View -->
             <div id="login-view">
                 <h2 class="text-lg font-bold mb-4 text-center">تسجيل الدخول</h2>
                 <form id="login-form" class="space-y-4">
@@ -102,7 +90,6 @@
                 </form>
                 <p id="show-signup" class="auth-toggle">ليس لديك حساب؟ إنشاء حساب جديد</p>
             </div>
-            <!-- Signup View -->
             <div id="signup-view" style="display: none;">
                 <h2 class="text-lg font-bold mb-4 text-center">إنشاء حساب جديد</h2>
                 <form id="signup-form" class="space-y-4">
@@ -113,7 +100,6 @@
                 </form>
                 <p id="show-login" class="auth-toggle">لديك حساب بالفعل؟ تسجيل الدخول</p>
             </div>
-            <!-- Logged In View -->
             <div id="loggedin-view" style="display: none;" class="text-center">
                 <h2 class="text-lg font-bold mb-2">أهلاً بك!</h2>
                 <p id="user-email-display" class="mb-4"></p>
