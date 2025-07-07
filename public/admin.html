@@ -1,0 +1,321 @@
+<!DOCTYPE html> 
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم النهائية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0d1117; --bg-medium: #161b22; --border-color: #30363d;
+            --text-primary: #c9d1d9; --text-secondary: #8b949e; --accent-blue: #2f81f7;
+            --accent-red: #da3633; --accent-yellow: #f7b731; --accent-green: #238636;
+            --accent-orange: #f0ad4e;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); }
+        .container { max-width: 1600px; margin: 2rem auto; padding: 0 1rem; }
+        .card { background-color: var(--bg-medium); border-radius: 8px; border: 1px solid var(--border-color); padding: 1.5rem; }
+        h1, h2, h3 { color: white; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem; font-weight: 700; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); }
+        input, textarea, select { width: 100%; padding: 0.75rem; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); transition: all 0.2s; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.3); }
+        .hidden { display: none; }
+        button, .button-link { background-color: var(--accent-blue); color: white; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; }
+        button:disabled { background-color: var(--text-secondary); cursor: not-allowed; }
+        button:hover:not(:disabled), .button-link:hover { filter: brightness(1.2); }
+        .tab-button { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); white-space: nowrap; padding: 0.5rem 1rem; }
+        .tab-button.active { background-color: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+        .item-card { background-color: var(--bg-dark); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; }
+        .item-card:hover { transform: translateY(-4px); border-color: var(--accent-blue); }
+        .item-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .item-card-footer { margin-top: 1rem; display: flex; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem; }
+        .item-card-footer button { flex-grow: 1; padding: 0.5rem; font-size: 0.9em; }
+        .delete-btn { background-color: var(--accent-red); }
+        .edit-btn { background-color: var(--accent-orange); }
+        .loader { width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid var(--accent-blue); border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto; }
+        .sub-tab-button { background-color: var(--bg-medium); border: 1px solid var(--border-color); }
+        .sub-tab-button.active { background-color: var(--accent-green); color: white; border-color: var(--accent-green); }
+        .comment-content-grid { display: none; }
+        .comment-content-grid.active { display: grid; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background-color: var(--bg-medium); padding: 2rem; border-radius: 8px; border: 1px solid var(--border-color); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .modal-close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="login-screen" class="container max-w-md text-center card mt-20">
+        <!-- ... Login Screen HTML remains the same ... -->
+    </div>
+
+    <div id="admin-panel" class="container hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-3xl m-0 p-0 border-none">لوحة التحكم</h1>
+            <div class="tabs flex flex-row-reverse gap-2 overflow-x-auto pb-2">
+                <button class="tab-button active" data-tab="matches"><i class="fas fa-futbol"></i> المباريات</button>
+                <button class="tab-button" data-tab="articles"><i class="fas fa-newspaper"></i> المقالات</button>
+                <button class="tab-button" data-tab="comments"><i class="fas fa-comments"></i> التعليقات</button>
+                <button class="tab-button" data-tab="predictions"><i class="fas fa-poll"></i> التوقعات</button>
+            </div>
+        </div>
+        
+        <div id="tab-matches" class="tab-content active"></div>
+        <div id="tab-articles" class="tab-content"></div>
+        <div id="tab-comments" class="tab-content"></div>
+        <div id="tab-predictions" class="tab-content"></div>
+    </div>
+    
+    <div id="edit-modal" class="modal-overlay hidden">
+        <!-- ... Modal HTML remains the same ... -->
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ... Other constants and DOM elements ...
+        
+        function initializePanels() {
+            // === THIS IS THE CORRECTED CODE FOR THE MATCHES TAB ===
+            tabContents.matches.innerHTML = `<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <div class="xl:col-span-1 space-y-6">
+                    <section class="card">
+                        <h3 class="text-xl"><i class="fas fa-robot"></i> التحكم بالـ API</h3>
+                        <div class="space-y-4 mt-4">
+                            <a href="https://github.com/RaQam9/RaQam9/actions/workflows/fetch-matches-schedule.yml" 
+                               target="_blank" 
+                               class="button-link w-full bg-indigo-600">
+                                <i class="fas fa-sync-alt"></i> تشغيل جلب المباريات يدوياً
+                            </a>
+                            <p class="text-xs text-center text-gray-400">
+                                سيفتح هذا الرابط صفحة GitHub Actions. اضغط على "Run workflow" لتشغيل المهمة فوراً.
+                            </p>
+                        </div>
+                    </section>
+                    <section class="card">
+                        <h3 class="text-xl"><i class="fas fa-plus-circle"></i> إضافة مباراة يدوياً</h3>
+                        <form id="add-match-form" class="space-y-4 mt-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label>الفريق الأول:</label><input type="text" name="team1_name" required></div><div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" required></div><div><label>الفريق الثاني:</label><input type="text" name="team2_name" required></div><div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" required></div></div>
+                            <div><label>الدوري:</label><input type="text" name="league" required></div><div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" required></div><div><label>القنوات (فاصلة ,):</label><input type="text" name="channels"></div>
+                            <button type="submit" class="w-full"><i class="fas fa-save"></i> حفظ المباراة</button>
+                        </form>
+                    </section>
+                </div>
+                <div class="card xl:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl m-0 p-0 border-none"><i class="fas fa-list-ul"></i> المباريات الحالية</h3>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2"><input type="checkbox" id="select-all-matches" class="w-4 h-4"><label for="select-all-matches" class="m-0 text-sm">تحديد الكل</label></div>
+                            <button id="delete-selected-matches-btn" class="delete-btn" disabled><i class="fas fa-trash-alt"></i> حذف المحدد</button>
+                        </div>
+                    </div>
+                    <div id="matches-grid" class="items-grid mt-4 max-h-[80vh] overflow-y-auto p-2"></div>
+                </div>
+            </div>`;
+            
+            // Other tabs remain the same
+            tabContents.articles.innerHTML = `<!-- Article tab content here -->`;
+            tabContents.comments.innerHTML = `<!-- Comments tab content here -->`;
+            tabContents.predictions.innerHTML = `<!-- Predictions tab content here -->`;
+
+            document.getElementById('add-match-form')?.addEventListener('submit', handleAddOrUpdate);
+            // ... other event listeners
+        }
+
+        const loadData = {
+            // === THIS IS THE CORRECTED 'matches' LOADING FUNCTION ===
+            matches: async () => { 
+                const grid = document.getElementById('matches-grid'); if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                
+                const now = new Date();
+                const upcoming = data.filter(m => new Date(m.datetime) > now);
+                const past = data.filter(m => new Date(m.datetime) <= now).sort((a,b) => new Date(b.datetime) - new Date(a.datetime));
+                const sortedData = [...upcoming, ...past];
+
+                grid.innerHTML = sortedData.length === 0 ? '<p>لا توجد مباريات حالية.</p>' : sortedData.map(renderData.match).join('');
+                updateDeleteButtonState();
+            },
+            // ... other loading functions ...
+
+            // === THIS IS THE CORRECTED 'predictions' LOADING FUNCTION ===
+            predictions: async () => {
+                const grid = document.getElementById('predictions-management-grid'); if(!grid) return;
+                grid.innerHTML = '<div class="loader"></div>';
+                // Simplified query
+                const { data, error } = await supabaseClient.from('predictions').select('*, matches(team1_name, team2_name)').order('created_at', { ascending: false });
+                if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
+                grid.innerHTML = data.length === 0 ? '<p>لا توجد توقعات.</p>' : data.map(renderData.prediction).join('');
+            }
+        };
+
+        const renderData = {
+            // === THIS IS THE CORRECTED 'match' RENDER FUNCTION ===
+            match: (match) => { 
+                const matchDate = new Date(match.datetime);
+                const dt = match.datetime.split('T');
+                const datePart = dt.length > 0 ? dt[0].split('-').reverse().join('/') : '';
+                const timePart = dt.length > 1 ? dt[1].substring(0, 5) : '';
+                const formattedDate = `${datePart} - ${timePart}`;
+
+                const activeStatus = match.is_active === false
+                    ? '<span class="text-xs text-red-400 font-bold">○ معطل</span>'
+                    : '<span class="text-xs text-green-400 font-bold">● مفعل</span>';
+                    
+                const apiTag = match.api_id ? `<span class="text-xs bg-blue-900 text-blue-300 px-2 py-1 rounded">API</span>` : '';
+                const isPast = new Date(match.datetime) < new Date();
+
+                return `<div class="item-card ${!match.is_active ? 'opacity-50' : ''} ${isPast ? 'bg-opacity-50 bg-gray-800' : ''}">
+                            <div class="item-card-header">
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center gap-2"><img src="${match.team1_logo}" class="w-6 h-6 object-contain"><span class="font-bold">${match.team1_name}</span></div>
+                                        <span class="text-gray-400">ضد</span>
+                                        <div class="flex items-center gap-2"><span class="font-bold">${match.team2_name}</span><img src="${match.team2_logo}" class="w-6 h-6 object-contain"></div>
+                                    </div>
+                                    <p class="text-sm text-center text-yellow-400 mb-2">${match.league}</p>
+                                    <div class="flex justify-center items-center gap-4">
+                                        <p class="text-sm text-gray-400" dir="ltr">${formattedDate}</p>
+                                        ${activeStatus}
+                                        ${apiTag}
+                                    </div>
+                                </div>
+                                <input type="checkbox" class="match-checkbox w-5 h-5 flex-shrink-0" data-id="${match.id}">
+                            </div>
+                            <div class="item-card-footer">
+                                <button class="edit-btn" data-type="match" data-id="${match.id}"><i class="fas fa-edit"></i> تعديل / إدخال نتيجة</button>
+                                <button class="delete-btn" data-type="match" data-id="${match.id}"><i class="fas fa-trash"></i> حذف</button>
+                            </div>
+                        </div>`;
+            },
+            // ... other render functions ...
+
+            // === THIS IS THE CORRECTED 'prediction' RENDER FUNCTION ===
+            prediction: (prediction) => {
+                const authorName = prediction.username || prediction.user_email || 'مستخدم غير معروف';
+                return `<div class="item-card">
+                            <p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p>
+                            <p class="text-sm text-gray-400 mt-2">
+                                بواسطة: <strong class="text-gray-200">${authorName}</strong> 
+                                - على مباراة: <span class="text-yellow-400">${prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة'}</span>
+                            </p>
+                            <div class="item-card-footer">
+                                <button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button>
+                            </div>
+                        </div>`;
+            }
+        };
+
+        // === THIS IS THE CORRECTED MODAL FUNCTION ===
+        const openEditModal = async (type, id) => {
+            let formHtml = '';
+            let title = '';
+            let tableName;
+            
+            if (type.startsWith('reply_')) {
+                // Reply logic remains the same
+            } else {
+                tableName = type === 'match' ? 'matches' : 'articles';
+                const { data, error } = await supabaseClient.from(tableName).select('*').eq('id', id).single();
+                if (error) { alert(`خطأ: ${error.message}`); return; }
+
+                if (type === 'match') {
+                    title = `تعديل مباراة: ${data.team1_name} ضد ${data.team2_name}`;
+                    const channelsText = (data.channels || []).join(', ');
+                    const isChecked = data.is_active !== false;
+
+                    formHtml = `
+                        <div class="space-y-4">
+                            <h4 class="text-lg text-white font-bold border-b border-gray-600 pb-2">بيانات المباراة</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label>الفريق الأول:</label><input type="text" name="team1_name" value="${data.team1_name || ''}" required></div>
+                                <div><label>شعار الفريق الأول:</label><input type="url" name="team1_logo" value="${data.team1_logo || ''}" required></div>
+                                <div><label>الفريق الثاني:</label><input type="text" name="team2_name" value="${data.team2_name || ''}" required></div>
+                                <div><label>شعار الفريق الثاني:</label><input type="url" name="team2_logo" value="${data.team2_logo || ''}" required></div>
+                            </div>
+                            <div><label>الدوري:</label><input type="text" name="league" value="${data.league || ''}" required></div>
+                            <div><label>التاريخ والوقت:</label><input type="datetime-local" name="datetime" value="${data.datetime ? data.datetime.slice(0, 16) : ''}" required></div>
+                            <div><label>القنوات (فاصلة ,):</label><input type="text" name="channels" value="${channelsText}"></div>
+                            
+                            <h4 class="text-lg text-white font-bold border-b border-gray-600 pb-2 pt-4">إدارة المباراة</h4>
+                            <div class="flex items-center gap-3 bg-gray-900 p-3 rounded-md">
+                               <input type="checkbox" id="is_active_toggle" name="is_active" class="w-5 h-5" ${isChecked ? 'checked' : ''}>
+                               <label for="is_active_toggle" class="m-0 text-white">إظهار هذه المباراة في التطبيق</label>
+                            </div>
+                            
+                            <h4 class="text-lg text-white font-bold border-b border-gray-600 pb-2 pt-4">إدخال النتيجة النهائية</h4>
+                            <div><label>الفائز الفعلي (اكتب "تعادل" في حالة التعادل):</label><input type="text" name="actual_winner" value="${data.actual_winner || ''}" placeholder="اسم الفريق الفائز أو 'تعادل'"></div>
+                            <div><label>صاحب الهدف الأول الفعلي (اختياري):</label><input type="text" name="actual_scorer" value="${data.actual_scorer || ''}" placeholder="اسم اللاعب"></div>
+                            
+                            <button type="submit" class="w-full mt-6"><i class="fas fa-save"></i> حفظ كل التعديلات</button>
+                        </div>
+                    `;
+                } else if (type === 'article') {
+                    // Article edit logic remains the same
+                }
+            }
+            
+            modalTitle.textContent = title;
+            editForm.innerHTML = formHtml;
+            editForm.dataset.type = type;
+            editForm.dataset.id = id;
+            editModal.classList.remove('hidden');
+        };
+
+        // === THIS IS THE CORRECTED MODAL UPDATE HANDLER ===
+        const handleUpdateInModal = async (e) => {
+            e.preventDefault();
+            const button = e.target.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            const { type, id } = e.target.dataset;
+            
+            if (type.startsWith('reply_')) {
+                // Reply logic remains the same
+            } else {
+                const formData = new FormData(e.target);
+                const updatedData = Object.fromEntries(formData.entries());
+                const tableName = type === 'match' ? 'matches' : 'articles';
+
+                if (type === 'match') {
+                    if (typeof updatedData.channels === 'string') {
+                        updatedData.channels = updatedData.channels.split(',').map(ch => ch.trim()).filter(ch => ch !== '');
+                    }
+                    updatedData.is_active = updatedData.is_active === 'on';
+                }
+                
+                const { error } = await supabaseClient.from(tableName).update(updatedData).eq('id', id);
+
+                if (error) {
+                    alert(`فشل التحديث: ${error.message}`);
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+                } else {
+                    alert('تم التحديث بنجاح!');
+                    editModal.classList.add('hidden');
+                    if (type === 'match') loadData.matches();
+                    else if (type === 'article') loadData.articles();
+                }
+            }
+        };
+
+        // All other functions and event listeners (login, tabs, delete, etc.) remain as they were.
+        // Make sure you have them in your final script.
+    });
+    </script>
+</body>
+</html>
