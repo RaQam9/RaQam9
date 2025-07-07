@@ -1,40 +1,31 @@
-# .github/workflows/fetch-matches-schedule.yml
-
 name: Fetch Football Matches Schedule
 
 on:
-  # هذا يسمح لك بتشغيل المهمة يدوياً من صفحة Actions في GitHub
-  workflow_dispatch: 
-  
-  # هذا يشغل المهمة تلقائياً كل 6 ساعات
   schedule:
+    # يمكنك تحديد الوقت الذي تريده هنا (مثلاً كل 6 ساعات)
     - cron: '0 */6 * * *'
+  workflow_dispatch: # هذا يسمح لك بتشغيله يدوياً من واجهة GitHub
 
 jobs:
   fetch-and-update:
-    runs-on: ubuntu-latest # استخدم أحدث نسخة من Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
-      # الخطوة 1: جلب كود المشروع من المستودع
       - name: Checkout repository
-        uses: actions/checkout@v4 # استخدم أحدث نسخة من checkout
+        uses: actions/checkout@v3
 
-      # الخطوة 2: إعداد بيئة Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v4 # استخدم أحدث نسخة من setup-node
+        uses: actions/setup-node@v3
         with:
-          node-version: '20' # استخدم نفس نسخة Node التي تستخدمها في بناء التطبيق
-          cache: 'npm' # لتسريع تثبيت الحزم في المستقبل
+          node-version: '20' # استخدام إصدار حديث من نود
 
-      # الخطوة 3: تثبيت الحزم المطلوبة (supabase-js, node-fetch)
+      # ▼▼▼ الخطوة الجديدة والمهمة ▼▼▼
       - name: Install dependencies
         run: npm install
 
-      # الخطوة 4: تشغيل سكربت جلب المباريات
       - name: Run fetch matches script
-        run: node scripts/fetch-matches.js
+        # نقوم بتمرير المفاتيح السرية هنا
         env:
-          # هذه هي الأسرار التي ستضيفها في إعدادات GitHub
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/fetch-matches.js
