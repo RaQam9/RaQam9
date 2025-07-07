@@ -1,93 +1,93 @@
+/* =================================== */
+/* GLOBAL & VARIABLES                  */
+/* =================================== */
+:root {
+    --bg-color: #0d1117;
+    --surface-color: #161b22;
+    --primary-text-color: #c9d1d9;
+    --secondary-text-color: #8b949e;
+    --accent-color: #2f81f7;
+    --border-color: #30363d;
+    --success-color: #238636;
+    --danger-color: #da3633;
+    --warning-color: #f7b731;
+    --channel-color: #facc15;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Tajawal', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--primary-text-color);
+    line-height: 1.6;
+}
+
 /* ========================================================== */
-/*   النسخة الكاملة والنهائية من ملف style.css
-/*   - تم تصميم هذا الملف ليعمل مع Tailwind CSS.
-/*   - يحتوي فقط على التنسيقات المخصصة والضرورية.
+/*   ⬇️⬇️⬇️   إصلاح سلاسة التمرير والانتقال (التعديل الرئيسي)   ⬇️⬇️⬇️    */
 /* ========================================================== */
 
-/* --- Loader Spinner Animation --- */
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #30363d; /* --border-color from Tailwind config */
-    border-top-color: #2f81f7; /* --accent-color from Tailwind config */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-@keyframes spin { 
-    to { 
-        transform: rotate(360deg); 
-    } 
+/* الخطوة 1: منع العنصر body من التمرير لعزل تمرير المحتوى */
+html, body {
+    overflow: hidden; /* يمنع ظهور شريط التمرير على الصفحة بأكملها */
+    height: 100%;     /* يضمن أن body يملأ الشاشة بالكامل */
 }
 
-/* --- Main Page Structure & Transitions --- */
+/* الخطوة 2: جعل حاويات الصفحات الرئيسية (مثل صفحة التوقعات) تملأ المساحة المتبقية وتكون قابلة للتمرير */
 .page-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: transform 0.35s ease-in-out;
-    -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
-    background-color: #0d1117; /* --bg-color */
-}
-.page-container.is-active { 
-    transform: translateX(0); 
-    z-index: 10; 
-}
-.page-container.is-inactive-right { 
-    transform: translateX(100%); 
-    z-index: 5; 
-}
-.page-container.is-inactive-left { 
-    transform: translateX(-100%); 
-    z-index: 5; 
-}
-/* Special handling for profile page visibility controlled by JS */
-#profile-page.is-visible {
-    display: block;
+    height: calc(100vh - 70px); /* 100% من ارتفاع الشاشة ناقص ارتفاع شريط التنقل (70px تقريبيًا) */
+    overflow-y: auto;          /* إضافة شريط تمرير رأسي فقط عند الحاجة */
+    overflow-x: hidden;        /* منع التمرير الأفقي غير المرغوب فيه */
+    -webkit-overflow-scrolling: touch; /* لتحسين سلاسة التمرير على أجهزة iOS */
 }
 
-/* --- News Page: Sub-page Transitions --- */
-#news-page .page {
+/* الخطوة 3: تعديل خاص لحاوية صفحة الأخبار (#news-page) */
+/* لأنها تحتوي على صفحات فرعية منزلقة، يجب أن تكون هي نفسها ثابتة (مخفية التمرير) لتكون بمثابة "إطار" للانتقال */
+#news-page {
+    overflow: hidden !important; /* مهم جدًا: لإخفاء الصفحة الفرعية التي تنزلق للخارج */
+    position: relative;          /* لكي يتم تحديد موضع الصفحات الفرعية بداخلها بشكل صحيح */
+}
+
+/* الخطوة 4: تنسيق الصفحات الفرعية داخل حاوية الأخبار (قائمة المقالات وصفحة المقال) */
+#news-page .page { /* يطبق على #home-page و #article-page */
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #0d1117; /* --bg-color */
+    height: 100%;               /* تجعلها تملأ حاوية #news-page بالكامل */
+    overflow-y: auto;           /* هذه هي العناصر التي يجب أن تكون قابلة للتمرير فعليًا */
+    background-color: var(--bg-color);
     transition: transform .35s ease-in-out;
     display: flex;
     flex-direction: column;
 }
-#home-page { 
-    transform: translateX(0); 
-    z-index: 10; 
-}
-#article-page { 
-    transform: translateX(100%); 
-    z-index: 20; 
-}
+/* ========================================================== */
+/*                ⬆️⬆️⬆️   نهاية قسم الإصلاح   ⬆️⬆️⬆️               */
+/* ========================================================== */
 
-/* --- Pull-to-Refresh Indicator --- */
+
+/* =================================== */
+/* NEW STYLES for Pull-to-Refresh      */
+/* =================================== */
 .pull-to-refresh-indicator-fixed {
     position: fixed;
-    top: 70px; /* Position below the nav bar */
+    top: 70px; /* ليظهر تحت شريط التنقل مباشرة */
     left: 0;
     right: 0;
     z-index: 100;
     display: none;
     justify-content: center;
     align-items: center;
+    color: var(--primary-text-color);
     font-size: 22px;
     opacity: 0;
     transform: translateY(0) scale(0.5);
-    color: #c9d1d9; /* --primary-text-color */
 }
+
 .pull-to-refresh-indicator-fixed i {
-    background: #161b22; /* --surface-color */
+    background: var(--surface-color);
     border-radius: 50%;
     width: 44px;
     height: 44px;
@@ -95,147 +95,743 @@
     justify-content: center;
     align-items: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    border: 1px solid #30363d; /* --border-color */
+    border: 1px solid var(--border-color);
 }
 
-/* --- Modal Styles (Auth) --- */
-.modal { 
-    display: none; 
-    position: fixed; 
-    z-index: 1000; 
-    left: 0; 
-    top: 0; 
-    width: 100%; 
-    height: 100%; 
-    background-color: rgba(0,0,0,.7); 
-    justify-content: center; 
-    align-items: center; 
-}
-.modal.show { 
-    display: flex; 
-}
-.modal-content { 
-    background-color: #161b22; /* --surface-color */
-    padding: 25px; 
-    border-radius: 12px; 
-    width: 90%; 
-    max-width: 450px; 
-    position: relative; 
-    border-top: 4px solid #2f81f7; /* --accent-color */
-}
-.modal-input { 
-    width: 100%; 
-    padding: 10px; 
-    margin-top: 4px; 
-    background-color: #30363d; /* --border-color */
-    border: 1px solid #30363d; 
-    border-radius: 6px; 
-    color: #c9d1d9; /* --primary-text-color */
-}
-.modal-btn-primary { 
-    width: 100%; 
-    padding: 12px; 
-    background-color: #2f81f7; /* --accent-color */
-    color: white; 
-    border: none; 
-    border-radius: 8px; 
-    cursor: pointer; 
-}
-.close-button { 
-    position: absolute; 
-    top: 15px; 
-    right: 15px; 
-    font-size: 24px; 
-    cursor: pointer; 
-    color: #8b949e; /* --secondary-text-color */
-}
-.auth-toggle { 
-    text-align: center; 
-    margin-top: 15px; 
-    font-size: .9rem; 
-    color: #2f81f7; /* --accent-color */
-    cursor: pointer; 
+
+/* =================================== */
+/*   PREDICTIONS PAGE STYLES           */
+/* =================================== */
+
+#predictions-page .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 15px;
 }
 
-/* --- Match Status Pulse Animation --- */
-.match-status.live { 
-    animation: pulse 1.5s infinite; 
+#predictions-page header h1, #news-page header h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+    padding: 15px 0;
+}
+
+/* --- Floating User Icon & Modal --- */
+.floating-icon-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1001;
+}
+
+.user-icon-button {
+    background-color: var(--accent-color);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,.3);
+}
+.user-icon-button.logged-in {
+    background-color: var(--success-color);
+}
+.dismiss-icon-button {
+    background-color: var(--surface-color);
+    color: var(--secondary-text-color);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    font-size: .9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.7);
+    justify-content: center;
+    align-items: center;
+}
+.modal.show {
+    display: flex;
+}
+.modal-content {
+    background-color: var(--surface-color);
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    border-top: 4px solid var(--accent-color);
+}
+.modal-content h2 {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.modal .form-control input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--border-color);
+    color: var(--primary-text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+.modal .form-control {
+    margin-bottom: 15px;
+}
+.modal button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: var(--secondary-text-color);
+    font-size: 24px;
+    cursor: pointer;
+}
+.modal .auth-toggle {
+    text-align: center;
+    margin-top: 15px;
+    font-size: .9rem;
+    color: var(--accent-color);
+    cursor: pointer;
+}
+.modal #logout-btn {
+    background-color: var(--danger-color);
+    margin-top: 10px;
+}
+.modal #auth-message {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* --- News Ticker --- */
+.news-ticker {
+    background-color: var(--surface-color);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.ticker-icon {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-left: 15px;
+}
+
+.ticker-content {
+    white-space: nowrap;
+    animation: ticker-scroll-rtl 25s linear infinite;
+}
+
+@keyframes ticker-scroll-rtl {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.ticker-item {
+    display: inline-block;
+    margin-right: 50px;
+    font-size: .9rem;
+    color: var(--secondary-text-color);
+}
+
+/* --- Date Tabs --- */
+.date-tabs-container {
+    display: flex;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--surface-color);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+.date-tab {
+    flex-grow: 1;
+    text-align: center;
+    padding: 12px 10px;
+    cursor: pointer;
+    color: var(--secondary-text-color);
+    border-bottom: 4px solid transparent;
+    transition: all .2s;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+.date-tab.active {
+    color: var(--primary-text-color);
+    background-color: rgba(47, 129, 247, .15);
+    border-bottom-color: var(--accent-color);
+}
+.day-content { display: none; }
+.day-content.active {
+    display: block;
+    animation: fadeIn .5s;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- Match Card --- */
+.match-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+.match-header {
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(47,129,247,.1);
+}
+.match-league {
+    font-weight: 700;
+    color: var(--accent-color);
+}
+.match-date-time {
+    font-size: .9rem;
+    color: var(--secondary-text-color);
+}
+.match-body {
+    padding: 20px;
+}
+.teams-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.team {
+    text-align: center;
+    width: 120px;
+}
+.team img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin: 0 auto 10px auto;
+}
+.team-name {
+    font-weight: 700;
+    font-size: 1rem;
+}
+.match-status-container {
+    text-align: center;
+}
+.match-time {
+    font-size: 1.2rem;
+    font-weight: 700;
+    direction: ltr;
+}
+.match-status {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.match-status.soon {
+    color: white;
+    background-color: var(--success-color);
+}
+.match-status.live {
+    color: white;
+    background-color: var(--warning-color);
+    animation: pulse 1.5s infinite;
 }
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(247, 183, 49, .7); }
     70% { box-shadow: 0 0 0 10px rgba(247, 183, 49, 0); }
     100% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0); }
 }
-
-/* --- Day Content Fade-in Animation --- */
-.day-content { 
-    display: none; 
-}
-.day-content.active { 
-    display: block; 
-    animation: fadeIn .5s; 
-}
-@keyframes fadeIn { 
-    from { opacity: 0; } 
-    to { opacity: 1; } 
+.match-status.ended {
+    color: white;
+    background-color: var(--danger-color);
 }
 
-/* --- Toast Notifications --- */
-.toast { 
-    position: fixed; 
-    bottom: -100px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background-color: rgba(0,0,0,.8); 
-    color: white; 
-    padding: 10px 20px; 
-    border-radius: 20px; 
-    z-index: 2000; 
-    font-size: .9rem; 
-    transition: bottom .3s ease-in-out; 
-    box-shadow: 0 4px 12px rgba(0,0,0,.2); 
+/* --- Prediction & Comment Forms --- */
+.prediction-form,
+.comment-form {
+    background-color: var(--bg-color);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
-.toast.show { 
-    bottom: 30px; 
+.prediction-form.disabled {
+    opacity: .6;
+    pointer-events: none;
 }
-
-/* --- Prediction Options (Radio Buttons) --- */
-.prediction-options input[type=radio] { 
-    display: none; 
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group legend {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.channel-info span {
+    color: var(--channel-color);
+    font-weight: 700;
+}
+.prediction-options {
+    display: flex;
+    gap: 10px;
+}
+.prediction-options input[type=radio] {
+    display: none;
+}
+.prediction-options label {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
 }
 .prediction-options input[type=radio]:checked + label {
-    background-color: #238636; /* --success-color */
-    border-color: #238636;
+    background-color: var(--success-color);
+    border-color: var(--success-color);
     color: #fff;
     font-weight: 700;
 }
+.scorer-input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--border-color);
+    color: var(--primary-text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+.submit-btn:disabled {
+    background-color: var(--success-color);
+    opacity: .8;
+    cursor: not-allowed;
+}
 
-/* --- Comments Section --- */
-.delete-comment-btn { 
-    position: absolute; 
-    top: 10px; 
-    left: 10px; 
-    background: transparent; 
-    border: none; 
-    color: #8b949e; /* --secondary-text-color */
-    cursor: pointer; 
-    font-size: .9rem; 
-    transition: color .2s; 
-    padding: 5px; 
+/* --- Match Comments Section --- */
+.match-footer {
+    padding: 0 20px 20px;
 }
-.delete-comment-btn:hover { 
-    color: #da3633; /* --danger-color */
+.toggle-comments-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    border-radius: 8px;
+    margin-top: 15px;
 }
+#predictions-page .comments-section {
+    display: none;
+    margin-top: 15px;
+}
+.comment-list {
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.comment {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    position: relative;
+}
+.comment-avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.comment-body {
+    flex: 1;
+}
+.comment-author {
+    font-weight: 700;
+}
+.comment-text {
+    font-size: .9rem;
+    color: var(--secondary-text-color);
+}
+#predictions-page .comment-form textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+#predictions-page .comment-form button {
+    padding: 8px 15px;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* =================================== */
+/*        NEWS PAGE STYLES             */
+/* =================================== */
+#news-page #home-page {
+    transform: translateX(0);
+    z-index: 10;
+}
+#news-page #article-page {
+    transform: translateX(100%);
+    z-index: 20;
+    touch-action: pan-y;
+}
+#news-page #article-content {
+    padding-top: 15px;
+    padding-bottom: 10px;
+    flex-grow: 1;
+}
+#news-page #article-header h1 {
+    font-size: 1.8rem;
+    line-height: 1.4;
+    margin-bottom: 20px;
+}
+#news-page #article-content img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+#news-page #article-content > div {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--secondary-text-color);
+}
+
+#news-page .comments-section {
+    padding: 20px 0;
+    margin-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+#news-page .comments-section h2, #news-page #comment-form h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+.comment-item {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+}
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    color: var(--secondary-text-color);
+    font-size: .9rem;
+    flex-wrap: wrap;
+}
+.comment-item .comment-author {
+    font-weight: 700;
+    color: var(--primary-text-color);
+}
+.comment-body {
+    font-size: 1rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.delete-comment-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: 0 0;
+    border: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    font-size: .9rem;
+    transition: color .2s;
+    padding: 5px;
+}
+.delete-comment-btn:hover { color: var(--danger-color); }
+
+#news-page #comment-form textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--primary-text-color);
+    margin-bottom: 10px;
+    font-size: 1rem;
+    min-height: 80px;
+    resize: vertical;
+}
+#news-page #comment-form button {
+    width: 100%;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: background-color .2s;
+}
+#news-page #comment-form button:disabled {
+    background-color: var(--secondary-text-color);
+    cursor: not-allowed;
+}
+
+#articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+    gap: 20px;
+    padding-bottom: 80px;
+}
+.article-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform .2s ease,box-shadow .2s ease;
+    position: relative;
+}
+.article-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.article-card .article-title {
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    flex-grow: 1;
+}
+
+/* --- Toasts & Notifications --- */
+#exit-toast, #notification-toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    z-index: 2000;
+    font-size: .9rem;
+    transition: bottom .3s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+#exit-toast.show, #notification-toast.show { bottom: 30px; }
+
+
+/* =================================== */
+/*      PROFILE PAGE STYLES            */
+/* =================================== */
+#profile-page.is-visible { transform: translateX(0); }
+#profile-page.hidden { display: none !important; } /* Use important to ensure it's hidden */
+
+.delete-comment-btn-profile {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+.profile-prediction-item {
+    border-left-width: 5px;
+    border-left-style: solid;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+.profile-prediction-item.pending { border-left-color: var(--secondary-text-color); }
+.profile-prediction-item.correct { border-left-color: var(--success-color); background-color: rgba(35, 134, 54, 0.1); }
+.profile-prediction-item.incorrect { border-left-color: var(--danger-color); background-color: rgba(218, 54, 51, 0.1); }
+.prediction-match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    color: var(--primary-text-color);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.prediction-status {
+    font-size: 0.8rem;
+    font-weight: normal;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+.profile-prediction-item.pending .prediction-status { background-color: var(--border-color); color: var(--secondary-text-color); }
+.profile-prediction-item.correct .prediction-status { background-color: var(--success-color); color: white; }
+.profile-prediction-item.incorrect .prediction-status { background-color: var(--danger-color); color: white; }
+.prediction-details { color: var(--secondary-text-color); font-size: 0.85rem; }
+.prediction-details strong { color: var(--primary-text-color); font-weight: 700; }
+.profile-comment-item {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+.profile-comment-item .comment-content { flex-grow: 1; }
+.profile-comment-item .comment-text { display: block; margin-bottom: 5px; color: var(--primary-text-color); }
+.profile-comment-item .comment-meta { font-size: 0.8rem; color: var(--secondary-text-color); }
+
+/* --- Replies & Admin Comments --- */
 .replies-container, .news-replies-container {
     margin-right: 30px;
     margin-top: 10px;
     padding-right: 15px;
-    border-right: 2px solid #30363d; /* --border-color */
+    border-right: 2px solid var(--border-color);
 }
-.admin-reply {
+.comment.admin-reply, .comment-item.admin-reply {
     background-color: rgba(47, 129, 247, 0.1);
-    border-color: #2f81f7 !important; /* --accent-color */
+    border-color: var(--accent-color);
 }
-.admin-reply .comment-author {
-    color: #2f81f7; /* --accent-color */
+.comment.admin-reply .comment-author,
+.comment-item.admin-reply .comment-author {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+/* =================================== */
+/*   STYLES FOR IMAGE PLACEHOLDERS     */
+/* =================================== */
+
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--border-color);
+    color: var(--secondary-text-color);
+    width: 100%;
+    height: 180px;
+    font-size: 3rem;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#article-page .image-placeholder {
+    height: 250px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* ================================================= */
+/* ==== Article Action Bar Styles                  ==== */
+/* ================================================= */
+
+.article-footer {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: auto; /* يدفع الشريط للأسفل */
+    border-top: 1px solid var(--border-color);
+}
+
+.article-action-btn {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.article-action-btn:hover {
+    background-color: var(--border-color);
+    color: var(--primary-text-color);
 }
