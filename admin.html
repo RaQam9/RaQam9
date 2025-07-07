@@ -209,7 +209,7 @@
             matches: async () => { 
                 const grid = document.getElementById('matches-grid'); if(!grid) return;
                 grid.innerHTML = '<div class="loader"></div>';
-                const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: false });
+                const { data, error } = await supabaseClient.from('predictions').select('*, matches(team1_name, team2_name)').order('created_at', { ascending: false });
                 if (error) { grid.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; return; }
                 grid.innerHTML = data.length === 0 ? '<p>لا توجد مباريات حالية.</p>' : data.map(renderData.match).join('');
                 updateDeleteButtonState();
@@ -285,9 +285,21 @@ const renderData = {
     // التعديل هنا
     articleComment: (comment) => `<div class="item-card"><p class="font-bold text-white">"${comment.comment_text}"</p><p class="text-sm text-gray-400">بواسطة: ${comment.author} - على مقال: <span class="text-yellow-400">${comment.articles ? comment.articles.title : 'مقال محذوف'}</span></p><div class="item-card-footer"><button class="edit-btn" data-type="reply_article_comment" data-id="${comment.id}"><i class="fas fa-reply"></i> رد</button><button class="delete-btn" data-type="article_comment" data-id="${comment.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`,
 
-    prediction: (prediction) => `<div class="item-card"><p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p><p class="text-sm text-gray-400 mt-2">بواسطة: ${prediction.social_account || 'مجهول'} - على مباراة: <span class="text-yellow-400">${prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة'}</span></p><div class="item-card-footer"><button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button></div></div>`
-};
+    prediction: (prediction) => {
+    // نستخدم حقل username مباشرة، وإذا كان فارغاً نستخدم user_email كبديل
+    const authorName = prediction.username || prediction.user_email || 'مستخدم غير معروف';
 
+    return `<div class="item-card">
+                <p class="font-bold text-white">"الفائز: ${prediction.predicted_winner || 'لم يحدد'} | الهداف: ${prediction.predicted_scorer || 'لم يحدد'}"</p>
+                <p class="text-sm text-gray-400 mt-2">
+                    بواسطة: <strong class="text-gray-200">${authorName}</strong> 
+                    - على مباراة: <span class="text-yellow-400">${prediction.matches ? `${prediction.matches.team1_name} ضد ${prediction.matches.team2_name}` : 'مباراة محذوفة'}</span>
+                </p>
+                <div class="item-card-footer">
+                    <button class="delete-btn" data-type="prediction" data-id="${prediction.id}"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>`;
+};
         // ==================== ACTIONS HANDLING ====================
         const handleAddOrUpdate = async (e) => {
             e.preventDefault();
