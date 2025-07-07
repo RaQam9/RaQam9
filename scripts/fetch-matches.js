@@ -20,12 +20,25 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // تحديد الدوريات المهمة التي نريد جلب مبارياتها
 // يمكنك إضافة أو حذف الدوريات حسب حاجتك
 const LEAGUES = [
-  'PL',   // Premier League (England)
-  'BL1',  // Bundesliga (Germany)
-  'SA',   // Serie A (Italy)
-  'PD',   // La Liga (Spain)
-  'FL1',  // Ligue 1 (France)
+  // --- البطولات الدولية الكبرى ---
+  'WC',   // FIFA World Cup
   'CL',   // UEFA Champions League
+  'EC',   // UEFA European Championship (Euro)
+  'CCL',  // CAF Champions League
+  'CLI',  // Copa Libertadores
+  'CWC',  // <-- FIFA Club World Cup
+  // --- الدوريات الأوروبية الخمس الكبرى ---
+  'PL',   // Premier League (England)
+  'PD',   // La Liga (Spain)
+  'SA',   // Serie A (Italy)
+  'BL1',  // Bundesliga (Germany)
+  'FL1',  // Ligue 1 (France)
+
+  // --- دوريات عربية وعالمية أخرى ---
+  'PPL',  // Egyptian Premier League (or Portuguese Primeira Liga)
+  'SPL',  // Saudi Pro League
+  'DED',  // Eredivisie (Netherlands)
+  'BSA',  // Brasileiro Série A (Brazil)
 ];
 
 // ------------------- الدوال المساعدة -------------------
