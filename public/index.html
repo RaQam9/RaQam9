@@ -120,14 +120,37 @@
     <!-- News Page -->
     <div id="news-page" class="page-container hidden relative">
         <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
-        <div id="article-page" class="page"><div id="article-content"></div><div id="comments-section" class="comments-section"><h2><i class="fa-solid fa-comments"></i> التعليقات</h2><div id="comments-list"></div>
-            <form id="comment-form" name="news-comment-form">
-                <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
-                <h3>أضف تعليقك</h3>
-                <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
-                <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
-            </form>
-        </div></div>
+        
+        <!-- ====================== تعديل: هيكلة صفحة المقال ====================== -->
+        <div id="article-page" class="page">
+            <div id="article-content">
+                <!-- محتوى المقال (العنوان، الصورة، النص) سيتم حقنه هنا بواسطة JS -->
+            </div>
+
+            <!-- شريط الإجراءات الجديد في الأسفل -->
+            <div class="article-footer">
+                <button id="share-article-btn" class="article-action-btn">
+                    <i class="fa-solid fa-share-nodes"></i> مشاركة
+                </button>
+                <button id="toggle-news-comments-btn" class="article-action-btn">
+                    <i class="fa-solid fa-comments"></i> التعليقات
+                </button>
+            </div>
+            
+            <!-- قسم التعليقات (مخفي افتراضياً) -->
+            <div id="comments-section" class="comments-section" style="display:none;">
+                <h2><i class="fa-solid fa-comments"></i> التعليقات</h2>
+                <div id="comments-list"></div>
+                <form id="comment-form" name="news-comment-form">
+                    <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
+                    <h3>أضف تعليقك</h3>
+                    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
+                    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
+                </form>
+            </div>
+        </div>
+        <!-- ====================== نهاية التعديل ====================== -->
+
         <div id="notification-toast"></div>
         <div id="exit-toast">انقر مرة أخرى للخروج</div>
     </div>
