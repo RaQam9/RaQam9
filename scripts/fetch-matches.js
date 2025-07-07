@@ -1,80 +1,127 @@
-// scripts/fetch-matches.js
 const { createClient } = require('@supabase/supabase-js');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // سنحتاج لتثبيت هذه المكتبة أيضاً
 
-// تعريف الدوريات الكبرى التي تريد متابعتها (استخدم IDs من api-football)
-// مثال:
-// 39: Premier League (England)
-// 140: La Liga (Spain)
-// 960: Saudi League (KSA)
-// 203: Super League (Egypt)
-// 2: UEFA Champions League
-const TARGET_LEAGUE_IDS = [39, 140, 78, 135, 61, 2, 3, 960, 203];
-const API_FOOTBALL_URL = 'https://v3.football.api-sports.io';
+// ------------------- الإعدادات والمتغيرات -------------------
 
-// هذه الدالة هي قلب السكربت
-const runFetch = async () => {
-    // قراءة المتغيرات السرية التي سنضعها في GitHub
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
-    const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY;
+// قراءة المتغيرات من بيئة التشغيل (GitHub Actions Secrets)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const footballDataApiKey = process.env.FOOTBALL_DATA_API_KEY;
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !API_FOOTBALL_KEY) {
-        console.error('Error: Environment variables are not set.');
-        process.exit(1); // إنهاء السكربت مع خطأ
+// التحقق من وجود كل المتغيرات المطلوبة
+if (!supabaseUrl || !supabaseKey || !footballDataApiKey) {
+  console.error("Error: Missing required environment variables (Supabase URL/Key or Football Data API Key).");
+  process.exit(1); // إنهاء السكربت مع رمز خطأ
+}
+
+// إنشاء اتصال مع Supabase
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// تحديد الدوريات المهمة التي نريد جلب مبارياتها
+// يمكنك إضافة أو حذف الدوريات حسب حاجتك
+const LEAGUES = [
+  'PL',   // Premier League (England)
+  'BL1',  // Bundesliga (Germany)
+  'SA',   // Serie A (Italy)
+  'PD',   // La Liga (Spain)
+  'FL1',  // Ligue 1 (France)
+  'CL',   // UEFA Champions League
+];
+
+// ------------------- الدوال المساعدة -------------------
+
+/**
+ * دالة لجلب المباريات من API
+ * @param {string} leagueCode - رمز الدوري
+ * @returns {Promise<Array>} - قائمة بالمباريات
+ */
+async function fetchMatchesFromApi(leagueCode) {
+  const url = `https://api.football-data.org/v4/competitions/${leagueCode}/matches`;
+  try {
+    const response = await fetch(url, {
+      headers: { 'X-Auth-Token': footballDataApiKey },
+    });
+    if (!response.ok) {
+      throw new Error(`API call failed for ${leagueCode} with status: ${response.status}`);
     }
+    const data = await response.json();
+    return data.matches || [];
+  } catch (error) {
+    console.error(`Failed to fetch matches for league ${leagueCode}:`, error.message);
+    return []; // إرجاع مصفوفة فارغة في حالة الفشل لتجنب إيقاف العملية كلها
+  }
+}
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-    console.log('Successfully connected to Supabase.');
+/**
+ * دالة لتحويل بيانات المباراة من API إلى تنسيق قاعدة البيانات
+ * @param {object} matchData - بيانات المباراة من API
+ * @returns {object} - بيانات المباراة بالتنسيق المطلوب
+ */
+function transformMatchData(matchData) {
+  return {
+    api_id: matchData.id, // مهم جداً لعملية الـ upsert
+    team1_name: matchData.homeTeam.name,
+    team1_logo: matchData.homeTeam.crest,
+    team2_name: matchData.awayTeam.name,
+    team2_logo: matchData.awayTeam.crest,
+    datetime: matchData.utcDate,
+    league: matchData.competition.name,
+    is_active: true, // تفعيل المباراة افتراضياً
+    // يمكنك إضافة القنوات هنا إذا كانت متوفرة في API آخر أو تركها فارغة
+    channels: [],
+    // سيتم تحديث هذه الحقول لاحقاً
+    actual_winner: null,
+    actual_scorer: null,
 
-    try {
-        const currentYear = new Date().getFullYear();
-        let allMatchesToUpsert = [];
+  };
+}
 
-        for (const leagueId of TARGET_LEAGUE_IDS) {
-            console.log(`Fetching matches for league: ${leagueId}`);
-            const response = await fetch(`${API_FOOTBALL_URL}/fixtures?league=${leagueId}&season=${currentYear}&status=NS`, {
-                method: 'GET',
-                headers: {
-                    'x-rapidapi-host': 'v3.football.api-sports.io',
-                    'x-rapidapi-key': API_FOOTBALL_KEY,
-                },
-            });
+// ------------------- الدالة الرئيسية -------------------
 
-            if (!response.ok) {
-                console.error(`API error for league ${leagueId}: ${response.statusText}`);
-                continue;
-            }
+async function run() {
+  console.log("🚀 Starting the fetch-and-update process...");
 
-            const data = await response.json();
-            const formattedMatches = data.response.map(fixture => ({
-                api_id: fixture.fixture.id,
-                team1_name: fixture.teams.home.name,
-                team1_logo: fixture.teams.home.logo,
-                team2_name: fixture.teams.away.name,
-                team2_logo: fixture.teams.away.logo,
-                league: fixture.league.name,
-                datetime: fixture.fixture.date,
-            }));
-            allMatchesToUpsert.push(...formattedMatches);
-        }
+  let allMatchesToUpsert = [];
 
-        if (allMatchesToUpsert.length > 0) {
-            console.log(`Upserting ${allMatchesToUpsert.length} matches to Supabase...`);
-            const { error } = await supabase
-                .from('matches')
-                .upsert(allMatchesToUpsert, { onConflict: 'api_id', ignoreDuplicates: false });
+  // جلب المباريات لكل دوري على حدة
+  for (const league of LEAGUES) {
+    console.log(`- Fetching matches for ${league}...`);
+    const matchesFromApi = await fetchMatchesFromApi(league);
+    const transformedMatches = matchesFromApi
+      .filter(match => match.status === 'SCHEDULED' || match.status === 'TIMED') // جلب المباريات المجدولة فقط
+      .map(transformMatchData); // تحويل تنسيقها
+    
+    allMatchesToUpsert.push(...transformedMatches);
+    console.log(`  Found ${transformedMatches.length} scheduled matches for ${league}.`);
+  }
 
-            if (error) throw error;
-            console.log('Matches upserted successfully!');
-        } else {
-            console.log('No new matches to upsert.');
-        }
-    } catch (error) {
-        console.error('Error during script execution:', error);
-        process.exit(1);
-    }
-};
+  if (allMatchesToUpsert.length === 0) {
+    console.log("✅ No new scheduled matches to update. Process finished.");
+    return;
+  }
 
-// تشغيل الدالة
-runFetch();
+  console.log(`\n🔄 Attempting to upsert a total of ${allMatchesToUpsert.length} matches to Supabase...`);
+
+  // استخدام `upsert` لإضافة أو تحديث المباريات في قاعدة البيانات
+  // `onConflict: 'api_id'` يخبر Supabase أنه إذا وجد مباراة بنفس `api_id`،
+  // يجب أن يقوم بتحديثها بدلاً من إضافة صف جديد.
+  // تأكد من أن عمود `api_id` في جدول Supabase هو `UNIQUE`.
+  const { data, error } = await supabase
+    .from('matches')
+    .upsert(allMatchesToUpsert, {
+      onConflict: 'api_id',
+      ignoreDuplicates: true,
+    })
+    .select('id, team1_name, team2_name'); // select a few fields for logging
+
+  if (error) {
+    console.error("❌ Supabase upsert error:", error.message);
+    process.exit(1);
+  }
+
+  console.log(`✅ Successfully upserted ${data.length} matches.`);
+  console.log("Process completed successfully!");
+}
+
+// تشغيل السكربت
+run();
