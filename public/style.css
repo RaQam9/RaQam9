@@ -1,142 +1,241 @@
 /* ========================================================== */
-/*   النسخة الكاملة والمحسّنة من ملف style.css
+/*   النسخة الكاملة والنهائية من ملف style.css
+/*   - تم تصميم هذا الملف ليعمل مع Tailwind CSS.
+/*   - يحتوي فقط على التنسيقات المخصصة والضرورية.
 /* ========================================================== */
 
-:root {
-    --bg-color: #0d1117;
-    --surface-color: #161b22;
-    --primary-text-color: #c9d1d9;
-    --secondary-text-color: #8b949e;
-    --accent-color: #2f81f7;
-    --border-color: #30363d;
-    --success-color: #238636;
-    --danger-color: #da3633;
-    --warning-color: #f7b731;
-    --channel-color: #facc15;
+/* --- Loader Spinner Animation --- */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #30363d; /* --border-color from Tailwind config */
+    border-top-color: #2f81f7; /* --accent-color from Tailwind config */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { 
+    to { 
+        transform: rotate(360deg); 
+    } 
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-color); color: var(--primary-text-color); line-height: 1.6; overflow-x: hidden; }
-.container { max-width: 800px; margin: 0 auto; }
+/* --- Main Page Structure & Transitions --- */
+.page-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: transform 0.35s ease-in-out;
+    -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+    background-color: #0d1117; /* --bg-color */
+}
+.page-container.is-active { 
+    transform: translateX(0); 
+    z-index: 10; 
+}
+.page-container.is-inactive-right { 
+    transform: translateX(100%); 
+    z-index: 5; 
+}
+.page-container.is-inactive-left { 
+    transform: translateX(-100%); 
+    z-index: 5; 
+}
+/* Special handling for profile page visibility controlled by JS */
+#profile-page.is-visible {
+    display: block;
+}
 
-/* Loader Spinner */
-.spinner { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* --- News Page: Sub-page Transitions --- */
+#news-page .page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: #0d1117; /* --bg-color */
+    transition: transform .35s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+#home-page { 
+    transform: translateX(0); 
+    z-index: 10; 
+}
+#article-page { 
+    transform: translateX(100%); 
+    z-index: 20; 
+}
 
-/* Main Page Structure & Transitions */
-.page-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color); overflow-y: auto; overflow-x: hidden; transition: transform 0.35s ease-in-out; -webkit-overflow-scrolling: touch; }
-.page-container.is-active { transform: translateX(0); z-index: 10; }
-.page-container.is-inactive-right { transform: translateX(100%); z-index: 5; }
-.page-container.is-inactive-left { transform: translateX(-100%); z-index: 5; }
+/* --- Pull-to-Refresh Indicator --- */
+.pull-to-refresh-indicator-fixed {
+    position: fixed;
+    top: 70px; /* Position below the nav bar */
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+    color: #c9d1d9; /* --primary-text-color */
+}
+.pull-to-refresh-indicator-fixed i {
+    background: #161b22; /* --surface-color */
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border: 1px solid #30363d; /* --border-color */
+}
 
-/* News Sub-pages */
-#news-page .page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; background-color: var(--bg-color); transition: transform .35s ease-in-out; display: flex; flex-direction: column; }
-#home-page { transform: translateX(0); z-index: 10; }
-#article-page { transform: translateX(100%); z-index: 20; touch-action: pan-y; }
+/* --- Modal Styles (Auth) --- */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0,0,0,.7); 
+    justify-content: center; 
+    align-items: center; 
+}
+.modal.show { 
+    display: flex; 
+}
+.modal-content { 
+    background-color: #161b22; /* --surface-color */
+    padding: 25px; 
+    border-radius: 12px; 
+    width: 90%; 
+    max-width: 450px; 
+    position: relative; 
+    border-top: 4px solid #2f81f7; /* --accent-color */
+}
+.modal-input { 
+    width: 100%; 
+    padding: 10px; 
+    margin-top: 4px; 
+    background-color: #30363d; /* --border-color */
+    border: 1px solid #30363d; 
+    border-radius: 6px; 
+    color: #c9d1d9; /* --primary-text-color */
+}
+.modal-btn-primary { 
+    width: 100%; 
+    padding: 12px; 
+    background-color: #2f81f7; /* --accent-color */
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+}
+.close-button { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    font-size: 24px; 
+    cursor: pointer; 
+    color: #8b949e; /* --secondary-text-color */
+}
+.auth-toggle { 
+    text-align: center; 
+    margin-top: 15px; 
+    font-size: .9rem; 
+    color: #2f81f7; /* --accent-color */
+    cursor: pointer; 
+}
 
-/* Pull-to-Refresh */
-.pull-to-refresh-indicator-fixed { position: fixed; top: 70px; left: 0; right: 0; z-index: 100; display: none; justify-content: center; align-items: center; color: var(--primary-text-color); font-size: 22px; opacity: 0; transform: translateY(0) scale(0.5); }
-.pull-to-refresh-indicator-fixed i { background: var(--surface-color); border-radius: 50%; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 1px solid var(--border-color); }
+/* --- Match Status Pulse Animation --- */
+.match-status.live { 
+    animation: pulse 1.5s infinite; 
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(247, 183, 49, .7); }
+    70% { box-shadow: 0 0 0 10px rgba(247, 183, 49, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0); }
+}
 
-/* Modal */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,.7); justify-content: center; align-items: center; }
-.modal.show { display: flex; }
-.modal-content { background-color: var(--surface-color); padding: 25px; border-radius: 12px; width: 90%; max-width: 450px; position: relative; border-top: 4px solid var(--accent-color); }
-.modal-input { width: 100%; padding: 10px; margin-top: 4px; background-color: var(--border-color); color: var(--primary-text-color); border: 1px solid var(--border-color); border-radius: 6px; }
-.modal-btn-primary { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
-.close-button { position: absolute; top: 15px; right: 15px; color: var(--secondary-text-color); font-size: 24px; cursor: pointer; }
-.auth-toggle { text-align: center; margin-top: 15px; font-size: .9rem; color: var(--accent-color); cursor: pointer; }
+/* --- Day Content Fade-in Animation --- */
+.day-content { 
+    display: none; 
+}
+.day-content.active { 
+    display: block; 
+    animation: fadeIn .5s; 
+}
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
+}
 
-/* Match Card */
-.match-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 15px; }
-.match-header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; background-color: rgba(47,129,247,.1); }
-.match-league { font-weight: 700; color: var(--accent-color); }
-.match-date-time { font-size: .9rem; color: var(--secondary-text-color); }
-.match-body { padding: 20px; }
-.teams-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
-.team { text-align: center; width: 120px; }
-.team img { width: 50px; height: 50px; object-fit: contain; margin: 0 auto 10px auto; }
-.team-name { font-weight: 700; font-size: 1rem; }
-.match-status-container { text-align: center; }
-.match-time { font-size: 1.2rem; font-weight: 700; direction: ltr; }
-.match-status { font-size: 1rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; color: white; }
-.match-status.soon { background-color: var(--success-color); }
-.match-status.live { background-color: var(--warning-color); animation: pulse 1.5s infinite; }
-.match-status.ended { background-color: var(--danger-color); }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(247, 183, 49, .7); } 70% { box-shadow: 0 0 0 10px rgba(247, 183, 49, 0); } 100% { box-shadow: 0 0 0 0 rgba(247, 183, 49, 0); } }
+/* --- Toast Notifications --- */
+.toast { 
+    position: fixed; 
+    bottom: -100px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background-color: rgba(0,0,0,.8); 
+    color: white; 
+    padding: 10px 20px; 
+    border-radius: 20px; 
+    z-index: 2000; 
+    font-size: .9rem; 
+    transition: bottom .3s ease-in-out; 
+    box-shadow: 0 4px 12px rgba(0,0,0,.2); 
+}
+.toast.show { 
+    bottom: 30px; 
+}
 
-/* Forms */
-.prediction-form, .comment-form { background-color: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-.prediction-form.disabled { opacity: .6; pointer-events: none; }
-.form-group { margin-bottom: 15px; }
-.form-group legend { font-size: 1rem; font-weight: 500; color: var(--secondary-text-color); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-.channel-info span { color: var(--channel-color); font-weight: 700; }
-.prediction-options { display: flex; gap: 10px; }
-.prediction-options input[type=radio] { display: none; }
-.prediction-options label { flex-grow: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); text-align: center; cursor: pointer; transition: all .2s; }
-.prediction-options input[type=radio]:checked + label { background-color: var(--success-color); border-color: var(--success-color); color: #fff; font-weight: 700; }
-.scorer-input { width: 100%; padding: 10px; background-color: var(--border-color); color: var(--primary-text-color); border: 1px solid var(--border-color); border-radius: 6px; }
-.submit-btn { width: 100%; padding: 12px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
-.submit-btn:disabled { background-color: var(--success-color); opacity: .8; cursor: not-allowed; }
+/* --- Prediction Options (Radio Buttons) --- */
+.prediction-options input[type=radio] { 
+    display: none; 
+}
+.prediction-options input[type=radio]:checked + label {
+    background-color: #238636; /* --success-color */
+    border-color: #238636;
+    color: #fff;
+    font-weight: 700;
+}
 
-/* Comments */
-.match-footer { padding: 0 20px 20px; }
-.toggle-comments-btn { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border-color); color: var(--secondary-text-color); cursor: pointer; border-radius: 8px; margin-top: 15px; }
-.comments-section .comment-list { margin-bottom: 15px; max-height: 250px; overflow-y: auto; }
-.comment, .comment-item { display: flex; gap: 10px; margin-bottom: 15px; position: relative; padding: 12px; border-radius: 8px; background-color: var(--bg-color); border: 1px solid var(--border-color); }
-.comment-avatar { width: 35px; height: 35px; border-radius: 50%; background-color: var(--border-color); display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-.comment-body { flex: 1; }
-.comment-author { font-weight: 700; }
-.comment-text, .comment-item p { font-size: .95rem; color: var(--secondary-text-color); word-wrap: break-word; }
-.comment-form textarea { width: 100%; min-height: 60px; padding: 10px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; resize: vertical; margin-bottom: 10px; }
-.comment-form button { padding: 8px 15px; background-color: var(--accent-color); color: white; border: none; border-radius: 6px; cursor: pointer; }
-.delete-comment-btn { position: absolute; top: 10px; left: 10px; background: 0 0; border: none; color: var(--secondary-text-color); cursor: pointer; font-size: .9rem; transition: color .2s; padding: 5px; }
-.delete-comment-btn:hover { color: var(--danger-color); }
-.replies-container, .news-replies-container { margin-right: 30px; margin-top: 10px; padding-right: 15px; border-right: 2px solid var(--border-color); }
-.admin-reply { background-color: rgba(47, 129, 247, 0.1); border-color: var(--accent-color) !important; }
-.admin-reply .comment-author { color: var(--accent-color); }
-
-/* Date Tabs */
-.date-tabs-container { display: flex; width: 100%; border-radius: 8px; overflow: hidden; background-color: var(--surface-color); margin-bottom: 20px; border: 1px solid var(--border-color); }
-.date-tab { flex-grow: 1; text-align: center; padding: 12px 10px; cursor: pointer; color: var(--secondary-text-color); border-bottom: 4px solid transparent; transition: all .2s; font-weight: 700; font-size: 1.1rem; }
-.date-tab.active { color: var(--primary-text-color); background-color: rgba(47, 129, 247, .15); border-bottom-color: var(--accent-color); }
-.day-content { display: none; }
-.day-content.active { display: block; animation: fadeIn .5s; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-/* News Page */
-.article-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform .2s ease,box-shadow .2s ease; }
-.article-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,.2); }
-.article-card img { width: 100%; height: 180px; object-fit: cover; }
-.article-card .article-title { padding: 15px; font-size: 1.1rem; font-weight: 700; flex-grow: 1; }
-#article-content h1 { font-size: 1.8rem; line-height: 1.4; margin-bottom: 20px; }
-#article-content img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }
-#article-content > div { font-size: 1.1rem; line-height: 1.8; color: var(--secondary-text-color); }
-
-/* Article Actions Footer */
-.article-footer { display: flex; gap: 1rem; padding-top: 1rem; margin-top: auto; border-top: 1px solid var(--border-color); }
-.article-action-btn { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--surface-color); color: var(--secondary-text-color); cursor: pointer; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s, color 0.2s; }
-.article-action-btn:hover { background-color: var(--border-color); color: var(--primary-text-color); }
-
-/* Toasts & Notifications */
-.toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,.8); color: white; padding: 10px 20px; border-radius: 20px; z-index: 2000; font-size: .9rem; transition: bottom .3s ease-in-out; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-.toast.show { bottom: 30px; }
-
-/* Profile Page */
-#profile-page.is-visible { transform: translateX(0); }
-.profile-prediction-item { border-left-width: 5px; border-left-style: solid; background-color: var(--surface-color); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 8px; font-size: 0.9rem; }
-.profile-prediction-item.pending { border-left-color: var(--secondary-text-color); }
-.profile-prediction-item.correct { border-left-color: var(--success-color); background-color: rgba(35, 134, 54, 0.1); }
-.profile-prediction-item.incorrect { border-left-color: var(--danger-color); background-color: rgba(218, 54, 51, 0.1); }
-.prediction-match-info { display: flex; justify-content: space-between; align-items: center; font-weight: bold; margin-bottom: 8px; flex-wrap: wrap; gap: 10px; }
-.prediction-status { font-size: 0.8rem; font-weight: normal; padding: 3px 8px; border-radius: 12px; }
-.profile-prediction-item.pending .prediction-status { background-color: var(--border-color); color: var(--secondary-text-color); }
-.profile-prediction-item.correct .prediction-status { background-color: var(--success-color); color: white; }
-.profile-prediction-item.incorrect .prediction-status { background-color: var(--danger-color); color: white; }
-.prediction-details { color: var(--secondary-text-color); font-size: 0.85rem; }
-.prediction-details strong { color: var(--primary-text-color); font-weight: 700; }
-.profile-comment-item { background-color: var(--surface-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.profile-comment-item .comment-content { flex-grow: 1; }
-.profile-comment-item .comment-text { display: block; margin-bottom: 5px; }
-.profile-comment-item .comment-meta { font-size: 0.8rem; color: var(--secondary-text-color); }
-.delete-comment-btn-profile { background-color: var(--danger-color); color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 0.8rem; flex-shrink: 0; }
+/* --- Comments Section --- */
+.delete-comment-btn { 
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    background: transparent; 
+    border: none; 
+    color: #8b949e; /* --secondary-text-color */
+    cursor: pointer; 
+    font-size: .9rem; 
+    transition: color .2s; 
+    padding: 5px; 
+}
+.delete-comment-btn:hover { 
+    color: #da3633; /* --danger-color */
+}
+.replies-container, .news-replies-container {
+    margin-right: 30px;
+    margin-top: 10px;
+    padding-right: 15px;
+    border-right: 2px solid #30363d; /* --border-color */
+}
+.admin-reply {
+    background-color: rgba(47, 129, 247, 0.1);
+    border-color: #2f81f7 !important; /* --accent-color */
+}
+.admin-reply .comment-author {
+    color: #2f81f7; /* --accent-color */
+}
