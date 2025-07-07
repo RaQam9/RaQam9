@@ -18,16 +18,17 @@
     padding: 0;
     box-sizing: border-box;
 }
+/* تعديل 1: إصلاح بنية التمرير الرئيسية */
 html, body {
     font-family: 'Tajawal', sans-serif;
     background-color: var(--bg-color);
     color: var(--primary-text-color);
     line-height: 1.6;
-    overflow: hidden; /* يمنع تمرير الصفحة بأكملها */
+    overflow: hidden;
     height: 100%;
 }
 .page-container {
-    height: calc(100vh - 61px); /* اضبط 61px ليتناسب مع ارتفاع الشريط العلوي لديك */
+    height: calc(100vh - 61px); /* اضبط هذا الرقم ليتناسب مع ارتفاع الشريط العلوي */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -66,8 +67,9 @@ html, body {
 
 
 /* ========================================================== */
-/*   GLOBAL COMPONENTS (MODAL, FLOATING ICON)               */
+/*   GLOBAL COMPONENTS (MODAL, FLOATING ICON) - (MODIFIED)    */
 /* ========================================================== */
+/* تعديل 2: جعل هذه العناصر عامة بدلاً من حصرها بصفحة التوقعات */
 .floating-icon-container {
     position: fixed;
     bottom: 20px; left: 20px;
@@ -142,6 +144,13 @@ html, body {
 /* =================================== */
 #predictions-page .container {
     max-width: 800px; margin: 0 auto; padding: 15px;
+}
+#predictions-page header h1, #news-page header h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+    padding: 15px 0;
 }
 #predictions-page .news-ticker {
     background-color: var(--surface-color);
@@ -304,10 +313,13 @@ html, body {
 #predictions-page .fa-spin { animation: spin 1s linear infinite; }
 @keyframes spin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
 /* =================================== */
-/*        NEWS PAGE STYLES             */
+/*        NEWS PAGE STYLES (FIXED)     */
 /* =================================== */
+/* تعديل 3: إصلاح بنية صفحة الأخبار الفرعية والمقال */
 #news-page {
-    height: calc(100vh - 61px);
+    /* لا نحتاج لتحديد ارتفاع هنا لأن .page-container يعتني به */
+    position: relative;
+    overflow: hidden; /* مهم لمنع ظهور الصفحات المنزلقة */
 }
 #news-page .page {
     position: absolute;
@@ -336,13 +348,6 @@ html, body {
     padding: 15px; /* Add padding to content */
     padding-top: 0;
     flex-grow: 1; 
-}
-#predictions-page header h1, #news-page header h1 {
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    font-weight: 700;
-    padding: 15px 0;
 }
 #article-page #article-header h1 {
     font-size: 2.2rem;
@@ -594,6 +599,7 @@ html, body {
     font-weight: bold;
 }
 
+
 /* =================================== */
 /*   STYLES FOR IMAGE PLACEHOLDERS     */
 /* =================================== */
@@ -609,6 +615,7 @@ html, body {
     border-radius: 12px;
     overflow: hidden;
 }
+
 #article-page .image-placeholder {
     height: 250px;
     border-radius: 8px;
