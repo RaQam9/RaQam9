@@ -857,39 +857,37 @@ body {
 /*   تنسيقات زر مشاركة المقال       */
 /* =================================== */
 
-/* (تمت إزالة التنسيق القديم الذي كان يجعل العنوان والزر بجانب بعضهما) */
-/* نضبط الهيدر من جديد ليحتوي على العنوان فقط */
+/* هذا الجزء يجعل العنوان وزر المشاركة بجانب بعضهما */
 #news-page #article-header {
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem; /* مسافة بين العنوان والزر */
+    margin-bottom: 20px; /* زيادة المسافة السفلية للتنسيق */
 }
+
+/* هذا الجزء يخصص مساحة أكبر للعنوان */
 #news-page #article-header h1 {
-   margin-bottom: 0;
+   flex-grow: 1; /* يسمح للعنوان بأخذ المساحة المتاحة */
+   margin-bottom: 0; /* إزالة الهامش السفلي من العنوان لأنه موجود الآن في الحاوية */
 }
 
-/* حاوية جديدة لإضافة الزر في أسفل المقال */
-#article-footer {
-    margin-top: 30px; /* مسافة فوق الزر */
-    padding-top: 20px; /* مسافة داخلية */
-    border-top: 1px solid var(--border-color); /* خط فاصل أنيق */
-}
-
-/* تنسيق زر المشاركة الجديد ليكون كبيراً وواضحاً */
+/* هذا الجزء ينسق زر المشاركة نفسه */
 #share-article-btn {
-    width: 100%; /* عرض كامل */
     background-color: var(--accent-color);
     color: white;
     border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
     cursor: pointer;
     font-family: 'Tajawal', sans-serif; /* ضمان استخدام نفس الخط */
+    font-size: 0.9rem;
     font-weight: 700;
-    padding: 12px; /* حشوة داخلية مريحة */
-    border-radius: 8px; /* حواف دائرية */
-    font-size: 1.1rem; /* حجم خط كبير */
-    transition: background-color .2s;
-    display: flex; /* لترتيب الأيقونة والنص */
-    justify-content: center;
+    display: inline-flex; /* لترتيب الأيقونة والنص بالداخل */
     align-items: center;
-    gap: 0.7rem; /* مسافة بين الأيقونة والنص */
+    gap: 0.5rem; /* مسافة بين الأيقونة والنص */
+    flex-shrink: 0; /* يمنع الزر من التقلص إذا كان العنوان طويلاً */
+    transition: background-color 0.2s;
 }
 
 /* تأثير عند مرور الفأرة فوق الزر */
