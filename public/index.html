@@ -2,15 +2,13 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>المركز الرياضي - نسخة مستقرة</title>
     
-    <!-- ============================================= -->
-    <!-- ==== الأكواد المضافة لدعم PWA والأوفلاين ==== -->
-    <!-- ============================================= -->
+    <!-- PWA & Offline Support -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#161b22">
-    <!-- ============================================= -->
+    <meta name="theme-color" content="#0d1117">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,15 +16,9 @@
     <!-- Fonts and Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { 'tajawal': ['Tajawal', 'sans-serif'] } } } }
-    </script>
-
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-05JCQWTWHK"></script>
     <script>
@@ -36,137 +28,153 @@
       gtag('config', 'G-05JCQWTWHK');
     </script>
     
-   <link rel="stylesheet" href="style.css">
+    <!-- Main Stylesheet (يجب أن يكون هذا هو الملف الذي يحتوي على الكود الكامل من ردي السابق) -->
+    <link rel="stylesheet" href="style.css">
 
 </head>
-<body class="bg-[#0d1117]">
+<body class="bg-bg-color font-tajawal">
 
     <!-- Splash Screen / Loader -->
-    <div id="loader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0d1117; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div id="loader" class="fixed inset-0 bg-[#0d1117] z-[9999] flex justify-center items-center">
         <style>
-            .spinner {
-                width: 50px;
-                height: 50px;
-                border: 5px solid #30363d;
-                border-top-color: #2f81f7;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
+            .spinner { width: 50px; height: 50px; border: 5px solid #30363d; border-top-color: #2f81f7; border-radius: 50%; animation: spin 1s linear infinite; }
+            @keyframes spin { to { transform: rotate(360deg); } }
         </style>
         <div class="spinner"></div>
     </div>
     
-    <!-- Navigation Bar -->
-    <nav class="bg-[#161b22] border-b border-[#30363d] p-3 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-center items-center gap-4">
-            <button id="nav-predictions-btn" class="nav-btn bg-blue-600 text-white px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-trophy ml-2"></i> توقعات المباريات</button>
-            <button id="nav-news-btn" class="nav-btn text-gray-400 px-6 py-2 rounded-md font-bold transition-all"><i class="fa-solid fa-newspaper ml-2"></i> أخبار كرة القدم</button>
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#161b22] border-b border-[#30363d] p-3 sticky top-0 z-50 h-[70px] flex items-center">
+        <div class="container mx-auto flex justify-center items-center gap-2 sm:gap-4">
+            <button id="nav-predictions-btn" class="nav-btn bg-accent-color text-white px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2"><i class="fa-solid fa-trophy"></i><span class="hidden sm:inline">توقعات المباريات</span></button>
+            <button id="nav-news-btn" class="nav-btn text-secondary-text-color px-4 py-2 rounded-lg font-bold transition-all flex items-center gap-2"><i class="fa-solid fa-newspaper"></i><span class="hidden sm:inline">أخبار كرة القدم</span></button>
         </div>
     </nav>
 
-    <!-- Predictions Page -->
-    <div id="predictions-page" class="page-container hidden">
-        <div class="container">
-            <header><h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1></header>
-            <div class="news-ticker"><i class="fa-solid fa-bell ticker-icon"></i><div class="ticker-content" id="predictions-ticker-content"></div></div>
-            <main id="matches-container">
-                <!-- Content is loaded by JavaScript -->
-            </main>
-        </div>
-        <div class="floating-icon-container" id="floating-icon-container"><button class="dismiss-icon-button" id="dismiss-icon-btn" title="إخفاء الأيقونة"><i class="fa-solid fa-xmark"></i></button><button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم"><i class="fa-solid fa-user-pen"></i></button></div>
-        
-        <!-- MODAL FOR AUTHENTICATION -->
-        <div class="modal" id="auth-modal">
-            <div class="modal-content">
-                <span class="close-button" id="close-auth-modal-btn">×</span>
-                <!-- Login View -->
-                <div id="login-view">
-                    <h2>تسجيل الدخول</h2>
-                    <form id="login-form">
-                        <div class="form-control"><label for="login-email">البريد الإلكتروني</label><input type="email" id="login-email" required></div>
-                        <div class="form-control"><label for="login-password">كلمة المرور</label><input type="password" id="login-password" required></div>
-                        <button type="submit">دخول</button>
-                    </form>
-                    <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
+    <!-- ================================================================= -->
+    <!--                   ✅ PREDICTIONS PAGE (RESTRUCTURED)              -->
+    <!-- ================================================================= -->
+    <div id="predictions-page" class="page-container">
+        <!-- القسم العلوي الثابت (لن يختفي عند التمرير) -->
+        <header class="page-fixed-header">
+            <h1><i class="fa-solid fa-trophy"></i> توقعات المباريات</h1>
+            <div class="news-ticker">
+                <i class="fa-solid fa-bell ticker-icon"></i>
+                <div class="ticker-content" id="predictions-ticker-content"><!-- JS will load content here --></div>
+            </div>
+        </header>
+
+        <!-- حاوية المحتوى القابلة للتمرير -->
+        <div class="page-scrollable-content">
+            <div class="container">
+                 <div class="date-tabs-container">
+                    <!-- Date tabs will be loaded by JS -->
                 </div>
-                <!-- Signup View -->
-                <div id="signup-view" style="display: none;">
-                    <h2>إنشاء حساب جديد</h2>
-                    <form id="signup-form">
-                        <div class="form-control"><label for="signup-username">اسم المستخدم (سيظهر في التعليقات)</label><input type="text" id="signup-username" required></div>
-                        <div class="form-control"><label for="signup-email">البريد الإلكتروني</label><input type="email" id="signup-email" required></div>
-                        <div class="form-control"><label for="signup-password">كلمة المرور</label><input type="password" id="signup-password" required></div>
-                        <button type="submit">إنشاء حساب</button>
-                    </form>
-                    <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
-                </div>
-                <!-- Logged In View -->
-                <div id="loggedin-view" style="display: none;">
-                    <h2>أهلاً بك!</h2>
-                    <p id="user-email-display" style="text-align: center; margin-bottom: 10px;"></p>
-                    <button id="open-profile-btn" style="width:100%; padding:12px; background-color: var(--success-color); color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom: 10px;">
-                        <i class="fa-solid fa-user-gear"></i> ملفي الشخصي
-                    </button>
-                    <button id="logout-btn">تسجيل الخروج</button>
-                </div>
-                <div id="auth-message"></div>
+                <main id="matches-container">
+                    <!-- Match content (day-content divs) will be loaded by JS -->
+                </main>
             </div>
         </div>
     </div>
     
-    <!-- News Page -->
+    <!-- ================================================================= -->
+    <!--                      ✅ NEWS PAGE (RESTRUCTURED)                  -->
+    <!-- ================================================================= -->
     <div id="news-page" class="page-container hidden relative">
-        <div id="home-page" class="page"><header><h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1></header><main id="articles-grid"></main></div>
-        
-        <!-- ====================== تعديل: هيكلة صفحة المقال ====================== -->
-        <div id="article-page" class="page">
-            <div id="article-content">
-                <!-- محتوى المقال (العنوان، الصورة، النص) سيتم حقنه هنا بواسطة JS -->
-            </div>
-
-            <!-- شريط الإجراءات الجديد في الأسفل -->
-            <div class="article-footer">
-                <button id="share-article-btn" class="article-action-btn">
-                    <i class="fa-solid fa-share-nodes"></i> مشاركة
-                </button>
-                <button id="toggle-news-comments-btn" class="article-action-btn">
-                    <i class="fa-solid fa-comments"></i> التعليقات
-                </button>
-            </div>
-            
-            <!-- قسم التعليقات (مخفي افتراضياً) -->
-            <div id="comments-section" class="comments-section" style="display:none;">
-                <h2><i class="fa-solid fa-comments"></i> التعليقات</h2>
-                <div id="comments-list"></div>
-                <form id="comment-form" name="news-comment-form">
-                    <input type="hidden" id="article-id-hidden-input" name="article_id" value="" />
-                    <h3>أضف تعليقك</h3>
-                    <textarea id="comment-text" name="comment_text" placeholder="اكتب تعليقك هنا..." required></textarea>
-                    <button type="submit" id="submit-comment-btn">إرسال التعليق</button>
-                </form>
+        <!-- Home Page (List of Articles) -->
+        <div id="home-page" class="page">
+            <header class="page-fixed-header">
+                <h1><i class="fa-solid fa-newspaper"></i> أخبار كرة القدم</h1>
+            </header>
+            <div class="page-scrollable-content">
+                <main id="articles-grid"><!-- Article cards loaded by JS --></main>
             </div>
         </div>
-        <!-- ====================== نهاية التعديل ====================== -->
+        
+        <!-- Article Page (Single Article View) -->
+        <div id="article-page" class="page">
+            <!-- القسم العلوي الثابت لعنوان المقال -->
+            <header id="article-header" class="page-fixed-header">
+                <h1 id="article-title-element"><!-- Article title loaded by JS --></h1>
+            </header>
+            
+            <!-- حاوية المحتوى القابلة للتمرير للمقال -->
+            <div class="page-scrollable-content">
+                <div id="article-content-wrapper">
+                    <div id="article-image-container"><!-- Article image loaded by JS --></div>
+                    <div id="article-text-content"><!-- Article text loaded by JS --></div>
+                    <div id="comments-section-article" class="comments-section">
+                         <!-- Article comments loaded by JS -->
+                    </div>
+                </div>
 
-        <div id="notification-toast"></div>
-        <div id="exit-toast">انقر مرة أخرى للخروج</div>
+                <div class="article-footer">
+                    <button id="share-article-btn" class="article-action-btn"><i class="fa-solid fa-share-nodes"></i> مشاركة</button>
+                    <button id="toggle-news-comments-btn" class="article-action-btn"><i class="fa-solid fa-comments"></i> التعليقات</button>
+                </div>
+            </div>
+        </div>
     </div>
   
-    <!-- Profile Page -->
-    <div id="profile-page" class="page-container hidden fixed top-0 left-0 w-full h-full bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
+    <!-- ================================================================= -->
+    <!--            GENERAL COMPONENTS (Modal, Profile, Toasts)            -->
+    <!-- ================================================================= -->
+
+    <!-- Floating User Icon -->
+    <div class="floating-icon-container" id="floating-icon-container">
+        <button class="user-icon-button" id="user-icon-btn" title="تسجيل الدخول / بيانات المستخدم">
+            <i class="fa-solid fa-user-pen"></i>
+        </button>
+    </div>
+    
+    <!-- Authentication Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-auth-modal-btn">×</span>
+            <!-- Login View -->
+            <div id="login-view">
+                <h2>تسجيل الدخول</h2>
+                <form id="login-form">
+                    <div class="form-control"><input type="email" id="login-email" placeholder="البريد الإلكتروني" required></div>
+                    <div class="form-control"><input type="password" id="login-password" placeholder="كلمة المرور" required></div>
+                    <button type="submit">دخول</button>
+                </form>
+                <p class="auth-toggle" id="show-signup">ليس لديك حساب؟ إنشاء حساب جديد</p>
+            </div>
+            <!-- Signup View -->
+            <div id="signup-view" style="display: none;">
+                <h2>إنشاء حساب جديد</h2>
+                <form id="signup-form">
+                    <div class="form-control"><input type="text" id="signup-username" placeholder="اسم المستخدم (سيظهر في التعليقات)" required></div>
+                    <div class="form-control"><input type="email" id="signup-email" placeholder="البريد الإلكتروني" required></div>
+                    <div class="form-control"><input type="password" id="signup-password" placeholder="كلمة المرور" required></div>
+                    <button type="submit">إنشاء حساب</button>
+                </form>
+                <p class="auth-toggle" id="show-login">لديك حساب بالفعل؟ تسجيل الدخول</p>
+            </div>
+            <!-- Logged In View -->
+            <div id="loggedin-view" style="display: none;">
+                <h2>أهلاً بك!</h2>
+                <p id="user-email-display" class="text-center mb-3"></p>
+                <button id="open-profile-btn" class="w-full p-3 bg-success-color text-white border-none rounded-lg cursor-pointer mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-user-gear"></i>ملفي الشخصي</button>
+                <button id="logout-btn">تسجيل الخروج</button>
+            </div>
+            <div id="auth-message"></div>
+        </div>
+    </div>
+
+    <!-- Profile Page (Overlay) -->
+    <div id="profile-page" class="hidden fixed inset-0 bg-[#0d1117] z-[60] p-4 overflow-y-auto transform translate-x-full transition-transform duration-300 ease-in-out">
         <header class="flex items-center justify-between pb-4 border-b border-[#30363d] mb-6">
-            <h1 class="text-2xl font-bold"><i class="fa-solid fa-user-circle ml-3"></i>الملف الشخصي</h1>
-            <button id="close-profile-btn" class="text-2xl text-gray-400">×</button>
+            <h1 class="text-2xl font-bold"><i class="fa-solid fa-user-circle mr-3"></i>الملف الشخصي</h1>
+            <button id="close-profile-btn" class="text-2xl text-secondary-text-color">×</button>
         </header>
         <main>
             <section id="username-section" class="mb-8 p-4 bg-[#161b22] rounded-lg border border-[#30363d]">
                 <h2 class="text-lg font-bold mb-3">تغيير اسم المستخدم</h2>
                 <div class="flex gap-2">
                     <input type="text" id="profile-username-input" class="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2 text-white" placeholder="اسم المستخدم الجديد...">
-                    <button id="save-username-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md font-bold">حفظ</button>
+                    <button id="save-username-btn" class="bg-accent-color text-white px-4 py-2 rounded-md font-bold">حفظ</button>
                 </div>
                 <p id="username-status" class="text-sm mt-2 text-gray-400"></p>
             </section>
@@ -180,17 +188,17 @@
             </section>
         </main>
     </div>
-    
+
+    <!-- Toasts & Status Indicators -->
+    <div id="notification-toast"></div>
+    <div id="exit-toast">انقر مرة أخرى للخروج</div>
+    <div id="offline-status" class="hidden fixed bottom-0 left-0 w-full bg-danger-color text-white text-center p-2.5 z-[10000] font-bold border-t border-red-400">
+        <i class="fa-solid fa-wifi-slash mr-2"></i> أنت غير متصل. يتم عرض نسخة محفوظة.
+    </div>
+
+    <!-- Scripts -->
     <script src="capacitor.js"></script>
     <script src="app.js"></script>
-
-    <!-- ======================================================== -->
-    <!-- ==== العنصر المضاف لإظهار حالة عدم الاتصال بالإنترنت ==== -->
-    <!-- ======================================================== -->
-    <div id="offline-status" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #c93434; color: white; text-align: center; padding: 10px; z-index: 10000; font-family: 'Tajawal', sans-serif; font-size: 0.9rem; font-weight: bold; border-top: 1px solid #e25858;">
-        <i class="fa-solid fa-wifi-slash" style="margin-left: 8px;"></i> أنت غير متصل. يتم عرض نسخة محفوظة.
-    </div>
-    <!-- ======================================================== -->
 
 </body>
 </html>
