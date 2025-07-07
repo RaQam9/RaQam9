@@ -652,17 +652,20 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-// استبدل هذه الدالة بالكامل في ملف app.js
-
-async function initializeNewsPage() {
+// استبدل هذه الدالة بالكامل بالكود الجديد
+async function initializeNewsPage(directArticleId = null) {
     const articlesGrid = document.getElementById('articles-grid');
     const articleContent = document.getElementById('article-content');
     const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
     let articlesCache = [];
     
-    async function fetchArticlesFromDB() {
+    // إذا لم يكن هناك ID مباشر، أظهر رسالة التحميل في قائمة الأخبار
+    if (!directArticleId) {
         articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+    }
+
+    async function fetchArticlesFromDB() {
         const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
         if (error) { 
              if (navigator.onLine) {
@@ -687,10 +690,11 @@ async function initializeNewsPage() {
     }
 
     function renderArticleDetail(articleId) {
-        // تحويل id إلى رقم للتأكد من المقارنة الصحيحة
         const article = articlesCache.find(a => a.id === parseInt(articleId)); 
         if (!article) {
             console.error(`Article with ID ${articleId} not found.`);
+            // إذا لم يتم العثور على المقال، عد إلى الصفحة الرئيسية للأخبار
+            navigateToSubPage('home');
             return;
         };
 
@@ -719,26 +723,21 @@ async function initializeNewsPage() {
         const fetchedArticles = await fetchArticlesFromDB();
         if (fetchedArticles) { 
             articlesCache = fetchedArticles; 
-            renderArticleCards(articlesCache); 
 
-            // ==============================================================
-            // ==== إضافة: التعامل مع الروابط المباشرة (Deep Linking) ====
-            // ==============================================================
-            // هذا الكود سيقرأ الرابط الذي تم فتح التطبيق من خلاله
-            const urlParams = new URLSearchParams(window.location.search);
-            const articleIdFromUrl = urlParams.get('article');
-
-            // إذا وجدنا 'article' في الرابط
-            if (articleIdFromUrl) {
+            // =================================================================
+            // ==== تعديل: المنطق الجديد للتعامل مع الروابط المباشرة ====
+            // =================================================================
+            if (directArticleId) {
+                // إذا تم تمرير ID مباشرة:
                 // 1. انتقل إلى تبويب الأخبار
                 document.getElementById('nav-news-btn').click();
-
-                // 2. انتظر قليلاً لضمان عرض الصفحة ثم افتح المقال
-                setTimeout(() => {
-                    renderArticleDetail(articleIdFromUrl);
-                }, 100); // تأخير بسيط لضمان سلاسة الانتقال
+                // 2. اعرض تفاصيل المقال مباشرة بدون إظهار القائمة
+                renderArticleDetail(directArticleId);
+            } else {
+                // إذا لم يتم تمرير ID، اعرض قائمة المقالات كالمعتاد
+                renderArticleCards(articlesCache);
             }
-            // ==============================================================
+            // =================================================================
         }
     }
 
