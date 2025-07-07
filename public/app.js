@@ -539,7 +539,7 @@ async function initializePredictionsPage() {
     try {
         const container = document.getElementById('matches-container');
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
-        const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
+        const { data, error } = await supabaseClient.from('matches').select('*').eq('is_active', true).order('datetime', { ascending: true });
         if (error) {
             if (navigator.onLine) {
                  throw error;
