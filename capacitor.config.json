@@ -11,8 +11,8 @@
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",
       "showSpinner": false,
-      "splashFullScreen": false,
-      "splashImmersive": false
+      "splashFullScreen": true,
+      "splashImmersive": true
     }
   }
 }

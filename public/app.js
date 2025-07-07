@@ -27,25 +27,40 @@ function navigateToSubPage(pageName) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ⬇️⬇️ الكود الجديد للتحكم في شريط الحالة و شاشة البداية ⬇️⬇️
-    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-        const { StatusBar, SplashScreen, Style } = window.Capacitor.Plugins;
-        
-        // إظهار شريط الحالة
-        StatusBar.show();
-        
-        // جعل لونه داكنًا ليتناسب مع تصميمك
-        StatusBar.setStyle({ style: Style.Dark });
-        
-        // منع المحتوى من الظهور خلف شريط الحالة
-        StatusBar.setOverlaysWebView({ overlay: false });
 
-        // إخفاء شاشة البداية بعد أن يتم تحميل الصفحة
-        SplashScreen.hide();
+    // =============================================
+    // ==== الأكواد المضافة لدعم PWA والأوفلاين ====
+    // =============================================
+    // 1. تسجيل الـ Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
     }
-    // ⬆️⬆️ نهاية الكود الجديد ⬆️⬆️
 
-    // ======== الكود الأصلي الخاص بك يبدأ من هنا ========
+    // 2. إدارة إظهار وإخفاء شريط حالة الاتصال
+    const offlineStatusDiv = document.getElementById('offline-status');
+    const handleConnectionChange = () => {
+        if (navigator.onLine) {
+            offlineStatusDiv.style.display = 'none';
+        } else {
+            offlineStatusDiv.style.display = 'block';
+        }
+    };
+
+    window.addEventListener('online', handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
+
+    // التحقق من الحالة عند تحميل الصفحة لأول مرة
+    handleConnectionChange();
+    // =============================================
+
 
     // Check if Capacitor is available
     if (window.Capacitor) {
@@ -81,9 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
+    // ========================================================
+    // ==== تعديل: التحقق من الرابط العميق عند بدء التشغيل ====
+    // ========================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const articleIdFromUrl = urlParams.get('article');
+
     initializeAuth();
     initializePredictionsPage();
-    initializeNewsPage();
+    // استدعاء دالة الأخبار مع تمرير المعرف من الرابط
+    initializeNewsPage(articleIdFromUrl); 
+    // ========================================================
+
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
@@ -91,9 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================
     //  Initialize new features
     // ===================================
+    // ...
     initializePullToRefresh();
     initializeBackButtonHandler();
-});
+
+    // =================================================================
+    // ==== تعديل: إظهار الصفحة الافتراضية بعد انتهاء التحميل ====
+    // =================================================================
+    if (!articleIdFromUrl) {
+        // إذا لم يكن هناك رابط مقال، فهذا تشغيل عادي.
+        // أظهر صفحة التوقعات الافتراضية.
+        document.getElementById('predictions-page').classList.remove('hidden');
+    }
+    // إذا كان هناك رابط مقال، فإن دالة initializeNewsPage ستهتم بإظهار صفحة الأخبار.
+    // =================================================================
+
+}); // <--- نهاية المستمع
 
 
 // ==========================================================
@@ -445,20 +482,24 @@ function initializeBackButtonHandler() {
 function refreshVisibleComments() {
     document.querySelectorAll('.comments-section').forEach(section => {
         if (section.style.display === 'block') {
-            const matchId = section.closest('.match-card').dataset.matchId;
-            const listElement = section.querySelector('.comment-list');
-            if (matchId && listElement) {
-                fetchAndRenderMatchComments(matchId, listElement);
+            const matchCard = section.closest('.match-card');
+            if (matchCard) {
+                const matchId = matchCard.dataset.matchId;
+                const listElement = section.querySelector('.comment-list');
+                if (matchId && listElement) {
+                    fetchAndRenderMatchComments(matchId, listElement);
+                }
+            } else {
+                 const articlePage = section.closest('#article-page');
+                 if (articlePage) {
+                    const articleId = document.getElementById('article-id-hidden-input').value;
+                    if (articleId) {
+                        fetchAndRenderNewsComments(articleId);
+                    }
+                 }
             }
         }
     });
-    const articlePage = document.getElementById('article-page');
-    if (getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) {
-        const articleId = document.getElementById('article-id-hidden-input').value;
-        if (articleId) {
-            fetchAndRenderNewsComments(articleId);
-        }
-    }
 }
 
 async function loadUserPredictions() {
@@ -498,13 +539,19 @@ async function initializePredictionsPage() {
     try {
         const container = document.getElementById('matches-container');
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
-        const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
-        if (error) throw error;
+        const { data, error } = await supabaseClient.from('matches').select('*').eq('is_active', true).order('datetime', { ascending: true });
+        if (error) {
+            if (navigator.onLine) {
+                 throw error;
+            }
+            console.warn('Failed to fetch matches, but hopefully serving from cache.', error);
+            return;
+        }
         const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
         container.innerHTML = `<div class="date-tabs-container" id="date-tabs"></div><div id="days-content-container"></div>`;
         initializeAppWithData(formattedMatches);
     } catch (error) {
-        console.error("An error occurred:", error);
+        console.error("An error occurred while fetching predictions:", error);
         document.getElementById('matches-container').innerHTML = '<p class="text-center text-red-500 mt-8">فشل تحميل المباريات. يرجى المحاولة مرة أخرى لاحقًا.</p>';
     }
 }
@@ -517,6 +564,7 @@ function initializeAppWithData(matchesData) {
     function attachTabEventListeners() { const d = document.getElementById('date-tabs'); d.addEventListener('click', (e) => { if (!e.target.classList.contains('date-tab')) return; const t = e.target.dataset.tabId; document.querySelectorAll('.date-tab').forEach(c => c.classList.remove('active')); e.target.classList.add('active'); document.querySelectorAll('.day-content').forEach(c => c.classList.remove('active')); document.getElementById(`day-${t}`).classList.add('active'); }); }
     function attachMatchEventListeners() { const d = document.getElementById('days-content-container'); d.addEventListener('submit', e => { e.preventDefault(); if (e.target.name === 'prediction-form' || e.target.name === 'match-comment-form') { handleFormSubmit(e.target); } }); d.addEventListener('click', e => { if (e.target.classList.contains('toggle-comments-btn')) handleToggleComments(e.target); }); }
     async function handleFormSubmit(form) {
+        if (!navigator.onLine) { alert('لا يمكن إرسال البيانات وأنت غير متصل بالإنترنت.'); return; }
         const submitBtn = form.querySelector('button[type="submit"]');
         if (!currentUser) { alert('الرجاء تسجيل الدخول أولاً للمشاركة.'); document.getElementById('user-icon-btn').click(); return; }
         submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`; submitBtn.disabled = true;
@@ -555,7 +603,11 @@ function initializeAppWithData(matchesData) {
                 .eq('match_id', matchId)
                 .order('created_at', { ascending: true });
             
-            if (error) throw error;
+            if (error) {
+                if (navigator.onLine) throw error;
+                console.warn('Failed to fetch comments, hopefully serving from cache.');
+                return;
+            }
             listElement.innerHTML = '';
             const commentsById = {};
             const rootComments = [];
@@ -622,19 +674,33 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-async function initializeNewsPage() {
+// استبدل هذه الدالة بالكامل بالكود الجديد
+async function initializeNewsPage(directArticleId = null) {
     const articlesGrid = document.getElementById('articles-grid');
     const articleContent = document.getElementById('article-content');
     const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
     let articlesCache = [];
     
-    async function fetchArticlesFromDB() {
+    // إذا لم يكن هناك ID مباشر، أظهر رسالة التحميل في قائمة الأخبار
+    if (!directArticleId) {
         articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+    }
+
+    async function fetchArticlesFromDB() {
         const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
-        if (error) { console.error("Supabase error:", error); articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; return null; }
+        if (error) { 
+             if (navigator.onLine) {
+                console.error("Supabase error:", error); 
+                articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; 
+             } else {
+                console.warn('Failed to fetch articles, hopefully serving from cache.');
+             }
+             return null;
+        }
         return data;
     }
+
     function renderArticleCards(articles) {
         articlesGrid.innerHTML = ''; if (!articles || articles.length === 0) { articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>'; return; }
         articles.forEach(article => {
@@ -644,24 +710,63 @@ async function initializeNewsPage() {
             articlesGrid.appendChild(card);
         });
     }
+
     function renderArticleDetail(articleId) {
-        const article = articlesCache.find(a => a.id === articleId); if (!article) return;
+        const article = articlesCache.find(a => a.id === parseInt(articleId)); 
+        if (!article) {
+            console.error(`Article with ID ${articleId} not found.`);
+            // إذا لم يتم العثور على المقال، عد إلى الصفحة الرئيسية للأخبار
+            navigateToSubPage('home');
+            return;
+        };
+
         document.getElementById('article-id-hidden-input').value = article.id;
-        articleContent.innerHTML = `<div id="article-header"><h1>${article.title}</h1></div><img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div>${article.content}</div>`;
+        
+        articleContent.innerHTML = `
+            <h1>${article.title}</h1>
+            <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+            <div>${article.content}</div>`;
+        
+        const shareBtn = document.getElementById('share-article-btn');
+        if (shareBtn) {
+            shareBtn.dataset.articleId = article.id;
+            shareBtn.dataset.articleTitle = article.title;
+        }
+
+        const commentsSection = document.getElementById('comments-section');
+        const toggleBtn = document.getElementById('toggle-news-comments-btn');
+        if (commentsSection) commentsSection.style.display = 'none';
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-comments"></i> التعليقات';
+        
         navigateToSubPage('article');
-        fetchAndRenderNewsComments(article.id);
     }
     
     async function start() {
         const fetchedArticles = await fetchArticlesFromDB();
-        if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
+        if (fetchedArticles) { 
+            articlesCache = fetchedArticles; 
+
+            // =================================================================
+            // ==== تعديل: المنطق الجديد للتعامل مع الروابط المباشرة ====
+            // =================================================================
+            if (directArticleId) {
+                // إذا تم تمرير ID مباشرة:
+                // 1. انتقل إلى تبويب الأخبار
+                document.getElementById('nav-news-btn').click();
+                // 2. اعرض تفاصيل المقال مباشرة بدون إظهار القائمة
+                renderArticleDetail(directArticleId);
+            } else {
+                // إذا لم يتم تمرير ID، اعرض قائمة المقالات كالمعتاد
+                renderArticleCards(articlesCache);
+            }
+            // =================================================================
+        }
     }
 
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
     
-    // NEW: Enhanced swipe gesture
     let touchStartX = 0;
     newsArticlePage.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
@@ -669,7 +774,6 @@ async function initializeNewsPage() {
     
     newsArticlePage.addEventListener('touchend', e => {
         const touchEndX = e.changedTouches[0].screenX;
-        // If there's a horizontal swipe of more than 50px, navigate back
         if (Math.abs(touchEndX - touchStartX) > 50) {
             if (currentNewsSubPage === 'article') {
                 navigateToSubPage('home');
@@ -678,6 +782,61 @@ async function initializeNewsPage() {
     }, { passive: true });
     
     start();
+}
+
+
+// ===================================
+// ==== إضافة: دالة المشاركة الجديدة ====
+// ===================================
+/**
+ * Handles sharing an article.
+ * It prioritizes Capacitor Share, then Web Share API, and falls back to copying to clipboard.
+ * @param {string} articleId - The ID of the article to share.
+ * @param {string} articleTitle - The title of the article.
+ */
+// استبدل الدالة بالكامل بهذا الكود المعدل
+async function handleShareArticle(articleId, articleTitle) {
+    // ==========================================================
+    // ==== تعديل: استخدام رابط Netlify الثابت دائماً للمشاركة ====
+    // ==========================================================
+    const NETLIFY_URL = 'https://raqam9.netlify.app'; // <--- ضع رابط موقعك هنا
+    const shareUrl = `${NETLIFY_URL}/?article=${articleId}`;
+    // ==========================================================
+
+    const shareData = {
+        title: articleTitle,
+        text: `اطلع على هذا الخبر: "${articleTitle}"`,
+        url: shareUrl,
+    };
+
+    try {
+        // 1. الأولوية لتطبيق Capacitor الأصلي
+        if (window.Capacitor && window.Capacitor.Plugins.Share) {
+            console.log("Using Capacitor Share API");
+            await window.Capacitor.Plugins.Share.share(shareData);
+            return; // تمت المشاركة بنجاح
+        }
+
+        // 2. المحاولة الثانية: استخدام Web Share API في المتصفحات الداعمة
+        if (navigator.share) {
+            console.log("Using Web Share API");
+            await navigator.share(shareData);
+            return; // تمت المشاركة بنجاح
+        }
+
+        // 3. الحل البديل: نسخ الرابط إلى الحافظة
+        console.log("Fallback: Copying to clipboard");
+        await navigator.clipboard.writeText(shareUrl);
+        showNotification('✅ تم نسخ رابط المقال إلى الحافظة!');
+
+    } catch (err) {
+        // تجاهل الأخطاء الناتجة عن إلغاء المستخدم لعملية المشاركة
+        if (err.name !== 'AbortError' && !err.message.includes('Share canceled')) {
+            console.error('Share failed:', err);
+            // إظهار إشعار في حالة فشل النسخ
+            showNotification('❌ فشلت عملية المشاركة أو النسخ.');
+        }
+    }
 }
 
 
@@ -692,7 +851,11 @@ async function fetchAndRenderNewsComments(articleId) {
             .eq('article_id', articleId)
             .order('created_at', { ascending: true });
             
-        if (error) throw error;
+        if (error) {
+             if (navigator.onLine) throw error;
+             console.warn('Failed to fetch news comments, hopefully serving from cache.');
+             return;
+        }
         commentsListDiv.innerHTML = '';
         const commentsById = {};
         const rootComments = [];
@@ -754,6 +917,7 @@ function addNewsCommentToDOM(container, commentData) {
 
 async function handleNewsCommentSubmit(event) {
     event.preventDefault();
+    if (!navigator.onLine) { alert('لا يمكن إرسال البيانات وأنت غير متصل بالإنترنت.'); return; }
     const submitBtn = document.getElementById('submit-comment-btn');
     if (!currentUser) { alert('يجب تسجيل الدخول أولاً للتعليق.'); document.getElementById('user-icon-btn').click(); return; }
     submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جار الإرسال...';
@@ -809,9 +973,12 @@ function initializeRealtimeListeners() {
 
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
+        
+        // --- مستمع حدث لحذف التعليقات ---
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
+            if (!navigator.onLine) { alert('لا يمكن حذف التعليق وأنت غير متصل بالإنترنت.'); return; }
             const commentId = deleteBtn.dataset.commentId;
             const tableName = deleteBtn.dataset.tableName;
             const isConfirmed = confirm('هل أنت متأكد من أنك تريد حذف هذا التعليق؟');
@@ -829,6 +996,43 @@ function initializeGlobalEventListeners() {
                     }
                     showNotification('تم حذف التعليق بنجاح.');
                 } catch (error) { console.error('Error deleting comment:', error); alert('حدث خطأ أثناء حذف التعليق.'); }
+            }
+        }
+
+        // ===============================================
+        // ==== تعديل: مستمع لزر المشاركة (يعمل كما هو) ====
+        // ===============================================
+        const shareBtn = e.target.closest('#share-article-btn');
+        if (shareBtn) {
+            e.preventDefault();
+            const articleId = shareBtn.dataset.articleId;
+            const articleTitle = shareBtn.dataset.articleTitle;
+            if (articleId && articleTitle) {
+                handleShareArticle(articleId, articleTitle);
+            }
+        }
+        
+        // =================================================================
+        // ==== إضافة: مستمع حدث لزر إظهار/إخفاء تعليقات الأخبار الجديد ====
+        // =================================================================
+        const toggleNewsCommentsBtn = e.target.closest('#toggle-news-comments-btn');
+        if (toggleNewsCommentsBtn) {
+            e.preventDefault();
+            const commentsSection = document.getElementById('comments-section');
+            const isHidden = commentsSection.style.display === 'none';
+
+            if (isHidden) {
+                commentsSection.style.display = 'block';
+                toggleNewsCommentsBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> إخفاء التعليقات';
+                // جلب التعليقات فقط إذا كانت القائمة فارغة (لعدم إعادة الجلب كل مرة)
+                const commentsList = commentsSection.querySelector('#comments-list');
+                if (!commentsList.innerHTML || commentsList.innerHTML.includes('جاري تحميل')) {
+                    const articleId = document.getElementById('article-id-hidden-input').value;
+                    fetchAndRenderNewsComments(articleId);
+                }
+            } else {
+                commentsSection.style.display = 'none';
+                toggleNewsCommentsBtn.innerHTML = '<i class="fa-solid fa-comments"></i> التعليقات';
             }
         }
     });
@@ -908,8 +1112,12 @@ async function fetchAndRenderProfilePredictions() {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error("Error fetching profile predictions:", error);
-        predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        if(navigator.onLine) {
+            console.error("Error fetching profile predictions:", error);
+            predictionsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التوقعات.</p>';
+        } else {
+            predictionsListDiv.innerHTML = '<p class="text-gray-400">لا يمكن عرض التوقعات وأنت غير متصل.</p>';
+        }
         return;
     }
     if (data.length === 0) {
@@ -947,7 +1155,11 @@ async function fetchAndRenderProfileComments() {
     ]);
 
     if (matchComments.error || newsComments.error) {
-        commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        if (navigator.onLine) {
+            commentsListDiv.innerHTML = '<p class="text-red-500">فشل تحميل التعليقات.</p>';
+        } else {
+            commentsListDiv.innerHTML = '<p class="text-gray-400">لا يمكن عرض التعليقات وأنت غير متصل.</p>';
+        }
         return;
     }
     
@@ -969,6 +1181,7 @@ async function fetchAndRenderProfileComments() {
 }
 
 async function handleUpdateUsername(e) {
+    if (!navigator.onLine) { alert('لا يمكن تعديل البيانات وأنت غير متصل بالإنترنت.'); return; }
     const btn = e.target;
     const usernameInput = document.getElementById('profile-username-input');
     const statusP = document.getElementById('username-status');
@@ -1000,6 +1213,7 @@ async function handleUpdateUsername(e) {
 
 async function handleDeleteComment(e) {
     if (!e.target.classList.contains('delete-comment-btn-profile')) return;
+    if (!navigator.onLine) { alert('لا يمكن حذف التعليق وأنت غير متصل بالإنترنت.'); return; }
     const btn = e.target;
     const commentId = btn.dataset.commentId;
     const tableName = btn.dataset.table;
