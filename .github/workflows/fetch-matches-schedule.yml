@@ -1,31 +1,42 @@
+# اسم الـ Workflow الذي يظهر في قائمة Actions
 name: Fetch Football Matches Schedule
 
+# متى يتم تشغيل هذا الـ Workflow
 on:
+  # التشغيل المجدول (هنا كل 6 ساعات)
   schedule:
-    # يمكنك تحديد الوقت الذي تريده هنا (مثلاً كل 6 ساعات)
     - cron: '0 */6 * * *'
-  workflow_dispatch: # هذا يسمح لك بتشغيله يدوياً من واجهة GitHub
+  # هذا يسمح لك بتشغيله يدوياً من واجهة GitHub
+  workflow_dispatch:
 
+# المهام (Jobs) التي سيتم تنفيذها
 jobs:
+  # اسم المهمة (يمكنك تسميته أي شيء)
   fetch-and-update:
+    # نوع النظام الذي ستعمل عليه المهمة
     runs-on: ubuntu-latest
 
+    # الخطوات (Steps) التي ستنفذها المهمة بالترتيب
     steps:
+      # الخطوة 1: يقوم بتحميل الكود الخاص بك من المستودع
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # الخطوة 2: يقوم بتجهيز بيئة Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # استخدام إصدار حديث من نود
+          node-version: '20'
 
-      # ▼▼▼ الخطوة الجديدة والمهمة ▼▼▼
+      # الخطوة 3: يقوم بتثبيت المكتبات المذكورة في package.json
       - name: Install dependencies
         run: npm install
 
+      # ▼▼▼ هذا هو الجزء الذي قمت بتحديثه ▼▼▼
+      # الخطوة 4: يقوم بتشغيل السكربت مع تمرير المفاتيح السرية
       - name: Run fetch matches script
-        # نقوم بتمرير المفاتيح السرية هنا
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
         run: node scripts/fetch-matches.js
