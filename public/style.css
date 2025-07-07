@@ -554,13 +554,12 @@ body {
 #news-page #article-content {
     padding-top: 15px;
     padding-bottom: 10px;
-}
-#news-page #article-header {
-    margin-bottom: 10px;
+    flex-grow: 1; /* للسماح للمحتوى بالنمو ودفع الشريط السفلي للأسفل */
 }
 #news-page #article-header h1 {
     font-size: 1.8rem;
     line-height: 1.4;
+    margin-bottom: 20px;
 }
 #news-page #article-content img {
     width: 100%;
@@ -569,14 +568,15 @@ body {
     border-radius: 8px;
     margin-bottom: 20px;
 }
-#news-page #article-content div {
+#news-page #article-content > div { /* لاستهداف محتوى المقال النصي فقط */
     font-size: 1.1rem;
     line-height: 1.8;
     color: var(--secondary-text-color);
 }
+
 #news-page .comments-section {
     padding: 20px 0;
-    margin-top: 25px;
+    margin-top: 15px;
     border-top: 1px solid var(--border-color);
 }
 #news-page .comments-section h2, #news-page #comment-form h3 {
@@ -813,21 +813,11 @@ body {
 /* ========================================================== */
 /*   FIX FOR UNIFIED PAGE SCROLLING (Pull-to-Refresh FIX)   */
 /* ========================================================== */
-/*
-  This rule unifies the scrolling behavior for both main pages.
-  It gives them a specific height (viewport height minus the top nav bar)
-  and makes them scroll internally. This is crucial for the "pull-to-refresh"
-  feature to work correctly on both the Predictions and News pages.
-*/
 #predictions-page, #news-page {
     height: calc(100vh - 70px); /* ارتفاع الشاشة مطروحًا منه ارتفاع شريط التنقل العلوي */
     overflow-y: auto;          /* إضافة شريط تمرير داخلي عند الحاجة */
     overflow-x: hidden;        /* منع التمرير الأفقي */
 }
-
-/* style.css */
-
-/* ... (في نهاية الملف) ... */
 
 /* =================================== */
 /*   STYLES FOR IMAGE PLACEHOLDERS     */
@@ -837,60 +827,53 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--border-color); /* لون خلفية رمادي داكن */
-    color: var(--secondary-text-color);   /* لون الأيقونة رمادي فاتح */
+    background-color: var(--border-color);
+    color: var(--secondary-text-color);
     width: 100%;
-    height: 180px; /* نفس ارتفاع الصورة في بطاقة المقال */
-    font-size: 3rem; /* حجم الأيقونة */
+    height: 180px;
+    font-size: 3rem;
     border-radius: 12px;
     overflow: hidden;
 }
 
 #article-page .image-placeholder {
-    height: 250px; /* ارتفاع مختلف للصورة في صفحة المقال */
+    height: 250px;
     border-radius: 8px;
     margin-bottom: 20px;
 }
 
-/* =================================== */
-/*   STYLES FOR ARTICLE SHARE BUTTON   */
-/*   تنسيقات زر مشاركة المقال       */
-/* =================================== */
+/* ================================================= */
+/* ==== تعديل: تنسيقات شريط الإجراءات في المقال ==== */
+/* ================================================= */
 
-/* هذا الجزء يجعل العنوان وزر المشاركة بجانب بعضهما */
-#news-page #article-header {
+.article-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem; /* مسافة بين العنوان والزر */
-    margin-bottom: 20px; /* زيادة المسافة السفلية للتنسيق */
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: auto; /* يدفع الشريط للأسفل */
+    border-top: 1px solid var(--border-color);
 }
 
-/* هذا الجزء يخصص مساحة أكبر للعنوان */
-#news-page #article-header h1 {
-   flex-grow: 1; /* يسمح للعنوان بأخذ المساحة المتاحة */
-   margin-bottom: 0; /* إزالة الهامش السفلي من العنوان لأنه موجود الآن في الحاوية */
-}
-
-/* هذا الجزء ينسق زر المشاركة نفسه */
-#share-article-btn {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 0.6rem 1rem;
+.article-action-btn {
+    flex-grow: 1;
+    padding: 12px;
     border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+    color: var(--secondary-text-color);
     cursor: pointer;
-    font-family: 'Tajawal', sans-serif; /* ضمان استخدام نفس الخط */
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 700;
-    display: inline-flex; /* لترتيب الأيقونة والنص بالداخل */
+    display: flex;
     align-items: center;
-    gap: 0.5rem; /* مسافة بين الأيقونة والنص */
-    flex-shrink: 0; /* يمنع الزر من التقلص إذا كان العنوان طويلاً */
-    transition: background-color 0.2s;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
 }
 
-/* تأثير عند مرور الفأرة فوق الزر */
-#share-article-btn:hover {
-    background-color: #2563eb; /* درجة أغمق من اللون الأزرق */
+.article-action-btn:hover {
+    background-color: var(--border-color);
+    color: var(--primary-text-color);
 }
+
+/* تم إزالة التنسيقات القديمة الخاصة بـ #share-article-btn لأنها استبدلت بـ .article-action-btn */
