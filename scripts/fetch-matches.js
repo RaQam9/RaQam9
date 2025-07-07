@@ -20,25 +20,35 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // تحديد الدوريات المهمة التي نريد جلب مبارياتها
 // يمكنك إضافة أو حذف الدوريات حسب حاجتك
 const LEAGUES = [
-  // --- البطولات الدولية الكبرى ---
-  'WC',   // FIFA World Cup
-  'CL',   // UEFA Champions League
-  'EC',   // UEFA European Championship (Euro)
-  'CCL',  // CAF Champions League
-  'CLI',  // Copa Libertadores
-  'CWC',  // <-- FIFA Club World Cup
-  // --- الدوريات الأوروبية الخمس الكبرى ---
-  'PL',   // Premier League (England)
-  'PD',   // La Liga (Spain)
-  'SA',   // Serie A (Italy)
-  'BL1',  // Bundesliga (Germany)
-  'FL1',  // Ligue 1 (France)
+const LEAGUES = [
+  // --- بطولات المنتخبات الدولية ---
+  'WC',      // FIFA World Cup
+  'AFCON',   // Africa Cup of Nations
+  'ASLC',    // AFC Asian Cup
+  'EC',      // UEFA European Championship (Euro)
 
-  // --- دوريات عربية وعالمية أخرى ---
-  'PPL',  // Egyptian Premier League (or Portuguese Primeira Liga)
-  'SPL',  // Saudi Pro League
-  'DED',  // Eredivisie (Netherlands)
-  'BSA',  // Brasileiro Série A (Brazil)
+  // --- بطولات الأندية القارية ---
+  'CWC',     // FIFA Club World Cup
+  'CL',      // UEFA Champions League
+  'CCL',     // CAF Champions League
+  'ACL',     // AFC Champions League
+  'CLI',     // Copa Libertadores
+  
+  // --- الدوريات الأوروبية الخمس الكبرى ---
+  'PL',      // Premier League (England)
+  'PD',      // La Liga (Spain)
+  'SA',      // Serie A (Italy)
+  'BL1',     // Bundesliga (Germany)
+  'FL1',     // Ligue 1 (France)
+
+  // --- الكؤوس المحلية الهامة ---
+  'FAC',     // FA Cup (England)
+  
+  // --- دوريات أخرى ---
+  'PPL',     // Egyptian Premier League
+  'SPL',     // Saudi Pro League
+  'DED',     // Eredivisie (Netherlands)
+  'BSA',     // Brasileiro Série A (Brazil)
 ];
 
 // ------------------- الدوال المساعدة -------------------
