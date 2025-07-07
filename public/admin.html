@@ -80,11 +80,79 @@
     </div>
     
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // ... Other constants and DOM elements ...
+document.addEventListener('DOMContentLoaded', () => {
+    const SUPABASE_URL = '...'; // Your URL
+    const SUPABASE_ANON_KEY = '...'; // Your Key
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ======== ▼▼ أضف هذا الكود هنا ▼▼ ========
+
+    // --- 1. تعريف عناصر الواجهة ---
+    const loginScreen = document.getElementById('login-screen');
+    const adminPanel = document.getElementById('admin-panel');
+    const loginForm = document.getElementById('login-form'); // تأكد من أن للـ form الخاص بك هذا الـ id
+    const passwordInput = document.getElementById('password-input'); // تأكد من أن حقل كلمة المرور له هذا الـ id
+    const loginError = document.getElementById('login-error'); // عنصر لعرض رسائل الخطأ
+    const logoutButton = document.getElementById('logout-btn'); // زر لتسجيل الخروج
+
+    // --- 2. دالة لإظهار لوحة التحكم ---
+    function showAdminPanel() {
+        loginScreen.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        initializePanels(); // استدعاء الدالة لتهيئة اللوحة
+        // تحميل البيانات للتاب النشط (المباريات افتراضياً)
+        const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+        switchTab(activeTab, document.querySelector('.tab-button.active'));
+    }
+
+    // --- 3. التعامل مع إرسال نموذج تسجيل الدخول ---
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = passwordInput.value;
+            const button = loginForm.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'جاري التحقق...';
+            
+            // استخدم البريد الإلكتروني الخاص بالادمن هنا
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: 'admin@example.com', // ⚠️ غيّر هذا إلى بريدك الإلكتروني المستخدم في Supabase
+                password: password,
+            });
+
+            if (error) {
+                loginError.textContent = 'كلمة المرور غير صحيحة. حاول مرة أخرى.';
+                loginError.classList.remove('hidden');
+                button.disabled = false;
+                button.textContent = 'دخول';
+            } else {
+                // نجح تسجيل الدخول، أظهر لوحة التحكم
+                showAdminPanel();
+            }
+        });
+    }
+
+    // --- 4. التحقق من وجود جلسة حالية عند تحميل الصفحة ---
+    (async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            // المستخدم مسجل دخوله بالفعل
+            showAdminPanel();
+        } else {
+            // لا يوجد مستخدم، أظهر شاشة تسجيل الدخول
+            loginScreen.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+        }
+    })();
+    
+    // --- 5. التعامل مع تسجيل الخروج ---
+    if(logoutButton) {
+        logoutButton.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.reload(); // إعادة تحميل الصفحة للعودة لشاشة الدخول
+        });
+    }
+    
         
         function initializePanels() {
             // === THIS IS THE CORRECTED CODE FOR THE MATCHES TAB ===
