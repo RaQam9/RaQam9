@@ -794,9 +794,15 @@ async function initializeNewsPage(directArticleId = null) {
  * @param {string} articleId - The ID of the article to share.
  * @param {string} articleTitle - The title of the article.
  */
+// استبدل الدالة بالكامل بهذا الكود المعدل
 async function handleShareArticle(articleId, articleTitle) {
-    // بناء رابط فريد للمقال يمكن مشاركته
-    const shareUrl = `${window.location.origin}${window.location.pathname}?article=${articleId}`;
+    // ==========================================================
+    // ==== تعديل: استخدام رابط Netlify الثابت دائماً للمشاركة ====
+    // ==========================================================
+    const NETLIFY_URL = 'https://raqam9.netlify.app'; // <--- ضع رابط موقعك هنا
+    const shareUrl = `${NETLIFY_URL}/?article=${articleId}`;
+    // ==========================================================
+
     const shareData = {
         title: articleTitle,
         text: `اطلع على هذا الخبر: "${articleTitle}"`,
