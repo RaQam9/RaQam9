@@ -96,9 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
+    // ========================================================
+    // ==== تعديل: التحقق من الرابط العميق عند بدء التشغيل ====
+    // ========================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const articleIdFromUrl = urlParams.get('article');
+
     initializeAuth();
     initializePredictionsPage();
-    initializeNewsPage();
+    // استدعاء دالة الأخبار مع تمرير المعرف من الرابط
+    initializeNewsPage(articleIdFromUrl); 
+    // ========================================================
+
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
