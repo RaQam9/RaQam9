@@ -9,59 +9,6 @@ const HOST_EMAIL = "host@example.com";
 
 let currentUser = null;
 let currentNewsSubPage = 'home'; // Moved to global scope for back button access
-let articlesCache = [];
-
-/**
- * Checks the URL on load for a deep link to a news article and displays it.
- * @returns {Promise<boolean>} - Returns true if a deep link was handled, false otherwise.
- */
-async function handleDeepLink() {
-    const path = window.location.pathname;
-    const match = path.match(/^\/news\/(\d+)/);
-
-    if (match && match[1]) {
-        const articleId = parseInt(match[1], 10);
-        console.log(`Deep link detected for article ID: ${articleId}`);
-
-        const loader = document.getElementById('loader');
-        if (loader) loader.style.display = 'flex';
-
-        try {
-            // قم بالتبديل إلى صفحة الأخبار لعرضها
-            document.getElementById('nav-news-btn').click();
-            
-            const { data: article, error } = await supabaseClient
-                .from('articles')
-                .select('*')
-                .eq('id', articleId)
-                .single();
-
-            if (error || !article) {
-                throw new Error(error ? error.message : "Article not found.");
-            }
-            
-            // أضف المقال إلى الكاش إذا لم يكن موجوداً
-            if (!articlesCache.some(a => a.id === article.id)) {
-                 articlesCache.push(article);
-            }
-           
-            // استدعاء دالة عرض المقال مباشرة
-            renderArticleDetail(article.id, true);
-            
-            // تحديث سجل التصفح لتجنب إعادة التحميل الخاطئة
-            window.history.replaceState({}, '', `/news/${articleId}`);
-
-            return true;
-        } catch (err) {
-            console.error("Failed to handle deep link:", err);
-            window.history.replaceState({}, '', "/");
-            return false;
-        } finally {
-             if (loader) loader.style.display = 'none';
-        }
-    }
-    return false;
-}
 
 // Moved to global scope for access from back button handler
 function navigateToSubPage(pageName) {
@@ -79,9 +26,12 @@ function navigateToSubPage(pageName) {
 }
 
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
 
-    // PWA & Offline Support Setup
+    // =============================================
+    // ==== الأكواد المضافة لدعم PWA والأوفلاين ====
+    // =============================================
+    // 1. تسجيل الـ Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
@@ -93,15 +43,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
         });
     }
+
+    // 2. إدارة إظهار وإخفاء شريط حالة الاتصال
     const offlineStatusDiv = document.getElementById('offline-status');
     const handleConnectionChange = () => {
-        offlineStatusDiv.style.display = navigator.onLine ? 'none' : 'block';
+        if (navigator.onLine) {
+            offlineStatusDiv.style.display = 'none';
+        } else {
+            offlineStatusDiv.style.display = 'block';
+        }
     };
+
     window.addEventListener('online', handleConnectionChange);
     window.addEventListener('offline', handleConnectionChange);
-    handleConnectionChange();
 
-    // Navigation Buttons Setup
+    // التحقق من الحالة عند تحميل الصفحة لأول مرة
+    handleConnectionChange();
+    // =============================================
+
+
+    // Check if Capacitor is available
+    if (window.Capacitor) {
+        console.log("Capacitor is available.");
+    } else {
+        console.log("Capacitor is not available. Running in web mode.");
+    }
+
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
@@ -125,34 +92,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             predictionsBtn.classList.add('text-gray-400');
         }
     }
+
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // Initialize Core Functionalities
     initializeAuth();
+    initializePredictionsPage();
+    initializeNewsPage();
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
+
+    // ===================================
+    //  Initialize new features
+    // ===================================
     initializePullToRefresh();
     initializeBackButtonHandler();
-
-    // Handle Deep Link or Load Default Pages
-    const deepLinkHandled = await handleDeepLink();
-
-    if (deepLinkHandled) {
-        // إذا تم عرض مقال، قم بتحميل باقي الصفحات في الخلفية
-        initializeNewsPage(false); // حمّل قائمة الأخبار لكن لا تعرضها
-        initializePredictionsPage();
-    } else {
-        // إذا لم يكن هناك رابط، قم بتحميل الصفحة الافتراضية
-        switchPage('predictions');
-        initializePredictionsPage();
-        initializeNewsPage(true); // حمّل قائمة الأخبار واعرضها
-    }
-    
-    // Hide main loader
-    const loader = document.getElementById('loader');
-    if(loader) loader.style.display = 'none';
 });
 
 
@@ -697,170 +652,120 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
-// ==========================================================
-//  (REVISED) initializeNewsPage Function
-// ==========================================================
-async function initializeNewsPage(renderList = true) {
+async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
+    const articleContent = document.getElementById('article-content');
+    const newsArticlePage = document.getElementById('article-page');
     const commentForm = document.getElementById('comment-form');
-
-    // دالة داخلية لجلب وتخزين المقالات
-    async function fetchAndCacheArticles() {
-        // لا نعرض "جاري التحميل" إلا إذا كنا سنعرض القائمة بالفعل
-        if (renderList) {
-           articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
-        }
-        try {
-            const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
-            if (error) throw error;
-            
-            // تحديث الكاش العام بالبيانات الجديدة
-            articlesCache = data; 
-            
-            // عرض بطاقات الأخبار فقط إذا كان renderList صحيحًا
-            if (renderList) {
-                renderArticleCards(articlesCache);
-            }
-        } catch (error) {
-            if (navigator.onLine) {
-                console.error("Error fetching articles:", error);
-                if (renderList) articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`;
-            } else {
+    let articlesCache = [];
+    
+    async function fetchArticlesFromDB() {
+        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل الأخبار...</p>';
+        const { data, error } = await supabaseClient.from('articles').select('id, title, image_url, content').order('created_at', { ascending: false });
+        if (error) { 
+             if (navigator.onLine) {
+                console.error("Supabase error:", error); 
+                articlesGrid.innerHTML = `<p class="text-center text-red-500 col-span-full">فشل تحميل الأخبار.</p>`; 
+             } else {
                 console.warn('Failed to fetch articles, hopefully serving from cache.');
-                // إذا كان المستخدم غير متصل، حاول عرض البيانات من الكاش إن وجدت
-                if (renderList && articlesCache.length > 0) {
-                    renderArticleCards(articlesCache);
-                }
-            }
+             }
+             return null;
         }
+        return data;
+    }
+    function renderArticleCards(articles) {
+        articlesGrid.innerHTML = ''; if (!articles || articles.length === 0) { articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>'; return; }
+        articles.forEach(article => {
+            const card = document.createElement('div'); card.className = 'article-card';
+            card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
+            card.addEventListener('click', () => renderArticleDetail(article.id));
+            articlesGrid.appendChild(card);
+        });
+    }
+    function renderArticleDetail(articleId) {
+        const article = articlesCache.find(a => a.id === articleId); if (!article) return;
+        document.getElementById('article-id-hidden-input').value = article.id;
+        
+        // ===================================
+        // ==== تعديل: إضافة زر المشاركة ====
+        // ===================================
+        articleContent.innerHTML = `
+            <div id="article-header">
+                <h1>${article.title}</h1>
+                <button id="share-article-btn" class="share-btn" data-article-id="${article.id}" data-article-title="${article.title}">
+                    <i class="fa-solid fa-share-nodes"></i> مشاركة
+                </button>
+            </div>
+            <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
+            <div>${article.content}</div>`;
+        
+        navigateToSubPage('article');
+        fetchAndRenderNewsComments(article.id);
+    }
+    
+    async function start() {
+        const fetchedArticles = await fetchArticlesFromDB();
+        if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
     }
 
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
     
-    // Swipe gesture for back navigation
-    const newsArticlePage = document.getElementById('article-page');
+    // NEW: Enhanced swipe gesture
     let touchStartX = 0;
-    newsArticlePage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    newsArticlePage.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
     newsArticlePage.addEventListener('touchend', e => {
-        if (Math.abs(e.changedTouches[0].screenX - touchStartX) > 50) {
+        const touchEndX = e.changedTouches[0].screenX;
+        // If there's a horizontal swipe of more than 50px, navigate back
+        if (Math.abs(touchEndX - touchStartX) > 50) {
             if (currentNewsSubPage === 'article') {
                 navigateToSubPage('home');
             }
         }
     }, { passive: true });
     
-    // نقوم بجلب المقالات فقط إذا كان الكاش فارغًا أو إذا كنا بحاجة لعرض القائمة
-    if (articlesCache.length === 0 || renderList) {
-        await fetchAndCacheArticles();
-    }
+    start();
 }
 
-// ==========================================================
-//  (NEW) Article Rendering Functions
-// ==========================================================
 
-/**
- * Renders the list of article cards on the news home page.
- * @param {Array} articles - The array of article objects to render.
- */
-function renderArticleCards(articles) {
-    const articlesGrid = document.getElementById('articles-grid');
-    articlesGrid.innerHTML = '';
-    if (!articles || articles.length === 0) {
-        articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>';
-        return;
-    }
-    articles.forEach(article => {
-        const card = document.createElement('div');
-        card.className = 'article-card';
-        card.innerHTML = `<img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'"><div class="article-title"><h3>${article.title}</h3></div>`;
-        
-        // عند الضغط على البطاقة، نستدعي الدالة الجديدة
-        card.addEventListener('click', () => renderArticleDetail(article.id));
-        
-        articlesGrid.appendChild(card);
-    });
-}
-
-/**
- * Renders the detail view for a single article.
- * @param {number} articleId - The ID of the article to render.
- * @param {boolean} fromDeepLink - Flag to indicate if the call is from a deep link.
- */
-function renderArticleDetail(articleId, fromDeepLink = false) {
-    // ابحث عن المقال في الكاش الذي قمنا بتعبئته
-    const article = articlesCache.find(a => a.id === articleId);
-    if (!article) {
-        console.error(`Article with ID ${articleId} not found in cache.`);
-        // يمكنك هنا إضافة رسالة خطأ للمستخدم
-        return;
-    }
-
-    const articleContent = document.getElementById('article-content');
-    document.getElementById('article-id-hidden-input').value = article.id;
-    
-    // بناء HTML لصفحة المقال مع زر المشاركة الجديد
-    articleContent.innerHTML = `
-        <div id="article-header">
-            <h1>${article.title}</h1>
-        </div>
-        <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
-        <div>${article.content}</div>
-        
-        <div id="article-footer">
-            <button id="share-article-btn" data-article-id="${article.id}" data-article-title="${article.title}">
-                <i class="fa-solid fa-share-nodes"></i> مشاركة المقال
-            </button>
-        </div>`;
-    
-    // الانتقال إلى صفحة عرض المقال
-    navigateToSubPage('article');
-    // جلب التعليقات الخاصة بهذا المقال
-    fetchAndRenderNewsComments(article.id);
-    
-    // تحديث الرابط في شريط العنوان (فقط إذا لم نأت من رابط مباشر)
-    if (!fromDeepLink) {
-        window.history.pushState({ articleId: article.id }, article.title, `/news/${article.id}`);
-    }
-}
 // ===================================
 // ==== إضافة: دالة المشاركة الجديدة ====
 // ===================================
 /**
- * Handles sharing an article with a unique, deep-linkable URL.
+ * Handles sharing an article.
  * It prioritizes Capacitor Share, then Web Share API, and falls back to copying to clipboard.
  * @param {string} articleId - The ID of the article to share.
  * @param {string} articleTitle - The title of the article.
  */
 async function handleShareArticle(articleId, articleTitle) {
-    // 1. توليد الرابط العميق الكامل للمقال
-    // يستخدم window.location.origin للحصول على نطاق موقعك تلقائيًا (e.g., https://myapp.netlify.app)
-    const shareUrl = `${window.location.origin}/news/${articleId}`;
-
-    // 2. إعداد بيانات المشاركة
+    // بناء رابط فريد للمقال يمكن مشاركته
+    const shareUrl = `${window.location.origin}${window.location.pathname}?article=${articleId}`;
     const shareData = {
         title: articleTitle,
         text: `اطلع على هذا الخبر: "${articleTitle}"`,
-        url: shareUrl, // الرابط الذي سيتم مشاركته
+        url: shareUrl,
     };
 
     try {
-        // 3. محاولة المشاركة باستخدام واجهات برمجة التطبيقات الأصلية أولاً
-        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        // 1. الأولوية لتطبيق Capacitor الأصلي
+        if (window.Capacitor && window.Capacitor.Plugins.Share) {
             console.log("Using Capacitor Share API");
             await window.Capacitor.Plugins.Share.share(shareData);
-            return;
+            return; // تمت المشاركة بنجاح
         }
 
+        // 2. المحاولة الثانية: استخدام Web Share API في المتصفحات الداعمة
         if (navigator.share) {
             console.log("Using Web Share API");
             await navigator.share(shareData);
-            return;
+            return; // تمت المشاركة بنجاح
         }
 
-        // 4. الحل البديل للمتصفحات التي لا تدعم المشاركة: نسخ الرابط
+        // 3. الحل البديل: نسخ الرابط إلى الحافظة
         console.log("Fallback: Copying to clipboard");
         await navigator.clipboard.writeText(shareUrl);
         showNotification('✅ تم نسخ رابط المقال إلى الحافظة!');
@@ -869,6 +774,7 @@ async function handleShareArticle(articleId, articleTitle) {
         // تجاهل الأخطاء الناتجة عن إلغاء المستخدم لعملية المشاركة
         if (err.name !== 'AbortError' && !err.message.includes('Share canceled')) {
             console.error('Share failed:', err);
+            // إظهار إشعار في حالة فشل النسخ
             showNotification('❌ فشلت عملية المشاركة أو النسخ.');
         }
     }
@@ -1251,4 +1157,3 @@ window.addEventListener('load', () => {
         loader.style.display = 'none';
     }
 });
-
