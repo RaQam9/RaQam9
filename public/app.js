@@ -652,6 +652,8 @@ function initializeAppWithData(matchesData) {
 
 function getMatchStatus(d) { const m = new Date(d); const n = new Date(); const f = (m.getTime() - n.getTime()) / 60000; if (f < -125) return { state: 'ended' }; if (f <= 0) return { state: 'live' }; if (f <= 5) return { state: 'soon' }; return { state: 'scheduled' }; }
 
+// استبدل هذه الدالة بالكامل في ملف app.js
+
 async function initializeNewsPage() {
     const articlesGrid = document.getElementById('articles-grid');
     const articleContent = document.getElementById('article-content');
@@ -673,6 +675,7 @@ async function initializeNewsPage() {
         }
         return data;
     }
+
     function renderArticleCards(articles) {
         articlesGrid.innerHTML = ''; if (!articles || articles.length === 0) { articlesGrid.innerHTML = '<p class="text-center text-gray-400 col-span-full">لا توجد أخبار متاحة حالياً.</p>'; return; }
         articles.forEach(article => {
@@ -683,47 +686,66 @@ async function initializeNewsPage() {
         });
     }
 
-    // ===================================
-    // ==== تعديل: دالة عرض تفاصيل المقال ====
-    // ===================================
     function renderArticleDetail(articleId) {
-        const article = articlesCache.find(a => a.id === articleId); if (!article) return;
+        // تحويل id إلى رقم للتأكد من المقارنة الصحيحة
+        const article = articlesCache.find(a => a.id === parseInt(articleId)); 
+        if (!article) {
+            console.error(`Article with ID ${articleId} not found.`);
+            return;
+        };
+
         document.getElementById('article-id-hidden-input').value = article.id;
         
-        // 1. تعبئة محتوى المقال (بدون زر المشاركة هنا)
         articleContent.innerHTML = `
             <h1>${article.title}</h1>
             <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
             <div>${article.content}</div>`;
         
-        // 2. تحديد زر المشاركة الجديد وتعبئة بياناته
         const shareBtn = document.getElementById('share-article-btn');
         if (shareBtn) {
             shareBtn.dataset.articleId = article.id;
             shareBtn.dataset.articleTitle = article.title;
         }
 
-        // 3. إعادة تعيين حالة قسم التعليقات
         const commentsSection = document.getElementById('comments-section');
         const toggleBtn = document.getElementById('toggle-news-comments-btn');
         if (commentsSection) commentsSection.style.display = 'none';
         if (toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-comments"></i> التعليقات';
         
-        // 4. الانتقال إلى صفحة المقال
         navigateToSubPage('article');
-        // لن نقوم بجلب التعليقات الآن، سيتم جلبها عند الضغط على الزر
     }
     
     async function start() {
         const fetchedArticles = await fetchArticlesFromDB();
-        if (fetchedArticles) { articlesCache = fetchedArticles; renderArticleCards(articlesCache); }
+        if (fetchedArticles) { 
+            articlesCache = fetchedArticles; 
+            renderArticleCards(articlesCache); 
+
+            // ==============================================================
+            // ==== إضافة: التعامل مع الروابط المباشرة (Deep Linking) ====
+            // ==============================================================
+            // هذا الكود سيقرأ الرابط الذي تم فتح التطبيق من خلاله
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleIdFromUrl = urlParams.get('article');
+
+            // إذا وجدنا 'article' في الرابط
+            if (articleIdFromUrl) {
+                // 1. انتقل إلى تبويب الأخبار
+                document.getElementById('nav-news-btn').click();
+
+                // 2. انتظر قليلاً لضمان عرض الصفحة ثم افتح المقال
+                setTimeout(() => {
+                    renderArticleDetail(articleIdFromUrl);
+                }, 100); // تأخير بسيط لضمان سلاسة الانتقال
+            }
+            // ==============================================================
+        }
     }
 
     if (commentForm) {
        commentForm.addEventListener('submit', handleNewsCommentSubmit);
     }
     
-    // NEW: Enhanced swipe gesture
     let touchStartX = 0;
     newsArticlePage.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
@@ -731,7 +753,6 @@ async function initializeNewsPage() {
     
     newsArticlePage.addEventListener('touchend', e => {
         const touchEndX = e.changedTouches[0].screenX;
-        // If there's a horizontal swipe of more than 50px, navigate back
         if (Math.abs(touchEndX - touchStartX) > 50) {
             if (currentNewsSubPage === 'article') {
                 navigateToSubPage('home');
