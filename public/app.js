@@ -460,20 +460,24 @@ function initializeBackButtonHandler() {
 function refreshVisibleComments() {
     document.querySelectorAll('.comments-section').forEach(section => {
         if (section.style.display === 'block') {
-            const matchId = section.closest('.match-card').dataset.matchId;
-            const listElement = section.querySelector('.comment-list');
-            if (matchId && listElement) {
-                fetchAndRenderMatchComments(matchId, listElement);
+            const matchCard = section.closest('.match-card');
+            if (matchCard) {
+                const matchId = matchCard.dataset.matchId;
+                const listElement = section.querySelector('.comment-list');
+                if (matchId && listElement) {
+                    fetchAndRenderMatchComments(matchId, listElement);
+                }
+            } else {
+                 const articlePage = section.closest('#article-page');
+                 if (articlePage) {
+                    const articleId = document.getElementById('article-id-hidden-input').value;
+                    if (articleId) {
+                        fetchAndRenderNewsComments(articleId);
+                    }
+                 }
             }
         }
     });
-    const articlePage = document.getElementById('article-page');
-    if (getComputedStyle(articlePage).transform !== 'none' && !articlePage.style.transform.includes('100')) {
-        const articleId = document.getElementById('article-id-hidden-input').value;
-        if (articleId) {
-            fetchAndRenderNewsComments(articleId);
-        }
-    }
 }
 
 async function loadUserPredictions() {
@@ -515,14 +519,10 @@ async function initializePredictionsPage() {
         container.innerHTML = '<p class="text-center text-gray-400 mt-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> جاري تحميل المباريات...</p>';
         const { data, error } = await supabaseClient.from('matches').select('*').order('datetime', { ascending: true });
         if (error) {
-            // في حال وجود خطأ (مثل عدم وجود انترنت)، لا نعرض رسالة الخطأ
-            // لأن الـ Service Worker سيقوم بعرض النسخة المخزنة
-            // سنعرض الخطأ فقط إذا كان المستخدم متصلاً وفشل الطلب
             if (navigator.onLine) {
                  throw error;
             }
             console.warn('Failed to fetch matches, but hopefully serving from cache.', error);
-            // لا تفعل شيئا آخر هنا، دع الكاش يتولى الأمر
             return;
         }
         const formattedMatches = data.map(match => ({ id: match.id, team1: { name: match.team1_name, logo: match.team1_logo }, team2: { name: match.team2_name, logo: match.team2_logo }, league: match.league, datetime: match.datetime, channels: match.channels || [] }));
@@ -682,25 +682,36 @@ async function initializeNewsPage() {
             articlesGrid.appendChild(card);
         });
     }
+
+    // ===================================
+    // ==== تعديل: دالة عرض تفاصيل المقال ====
+    // ===================================
     function renderArticleDetail(articleId) {
         const article = articlesCache.find(a => a.id === articleId); if (!article) return;
         document.getElementById('article-id-hidden-input').value = article.id;
         
-        // ===================================
-        // ==== تعديل: إضافة زر المشاركة ====
-        // ===================================
+        // 1. تعبئة محتوى المقال (بدون زر المشاركة هنا)
         articleContent.innerHTML = `
-            <div id="article-header">
-                <h1>${article.title}</h1>
-                <button id="share-article-btn" class="share-btn" data-article-id="${article.id}" data-article-title="${article.title}">
-                    <i class="fa-solid fa-share-nodes"></i> مشاركة
-                </button>
-            </div>
+            <h1>${article.title}</h1>
             <img src="${article.image_url}" alt="${article.title}" onerror="this.style.display='none'">
             <div>${article.content}</div>`;
         
+        // 2. تحديد زر المشاركة الجديد وتعبئة بياناته
+        const shareBtn = document.getElementById('share-article-btn');
+        if (shareBtn) {
+            shareBtn.dataset.articleId = article.id;
+            shareBtn.dataset.articleTitle = article.title;
+        }
+
+        // 3. إعادة تعيين حالة قسم التعليقات
+        const commentsSection = document.getElementById('comments-section');
+        const toggleBtn = document.getElementById('toggle-news-comments-btn');
+        if (commentsSection) commentsSection.style.display = 'none';
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="fa-solid fa-comments"></i> التعليقات';
+        
+        // 4. الانتقال إلى صفحة المقال
         navigateToSubPage('article');
-        fetchAndRenderNewsComments(article.id);
+        // لن نقوم بجلب التعليقات الآن، سيتم جلبها عند الضغط على الزر
     }
     
     async function start() {
@@ -915,7 +926,7 @@ function initializeRealtimeListeners() {
 function initializeGlobalEventListeners() {
     document.addEventListener('click', async function(e) {
         
-        // --- مستمع حدث لحذف التعليقات (موجود مسبقاً) ---
+        // --- مستمع حدث لحذف التعليقات ---
         const deleteBtn = e.target.closest('.delete-comment-btn');
         if (deleteBtn) {
             e.preventDefault();
@@ -941,7 +952,7 @@ function initializeGlobalEventListeners() {
         }
 
         // ===============================================
-        // ==== تعديل: إضافة مستمع لزر المشاركة الجديد ====
+        // ==== تعديل: مستمع لزر المشاركة (يعمل كما هو) ====
         // ===============================================
         const shareBtn = e.target.closest('#share-article-btn');
         if (shareBtn) {
@@ -950,6 +961,30 @@ function initializeGlobalEventListeners() {
             const articleTitle = shareBtn.dataset.articleTitle;
             if (articleId && articleTitle) {
                 handleShareArticle(articleId, articleTitle);
+            }
+        }
+        
+        // =================================================================
+        // ==== إضافة: مستمع حدث لزر إظهار/إخفاء تعليقات الأخبار الجديد ====
+        // =================================================================
+        const toggleNewsCommentsBtn = e.target.closest('#toggle-news-comments-btn');
+        if (toggleNewsCommentsBtn) {
+            e.preventDefault();
+            const commentsSection = document.getElementById('comments-section');
+            const isHidden = commentsSection.style.display === 'none';
+
+            if (isHidden) {
+                commentsSection.style.display = 'block';
+                toggleNewsCommentsBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> إخفاء التعليقات';
+                // جلب التعليقات فقط إذا كانت القائمة فارغة (لعدم إعادة الجلب كل مرة)
+                const commentsList = commentsSection.querySelector('#comments-list');
+                if (!commentsList.innerHTML || commentsList.innerHTML.includes('جاري تحميل')) {
+                    const articleId = document.getElementById('article-id-hidden-input').value;
+                    fetchAndRenderNewsComments(articleId);
+                }
+            } else {
+                commentsSection.style.display = 'none';
+                toggleNewsCommentsBtn.innerHTML = '<i class="fa-solid fa-comments"></i> التعليقات';
             }
         }
     });
