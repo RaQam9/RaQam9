@@ -19,6 +19,38 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // تحديد الدوريات المهمة التي نريد جلب مبارياتها
 // يمكنك إضافة أو حذف الدوريات حسب حاجتك
+// قائمة محدثة بمعرفات الدوريات والبطولات لـ API-Football
+const leagueIds = [
+  // --- بطولات المنتخبات الدولية ---
+  1,    // FIFA World Cup (WC)
+  21,   // Africa Cup of Nations (AFCON)
+  6,    // AFC Asian Cup (ASLC)
+  4,    // UEFA European Championship (Euro)
+
+  // --- بطولات الأندية القارية ---
+  15,   // FIFA Club World Cup (CWC)
+  2,    // UEFA Champions League (CL)
+  7,    // CAF Champions League (CCL)
+  8,    // AFC Champions League (ACL)
+  13,   // Copa Libertadores (CLI)
+
+  // --- الدوريات الأوروبية الخمس الكبرى ---
+  39,   // Premier League (England) - PL
+  140,  // La Liga (Spain) - PD
+  135,  // Serie A (Italy) - SA
+  78,   // Bundesliga (Germany) - BL1
+  61,   // Ligue 1 (France) - FL1
+
+  // --- الكؤوس المحلية الهامة ---
+  45,   // FA Cup (England) - FAC
+
+  // --- دوريات أخرى ---
+  233,  // Egyptian Premier League (PPL - حسب تعليقك)
+  307,  // Saudi Pro League (SPL)
+  88,   // Eredivisie (Netherlands) - DED
+  71    // Brasileiro Série A (Brazil) - BSA
+];
+
 const LEAGUES = [
   // --- بطولات المنتخبات الدولية ---
   'WC',      // FIFA World Cup
