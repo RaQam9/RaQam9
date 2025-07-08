@@ -1,11 +1,16 @@
-# اسم الـ Workflow الذي يظهر في قائمة Actions
+# اسم الـ Workflow الذي سيظهر في قائمة Actions
 name: Fetch Football Matches Schedule
 
 # متى يتم تشغيل هذا الـ Workflow
 on:
+  # التشغيل المجدول: يعمل كل 6 ساعات
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # التشغيل اليدوي: يسمح لك بتشغيله من واجهة GitHub
   workflow_dispatch:
 
-# المهام (Jobs) التي سيتم تنفيذها
+# المهمة (Jobs) التي سيتم تنفيذها
 jobs:
   # اسم المهمة (يمكنك تسميته أي شيء)
   fetch-and-update:
@@ -16,22 +21,24 @@ jobs:
     steps:
       # الخطوة 1: يقوم بتحميل الكود الخاص بك من المستودع
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # الخطوة 2: يقوم بتجهيز بيئة Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # الخطوة 3: يقوم بتثبيت المكتبات المذكورة في - name: Install script dependencies
-      run: npm install
-      working-directory: ./scripts  # <-- يخبر الأمر بالعمل داخل مجلد scripts
+      # الخطوة 3: يقوم بتثبيت المكتبات المذكورة في package.json الخاص بالسكريبت
+      - name: Install script dependencies
+        run: npm install
+        working-directory: ./scripts # <-- يخبر الأمر بالعمل داخل مجلد scripts
 
-    - name: Run fetch matches script
-      working-directory: ./scripts  # 
-        env: # <--- تأكد من وجود هذا القسم هنا
+      # الخطوة 4: يقوم بتشغيل السكريبت لجلب وتحديث المباريات
+      - name: Run fetch matches script
+        working-directory: ./scripts # <-- شغل السكريبت من نفس المجلد
+        env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
-        run: node scripts/fetch-matches.js
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: node fetch-matches.js
