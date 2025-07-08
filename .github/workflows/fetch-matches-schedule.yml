@@ -24,13 +24,12 @@ jobs:
         with:
           node-version: '20'
 
-      # الخطوة 3: يقوم بتثبيت المكتبات المذكورة في package.json
-      - name: Install dependencies
-        run: npm install
+      # الخطوة 3: يقوم بتثبيت المكتبات المذكورة في - name: Install script dependencies
+      run: npm install
+      working-directory: ./scripts  # <-- يخبر الأمر بالعمل داخل مجلد scripts
 
-      # ▼▼▼ هذا هو الجزء الأهم. تأكد من وجوده تماماً كما هو ▼▼▼
-      # الخطوة 4: يقوم بتشغيل السكربت مع تمرير المفاتيح السرية
-      - name: Run fetch matches script
+    - name: Run fetch matches script
+      working-directory: ./scripts  # 
         env: # <--- تأكد من وجود هذا القسم هنا
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
