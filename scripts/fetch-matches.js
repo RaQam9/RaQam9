@@ -20,7 +20,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // تحديد الدوريات المهمة التي نريد جلب مبارياتها
 // يمكنك إضافة أو حذف الدوريات حسب حاجتك
 const LEAGUES = [
-const LEAGUES = [
   // --- بطولات المنتخبات الدولية ---
   'WC',      // FIFA World Cup
   'AFCON',   // Africa Cup of Nations
