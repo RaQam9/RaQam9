@@ -786,7 +786,7 @@ body {
 /* =================================== */
 .pull-to-refresh-indicator-fixed {
     position: fixed;
-    top: 60px;
+    top: 70px;
     left: 0;
     right: 0;
     z-index: 100;
@@ -872,9 +872,11 @@ body {
     color: var(--primary-text-color);
 }
 
-/* تعديل في الكود الجديد */
-.pull-to-refresh-indicator-fixed {
-    position: fixed;
-    top: 70px; /* <--- تم تعديل هذا ليتناسب مع شريط التنقل العلوي */
-    /* ... باقي الخصائص ... */
+/* ✅ هذا هو الكود الجديد الذي يحل المشكلة */
+#predictions-page,
+#news-page {
+    overflow-x: hidden; 
+    padding: 15px;      
+    min-height: calc(100vh - 70px); /* لضمان أن الصفحات القصيرة تملأ الشاشة */
+    /* تم حذف height و overflow-y */
 }
