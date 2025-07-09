@@ -72,7 +72,6 @@ body {
 #predictions-page .container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 15px;
 }
 
 #predictions-page header h1, #news-page header h1 {
@@ -547,7 +546,6 @@ body {
 #news-page #article-page {
     transform: translateX(100%);
     z-index: 20;
-    touch-action: pan-y;
 }
 #news-page #article-content {
     padding-top: 15px;
@@ -872,4 +870,14 @@ body {
 .article-action-btn:hover {
     background-color: var(--border-color);
     color: var(--primary-text-color);
+}
+
+/* ========================================= */
+/*  ✅ الإصلاح النهائي لمشاكل التمرير والهوامش */
+/* ========================================= */
+#predictions-page, #news-page {
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 15px; /* يمنع المحتوى من الاختفاء تحت الشريط العلوي */
 }
