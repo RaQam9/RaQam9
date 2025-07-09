@@ -1227,10 +1227,3 @@ async function handleDeleteComment(e) {
     }
 }
 
-// Hide loader after everything is loaded
-window.addEventListener('load', () => {
-    const loader = document.getElementById('loader');
-    if (loader) {
-        loader.style.display = 'none';
-    }
-});
