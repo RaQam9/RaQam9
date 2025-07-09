@@ -55,6 +55,7 @@ body {
     color: var(--primary-text-color);
     line-height: 1.6;
     overflow-x: hidden;
+    overscroll-behavior-y: contain;
 }
 .page-container.hidden {
     display: none
@@ -879,13 +880,4 @@ body {
     padding: 15px;      
     min-height: calc(100vh - 70px); /* لضمان أن الصفحات القصيرة تملأ الشاشة */
     /* تم حذف height و overflow-y */
-}
-
-body {
-    font-family: 'Tajawal', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--primary-text-color);
-    line-height: 1.6;
-    overflow-x: hidden;
-    overscroll-behavior-y: contain; /* 🔧 أضف هذا السطر لتعطيل تحديث المتصفح */
 }
