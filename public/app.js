@@ -26,56 +26,43 @@ function navigateToSubPage(pageName) {
 }
 
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+async function initializeApp() {
+    console.log("🚀 Initializing App...");
 
     // =============================================
-    // ==== الأكواد المضافة لدعم PWA والأوفلاين ====
+    // ==== PWA & OFFLINE SUPPORT ====
     // =============================================
-    // 1. تسجيل الـ Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('✅ Service Worker registered successfully:', registration.scope);
-                })
-                .catch(error => {
-                    console.error('❌ Service Worker registration failed:', error);
-                });
+                .then(registration => console.log('✅ Service Worker registered:', registration.scope))
+                .catch(error => console.error('❌ SW registration failed:', error));
         });
     }
 
-    // 2. إدارة إظهار وإخفاء شريط حالة الاتصال
     const offlineStatusDiv = document.getElementById('offline-status');
     const handleConnectionChange = () => {
-        if (navigator.onLine) {
-            offlineStatusDiv.style.display = 'none';
-        } else {
-            offlineStatusDiv.style.display = 'block';
-        }
+        offlineStatusDiv.style.display = navigator.onLine ? 'none' : 'block';
     };
-
     window.addEventListener('online', handleConnectionChange);
     window.addEventListener('offline', handleConnectionChange);
-
-    // التحقق من الحالة عند تحميل الصفحة لأول مرة
     handleConnectionChange();
+
     // =============================================
-
-
-    // Check if Capacitor is available
-    if (window.Capacitor) {
-        console.log("Capacitor is available.");
-    } else {
-        console.log("Capacitor is not available. Running in web mode.");
-    }
-
+    // ==== PAGE SWITCHING LOGIC ====
+    // =============================================
     const predictionsBtn = document.getElementById('nav-predictions-btn');
     const newsBtn = document.getElementById('nav-news-btn');
     const predictionsPage = document.getElementById('predictions-page');
     const newsPage = document.getElementById('news-page');
 
     function switchPage(pageToShow) {
-        if (typeof gtag !== 'undefined') { gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow }); }
+        console.log(`Switching to page: ${pageToShow}`);
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'select_content', { 'content_type': 'tab', 'item_id': pageToShow });
+        }
         if (pageToShow === 'predictions') {
             predictionsPage.classList.remove('hidden');
             newsPage.classList.add('hidden');
@@ -96,36 +83,43 @@ document.addEventListener('DOMContentLoaded', () => {
     predictionsBtn.addEventListener('click', () => switchPage('predictions'));
     newsBtn.addEventListener('click', () => switchPage('news'));
 
-    // ========================================================
-    // ==== تعديل: التحقق من الرابط العميق عند بدء التشغيل ====
-    // ========================================================
+    // =============================================
+    // ==== INITIALIZE ALL MODULES & DATA ====
+    // =============================================
     const urlParams = new URLSearchParams(window.location.search);
     const articleIdFromUrl = urlParams.get('article');
 
+    // تهيئة الوظائف الأساسية أولاً
     initializeAuth();
-    initializePredictionsPage();
-    // استدعاء دالة الأخبار مع تمرير المعرف من الرابط
-    initializeNewsPage(articleIdFromUrl); 
-    // ========================================================
-
     initializeRealtimeListeners();
     initializeGlobalEventListeners();
     initializeProfilePageListeners();
-
-    // ===================================
-    //  Initialize new features
-    // ===================================
-    // ...
     initializePullToRefresh();
     initializeBackButtonHandler();
 
-    // =================================================================
-// ====  ✅  الحل لمشكلة #1: إظهار صفحة التوقعات بشكل صحيح  ====
-// =================================================================
-if (!articleIdFromUrl) {
-    // إذا لم يكن هناك رابط مقال، فهذا تشغيل عادي.
-    // استخدم الدالة الرئيسية لتبديل الصفحات لضمان تحديث كل شيء بشكل صحيح.
-    switchPage('predictions');
+    // جلب البيانات بشكل متزامن لضمان الترتيب
+    // await يضمن أن الدالة لن تنتقل للسطر التالي إلا بعد اكتمال التحميل
+    await initializePredictionsPage();
+    await initializeNewsPage(articleIdFromUrl);
+
+    // =============================================
+    // ==== FINAL STEP: SHOW CORRECT PAGE & HIDE LOADER ====
+    // =============================================
+    if (articleIdFromUrl) {
+        // إذا كان هناك رابط لمقال، انتقل إلى صفحة الأخبار
+        // (الدالة initializeNewsPage ستهتم بإظهار المقال المحدد)
+        switchPage('news');
+    } else {
+        // في الحالات العادية، اعرض صفحة التوقعات كصفحة رئيسية
+        switchPage('predictions');
+    }
+
+    // الآن وبعد أن تم تحميل كل شيء وعرض الصفحة الصحيحة، قم بإخفاء شاشة التحميل
+    const loader = document.getElementById('loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+    console.log("✅ App Initialized Successfully.");
 }
 // إذا كان هناك رابط مقال، فإن دالة initializeNewsPage ستهتم بإظهار صفحة الأخبار.
 // =================================================================
