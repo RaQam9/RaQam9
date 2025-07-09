@@ -1,5 +1,36 @@
 /* =================================== */
-/* GLOBAL & VARIABLES                  */
+/* NEW STYLES for Pull-to-Refresh      */
+/* =================================== */
+.pull-to-refresh-indicator-fixed {
+    position: fixed;
+    top: 60px; /* To appear just below the top navigation bar */
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    color: var(--primary-text-color);
+    font-size: 22px;
+    opacity: 0;
+    transform: translateY(0) scale(0.5); /* Start small and at the top */
+    /* Note: JS will handle transitions during interaction */
+}
+
+.pull-to-refresh-indicator-fixed i {
+    background: var(--surface-color);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border: 1px solid var(--border-color);
+}
+
+/* =================================== */
+/* GLOBAL & VARIABLES (FROM YOUR CODE) */
 /* =================================== */
 :root {
     --bg-color: #0d1117;
@@ -23,68 +54,26 @@ body {
     background-color: var(--bg-color);
     color: var(--primary-text-color);
     line-height: 1.6;
-    overflow-x: hidden; /* 🔧 FIX: Prevent horizontal scroll globally */
+    overflow-x: hidden;
 }
 .page-container.hidden {
     display: none
 }
 
 
-/* =================================== */
-/*   PULL-TO-REFRESH INDICATOR         */
-/* =================================== */
-.pull-to-refresh-indicator-fixed {
-    position: fixed;
-    top: 70px; /* 🔧 FIX: Adjusted to appear below the 70px top navigation bar */
-    left: 0;
-    right: 0;
-    z-index: 100;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    color: var(--primary-text-color);
-    font-size: 22px;
-    opacity: 0;
-    transform: translateY(0) scale(0.5);
-}
-
-.pull-to-refresh-indicator-fixed i {
-    background: var(--surface-color);
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-    border: 1px solid var(--border-color);
-}
-
-
 /* ========================================================== */
-/*   ✅ MAIN PAGE CONTAINER STYLES (SCROLLING FIX)            */
+/*  ⬇️⬇️⬇️  أضف كل الكود التالي إلى ملف style.css ⬇️⬇️⬇️  */
 /* ========================================================== */
-/*
-  This is the main fix. We remove the fixed height and internal scroll
-  to allow the natural body scroll, which fixes pull-to-refresh
-  and other layout issues.
-*/
-#predictions-page,
-#news-page {
-    overflow-x: hidden; /* Prevent horizontal scroll within the page */
-    padding: 15px;      /* Add some spacing */
-    min-height: calc(100vh - 70px); /* Ensure short pages still fill the screen */
-}
 
 
 /* =================================== */
-/*   PREDICTIONS PAGE STYLES           */
+/*   FIX FOR PREDICTIONS PAGE STYLES   */
 /* =================================== */
 
 #predictions-page .container {
     max-width: 800px;
     margin: 0 auto;
-    padding-bottom: 70px; /* Space for floating icon */
+    padding: 15px;
 }
 
 #predictions-page header h1, #news-page header h1 {
@@ -92,6 +81,7 @@ body {
     font-size: 1.8rem;
     margin-bottom: 15px;
     font-weight: 700;
+    padding: 15px 0;
 }
 
 /* --- Floating User Icon & Modal --- */
@@ -534,13 +524,18 @@ body {
 /* =================================== */
 /*        NEWS PAGE STYLES             */
 /* =================================== */
+#news-page {
+    height: calc(100vh - 70px);
+}
 #news-page .page {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    min-height: 100%; /* This works correctly now without a fixed-height parent */
+    height: 100%;
     padding: 15px;
+    padding-top: 0;
+    overflow-y: auto;
     background-color: var(--bg-color);
     transition: transform .35s ease-in-out;
     display: flex;
@@ -554,11 +549,12 @@ body {
 #news-page #article-page {
     transform: translateX(100%);
     z-index: 20;
+    touch-action: pan-y;
 }
 #news-page #article-content {
     padding-top: 15px;
     padding-bottom: 10px;
-    flex-grow: 1; /* Allows content to push footer down */
+    flex-grow: 1; /* للسماح للمحتوى بالنمو ودفع الشريط السفلي للأسفل */
 }
 #news-page #article-header h1 {
     font-size: 1.8rem;
@@ -572,7 +568,7 @@ body {
     border-radius: 8px;
     margin-bottom: 20px;
 }
-#news-page #article-content > div { /* Target text content only */
+#news-page #article-content > div { /* لاستهداف محتوى المقال النصي فقط */
     font-size: 1.1rem;
     line-height: 1.8;
     color: var(--secondary-text-color);
@@ -686,58 +682,6 @@ body {
     flex-grow: 1;
 }
 
-/* --- Article Action Bar --- */
-.article-footer {
-    display: flex;
-    gap: 1rem;
-    padding-top: 1rem;
-    margin-top: auto; /* Pushes the bar to the bottom */
-    border-top: 1px solid var(--border-color);
-}
-.article-action-btn {
-    flex-grow: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--surface-color);
-    color: var(--secondary-text-color);
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: background-color 0.2s, color 0.2s;
-}
-.article-action-btn:hover {
-    background-color: var(--border-color);
-    color: var(--primary-text-color);
-}
-
-
-/* =================================== */
-/*   STYLES FOR IMAGE PLACEHOLDERS     */
-/* =================================== */
-.image-placeholder {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--border-color);
-    color: var(--secondary-text-color);
-    width: 100%;
-    height: 180px;
-    font-size: 3rem;
-    border-radius: 12px;
-    overflow: hidden;
-}
-#article-page .image-placeholder {
-    height: 250px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-
 /* --- Toasts & Notifications --- */
 #exit-toast, #notification-toast {
     position: fixed;
@@ -834,4 +778,103 @@ body {
 .comment-item.admin-reply .comment-author {
     color: var(--accent-color);
     font-weight: bold;
+}
+
+
+/* =================================== */
+/* PULL-TO-REFRESH (FROM PREVIOUS STEP)*/
+/* =================================== */
+.pull-to-refresh-indicator-fixed {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: var(--primary-text-color);
+    font-size: 22px;
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+}
+
+.pull-to-refresh-indicator-fixed i {
+    background: var(--surface-color);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    border: 1px solid var(--border-color);
+}
+/* ========================================================== */
+/*   FIX FOR UNIFIED PAGE SCROLLING (Pull-to-Refresh FIX)   */
+/* ========================================================== */
+
+
+/* =================================== */
+/*   STYLES FOR IMAGE PLACEHOLDERS     */
+/* =================================== */
+
+.image-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--border-color);
+    color: var(--secondary-text-color);
+    width: 100%;
+    height: 180px;
+    font-size: 3rem;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#article-page .image-placeholder {
+    height: 250px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* ================================================= */
+/* ==== تعديل: تنسيقات شريط الإجراءات في المقال ==== */
+/* ================================================= */
+
+.article-footer {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    margin-top: auto; /* يدفع الشريط للأسفل */
+    border-top: 1px solid var(--border-color);
+}
+
+.article-action-btn {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.article-action-btn:hover {
+    background-color: var(--border-color);
+    color: var(--primary-text-color);
+}
+
+/* تعديل في الكود الجديد */
+.pull-to-refresh-indicator-fixed {
+    position: fixed;
+    top: 70px; /* <--- تم تعديل هذا ليتناسب مع شريط التنقل العلوي */
+    /* ... باقي الخصائص ... */
 }
