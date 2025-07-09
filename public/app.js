@@ -119,7 +119,8 @@ async function initializeApp() {
     if (loader) {
         loader.style.display = 'none';
     }
-    console.log("✅ App Initialized Successfully.");}
+    console.log("✅ App Initialized Successfully.");
+
 
 // إذا كان هناك رابط مقال، فإن دالة initializeNewsPage ستهتم بإظهار صفحة الأخبار.
 // =================================================================
