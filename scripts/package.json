@@ -1,16 +1,33 @@
 {
-  "name": "scripts",
+  "name": "raqam9-app",
   "version": "1.0.0",
-  "main": "fetch-matches.js",
+  "description": "RaQam9 Capacitor App and Scripts",
+  "main": "index.js",
   "scripts": {
+    "start": "echo 'No start script, open public/index.html in a live server'",
+    "fetch-matches": "node scripts/fetch-matches.js",
+    "android-sync": "npx cap sync android",
+    "android-open": "npx cap open android",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "capacitor",
+    "supabase",
+    "sports"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.3",
-    "axios": "^1.10.0"
+    "@capacitor/android": "6.1.0",
+    "@capacitor/app": "6.0.0",
+    "@capacitor/core": "6.1.0",
+    "@capacitor/push-notifications": "6.0.1",
+    "@capacitor/share": "6.0.0",
+    "@supabase/supabase-js": "^2.44.4",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5"
   },
-  "description": ""
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.0"
+  }
 }
