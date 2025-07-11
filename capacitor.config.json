@@ -1,11 +1,14 @@
 {
   "appId": "com.raqam9.app",
-  "appName": "RaQam9",
+  "appName": "raqam9",
   "webDir": "public",
-  "backgroundColor": "#0d1117",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 3000,
+      "launchShowDuration": 2000,
       "launchAutoHide": true,
       "backgroundColor": "#0d1117",
       "androidSplashResourceName": "splash",
@@ -13,6 +16,9 @@
       "showSpinner": false,
       "splashFullScreen": true,
       "splashImmersive": true
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
     }
   }
 }
