@@ -90,12 +90,13 @@
     </div>
     
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // ==================== CONFIG & SETUP ====================
-        const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const LOCALE = 'fr-MA';
+  document.addEventListener('DOMContentLoaded', () => {
+    // ==================== CONFIG & SETUP ====================
+    const SUPABASE_URL = 'https://uxtxavurcgdeueeemmdi.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4dHhhdnVyY2dkZXVlZWVtbWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwMjQ4NzYsImV4cCI6MjA2NjYwMDg3Nn0.j7MrIoGzbzjurKyWGN0GgpMBIzl5exOsZrYlKCSmNbk';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const ADMIN_REQUIRED_EMAIL = "fieldstories0@gmail.com";
+    const LOCALE = 'fr-MA';
 
         if (!supabaseClient) { alert("فشل تهيئة Supabase."); return; }
 
